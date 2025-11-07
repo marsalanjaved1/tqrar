@@ -1,163 +1,108 @@
-# project files
-coverage/
-.eslintcache
-.stylelintcache
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 
-dev_mode/listings
-dev_mode/schemas
-dev_mode/static
-dev_mode/themes
-dev_mode/workspaces
-dev_mode/stats.json
+# C extensions
+*.so
 
-docs/_build
-docs/source/user/commands_list.md
-docs/source/extension/plugins_list.rst
-docs/source/extension/tokens_list.rst
-docs/source/api
-**/docs/source/_build
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-examples/app/build
-examples/app/themes
-examples/app/schemas
-examples/**/static
-examples/federated/labextensions
+# PyInstaller
+*.manifest
+*.spec
 
-junit.xml
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
 
-jupyterlab/galata/@jupyterlab
-jupyterlab/geckodriver
-jupyterlab/static
-jupyterlab/schemas
-jupyterlab/themes
-jupyterlab/style.js
-jupyterlab/tests/**/static
-jupyterlab/tests/**/labextension
-
-ui-tests/test-output
-
-# Remove after next release
-jupyterlab/imports.css
-
-packages/codemirror/test/foo*.js
-packages/nbconvert-css/style/
-packages/services/examples/node/config.json
-packages/services/examples/browser/tmp
-packages/theme-*/static
-
-tests/**/coverage
-tests/**/.cache-loader
-
-# galata
-galata/benchmark-results
-galata/playwright-report
-galata/test-results
-galata/*benchmark-expected.json
-
-package_json.tar.gz
-
-# javascript/typescript
-lib
-node_modules
-
-*.tsbuildinfo
-lerna-debug.log
-yarn-error.log
-
-# python
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
 .cache
-*.py[co]
-.pytest_cache
-__pycache__
-*.egg-info
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
 .ipynb_checkpoints
-pip-wheel-metadata
-Pipfile
-Pipfile.lock
+*.ipynb
+
+# pyenv
+.python-version
+
+# Environments
+.env
+.venv
+env/
 venv/
+ENV/
+env.bak/
+venv.bak/
 
-# xeus-python debug logs
-xpython_debug_logs
-xeus.log
-
-build
-dist
-
-MANIFEST
-
-# misc
-*~
-*.bak
-*.map
-*.swp
-.DS_Store
-.log/
-\#*#
-.#*
-
-*.swp
-*.map
-
-coverage/
-tests/**/coverage
-tests/**/.cache-loader
-docs/_build
-docs/api
-docs/source/_build
-packages/services/examples/node/config.json
-examples/app/build
-examples/app/themes
-examples/app/schemas
-iframe_figures/
-
-lerna-debug.log
-yarn-error.log
-
-# yarn >=2.x local files
-.yarn/*
-.pnp.*
-jupyterlab/staging/.yarn/*
-jupyterlab/staging/.pnp.*
-jupyterlab/tests/mock_packages/test-hyphens-underscore/.yarn/*
-jupyterlab/tests/mock_packages/test-hyphens-underscore/.pnp/*
-jupyterlab/tests/mock_packages/test_no_hyphens/.yarn/*
-jupyterlab/tests/mock_packages/test_no_hyphens/.pnp/*
-jupyterlab/tests/mock_packages/test-hyphens/.yarn/*
-
-# copied changelog file
-docs/source/getting_started/changelog.md
-
-junit.xml
-
-*.tsbuildinfo
-
-# jetbrains IDE stuff
-*.iml
+# IDEs
+.vscode/
 .idea/
+*.swp
+*.swo
+*~
+.DS_Store
 
-# ms IDE stuff
-*.code-workspace
-.history
-.vscode/*
-!.vscode/extension.json
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 
-.jupyter_releaser_checkout
+# Build outputs
+lib/
+dist/
+*.js.map
+*.d.ts.map
+tsconfig.tsbuildinfo
 
-# generated LSP interfaces
-packages/lsp/src/_*
+# JupyterLab
+jupyterlab/staging/
+dev_mode/build/
+dev_mode/static/
 
-# generated reports
-webpack-bundle-analyzer.html
-examples/**/test-results/
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
 
-# untitled (default name) files
-Untitled*.ipynb
-untitled*.md
-untitled*.py
-untitled*.txt
+# Testing
+coverage/
+.nyc_output/
 
-# pixi environments
-.pixi
-
-# temporary files, useful for testing
-tmp
+# Misc
+*.log
+.cache/
+.temp/
+.tmp/

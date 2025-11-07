@@ -1,185 +1,388 @@
-**[Installation](#installation)** |
-**[Documentation](https://jupyterlab.readthedocs.io)** |
-**[Contributing](#contributing)** |
-**[License](#license)** |
-**[Team](#team)** |
-**[Getting help](#getting-help)** |
+# تِقرار (Tqrar)
 
-# [JupyterLab](https://jupyterlab.readthedocs.io)
+<div align="center">
 
-[![PyPI version](https://badge.fury.io/py/jupyterlab.svg)](https://badge.fury.io/py/jupyterlab)
-[![PyPI Downloads](https://static.pepy.tech/personalized-badge/jupyterlab?period=monthly&units=INTERNATIONAL_SYSTEM&left_color=GRAY&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/jupyterlab)
-[![Build Status](https://github.com/jupyterlab/jupyterlab/workflows/Linux%20Tests/badge.svg)](https://github.com/jupyterlab/jupyterlab/actions?query=branch%3Amain+workflow%3A%22Linux+Tests%22)
-[![Build Status](https://github.com/jupyterlab/jupyterlab/workflows/Windows%20Tests/badge.svg)](https://github.com/jupyterlab/jupyterlab/actions?query=branch%3Amain+workflow%3A%22Windows+Tests%22)
-[![Documentation Status](https://readthedocs.org/projects/jupyterlab/badge/?version=stable)](http://jupyterlab.readthedocs.io/en/stable/)
-[![Crowdin](https://badges.crowdin.net/jupyterlab/localized.svg)](https://crowdin.com/project/jupyterlab)
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/8675/badge)](https://www.bestpractices.dev/projects/8675)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/jupyterlab/jupyterlab/badge)](https://scorecard.dev/viewer/?uri=github.com/jupyterlab/jupyterlab)
-[![GitHub](https://img.shields.io/badge/issue_tracking-github-blue.svg)](https://github.com/jupyterlab/jupyterlab/issues)
-[![Discourse](https://img.shields.io/badge/help_forum-discourse-blue.svg)](https://discourse.jupyter.org/c/jupyterlab)
-[![Zulip](https://img.shields.io/badge/social_chat-zulip-blue.svg)](https://jupyter.zulipchat.com/#narrow/channel/469762-jupyterlab)
-[![Gitpod](https://img.shields.io/badge/gitpod_editor-open-blue.svg)](https://gitpod.io/#https://github.com/jupyterlab/jupyterlab)
+![Tqrar Logo](https://via.placeholder.com/200x200?text=Tqrar)
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/jupyterlab/jupyterlab-demo/HEAD?urlpath=lab/tree/demo)
+**AI-Powered Conversational Assistant for JupyterLab**
 
-An extensible environment for interactive and reproducible computing, based on the
-Jupyter Notebook and Architecture.
+[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](LICENSE)
+[![JupyterLab](https://img.shields.io/badge/JupyterLab-4.5+-orange.svg)](https://jupyterlab.readthedocs.io)
+[![React](https://img.shields.io/badge/React-18.2+-61DAFB.svg?logo=react)](https://reactjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-3178C6.svg?logo=typescript)](https://www.typescriptlang.org)
 
-[JupyterLab](http://jupyterlab.readthedocs.io/en/stable/) is the next-generation user interface for [Project Jupyter](https://jupyter.org) offering
-all the familiar building blocks of the classic Jupyter Notebook (notebook,
-terminal, text editor, file browser, rich outputs, etc.) in a flexible and
-powerful user interface.
+[Website](https://tqrar.dev) • [Documentation](#documentation) • [Installation](#installation) • [Contributing](#contributing)
 
-JupyterLab can be extended using [npm](https://www.npmjs.com/) packages
-that use our public APIs. The _prebuilt_ extensions can be distributed
-via [PyPI](https://pypi.org/search/?q=jupyterlab&o=-created&c=Framework+%3A%3A+Jupyter),
-conda, and other package managers. The _source_ extensions can be installed
-directly from npm (search for [jupyterlab-extension](https://www.npmjs.com/search?q=keywords:jupyterlab-extension)) but require an additional build step.
-You can also find JupyterLab extensions exploring GitHub topic [jupyterlab-extension](https://github.com/topics/jupyterlab-extension).
-To learn more about extensions, see the [user documentation](https://jupyterlab.readthedocs.io/en/latest/user/extensions.html).
-
-Read the current JupyterLab documentation on [ReadTheDocs](http://jupyterlab.readthedocs.io/en/stable/).
-
-> [!IMPORTANT]
-> JupyterLab 3 reached its end of maintenance date on May 15, 2024. Fixes for critical issues will still be backported until December 31, 2024. If you are still running JupyterLab 3, we strongly encourage you to **upgrade to JupyterLab 4 as soon as possible.** For more information, see [JupyterLab 3 end of maintenance](https://blog.jupyter.org/jupyterlab-3-end-of-maintenance-879778927db2) on the Jupyter Blog.
+</div>
 
 ---
 
-## Getting started
+## 📖 About
 
-### Installation
+**Tqrar** (تِقرار) — meaning "repetition" in Arabic and Urdu — is an intelligent AI assistant extension for JupyterLab that helps you iterate faster on your data science and machine learning workflows. Just as the name suggests, Tqrar enables you to repeat, refine, and perfect your work through natural conversation with AI.
 
-If you use [conda](https://docs.conda.io/en/latest/), [mamba](https://mamba.readthedocs.io/en/latest/), or [pip](https://docs.python.org/3/installing/index.html), you can install JupyterLab with one of the following commands.
+### Etymology
 
-- If you use conda:
-  ```shell
-  conda install -c conda-forge jupyterlab
-  ```
-- If you use mamba:
-  ```shell
-  mamba install -c conda-forge jupyterlab
-  ```
-- If you use pip:
-  ```shell
-  pip install jupyterlab
-  ```
-  If installing using `pip install --user`, you must add the user-level `bin` directory to your `PATH` environment variable in order to launch `jupyter lab`. If you are using a Unix derivative (e.g., FreeBSD, GNU/Linux, macOS), you can do this by running `export PATH="$HOME/.local/bin:$PATH"`.
+The word **تِقرار** (tqrar) originates from Arabic and is widely used in Urdu:
 
-For more detailed instructions, consult the [installation guide](http://jupyterlab.readthedocs.io/en/latest/getting_started/installation.html). Project installation instructions from the git sources are available in the [contributor documentation](CONTRIBUTING.md).
+- **Arabic**: تِكرار (tikrār) — from root ك ر ر (k-r-r), meaning "to repeat" or "repetition"
+- **Urdu**: تکرار (tqrar) — carries the same meaning of repetition, iteration, or refinement
 
-#### Installing with Previous Versions of Jupyter Notebook
+This perfectly captures the essence of data science: iterative experimentation, continuous refinement, and repeated analysis until you achieve the perfect result.
 
-When using a version of Jupyter Notebook earlier than 5.3, the following command must be run after installing JupyterLab to enable the JupyterLab server extension:
+---
 
-```bash
-jupyter serverextension enable --py jupyterlab --sys-prefix
+## ✨ Features
+
+### 🤖 Intelligent Conversational Interface
+- **Natural Language Interaction**: Ask questions about your notebooks, code, and data in plain English
+- **Context-Aware Responses**: Understands your notebook structure, variables, and execution state
+- **Streaming Responses**: Real-time AI responses with smooth, word-by-word streaming
+
+### 🎨 Beautiful, Native Integration
+- **Seamless JupyterLab Integration**: Fits naturally into your existing workflow
+- **Theme-Aware Design**: Automatically adapts to JupyterLab's light and dark themes
+- **Responsive UI**: Clean, modern interface built with React and TypeScript
+
+### 🔧 Powerful Capabilities
+- **Code Analysis**: Get explanations, suggestions, and improvements for your code
+- **Data Insights**: Ask questions about your datasets and visualizations
+- **Error Debugging**: Intelligent assistance with error messages and stack traces
+- **Documentation**: Quick access to library documentation and examples
+
+### 🚀 Developer-Friendly
+- **Multiple LLM Providers**: Support for OpenRouter, OpenAI, Anthropic, and local models
+- **Extensible Architecture**: Built on modern React patterns with clean separation of concerns
+- **Type-Safe**: Full TypeScript implementation for reliability and maintainability
+
+---
+
+## 🎯 Use Cases
+
+### For Data Scientists
+```
+You: "Explain what this pandas groupby operation does"
+Tqrar: Analyzes your code and provides clear explanations with examples
 ```
 
-### Running
-
-Start up JupyterLab using:
-
-```bash
-jupyter lab
+### For ML Engineers
+```
+You: "Why is my model overfitting?"
+Tqrar: Reviews your training code and suggests regularization techniques
 ```
 
-JupyterLab will open automatically in the browser. See the [documentation](http://jupyterlab.readthedocs.io/en/latest/getting_started/starting.html) for additional details.
+### For Researchers
+```
+You: "Generate a visualization for this dataset"
+Tqrar: Provides matplotlib/seaborn code tailored to your data structure
+```
 
-If you encounter an error like "Command 'jupyter' not found", please make sure `PATH` environment variable is set correctly. Alternatively, you can start up JupyterLab using `~/.local/bin/jupyter lab` without changing the `PATH` environment variable.
-
-### Prerequisites and Supported Browsers
-
-The latest versions of the following browsers are currently _known to work_:
-
-- Firefox
-- Chrome
-- Safari
-
-See our [documentation](http://jupyterlab.readthedocs.io/en/latest/getting_started/installation.html) for additional details.
+### For Students
+```
+You: "What's the difference between numpy arrays and pandas series?"
+Tqrar: Explains concepts with practical examples from your notebook
+```
 
 ---
 
-## Getting help
+## 📦 Installation
 
-We encourage you to ask questions on the [Discourse forum](https://discourse.jupyter.org/c/jupyterlab). A question answered there can become a useful resource for others.
+### Prerequisites
 
-### Bug report
+- **JupyterLab** 4.5.0 or higher
+- **Node.js** 20.0.0 or higher
+- **Python** 3.8 or higher
 
-To report a bug please read the [guidelines](https://jupyterlab.readthedocs.io/en/latest/getting_started/issue.html) and then open a [Github issue](https://github.com/jupyterlab/jupyterlab/issues/new?labels=bug%2C+status%3ANeeds+Triage&template=bug_report.md). To keep resolved issues self-contained, the [lock bot](https://github.com/apps/lock) will lock closed issues as resolved after a period of inactivity. If a related discussion is still needed after an issue is locked, please open a new issue and reference the old issue.
+### Quick Start
 
-### Feature request
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/marsalanjaved1/tqrar.git
+   cd tqrar
+   ```
 
-We also welcome suggestions for new features as they help make the project more useful for everyone. To request a feature please use the [feature request template](https://github.com/jupyterlab/jupyterlab/issues/new?labels=enhancement%2C+status%3ANeeds+Triage&template=feature_request.md).
+2. **Install dependencies**
+   ```bash
+   yarn install
+   ```
 
----
+3. **Build the extension**
+   ```bash
+   yarn build
+   ```
 
-## Development
+4. **Start JupyterLab in development mode**
+   ```bash
+   jupyter lab --dev-mode
+   ```
 
-### Extending JupyterLab
-
-To start developing an extension for JupyterLab, see the [developer documentation](https://jupyterlab.readthedocs.io/en/latest/extension/extension_dev.html) and the [API docs](https://jupyterlab.readthedocs.io/en/latest/api/).
-
-### Contributing
-
-To contribute code or documentation to JupyterLab itself, please read the [contributor documentation](https://jupyterlab.readthedocs.io/en/latest/developer/contributing.html).
-
-JupyterLab follows the Jupyter [Community Guides](https://jupyter.readthedocs.io/en/latest/community/content-community.html).
-
-### License
-
-JupyterLab uses a shared copyright model that enables all contributors to maintain the
-copyright on their contributions. All code is licensed under the terms of the revised [BSD license](https://github.com/jupyterlab/jupyterlab/blob/main/LICENSE).
-
-### Team
-
-JupyterLab is part of [Project Jupyter](https://jupyter.org/) and is developed by an open community. The maintenance team is assisted by a much larger group of contributors to JupyterLab and Project Jupyter as a whole.
-
-JupyterLab's current maintainers are listed in alphabetical order, with affiliation, and main areas of contribution:
-
-- Mehmet Bektas, Netflix (general development, extensions).
-- Alex Bozarth, IBM (general development, extensions).
-- Eric Charles, Datalayer, (general development, extensions).
-- Frédéric Collonval, WebScIT (general development, extensions).
-- Martha Cryan, Mito (general development, extensions).
-- Afshin Darian, QuantStack (co-creator, application/high-level architecture,
-  prolific contributions throughout the code base).
-- Vidar T. Fauske, JPMorgan Chase (general development, extensions).
-- Brian Granger, AWS (co-creator, strategy, vision, management, UI/UX design,
-  architecture).
-- Jason Grout, Databricks (co-creator, vision, general development).
-- Michał Krassowski, Quansight (general development, extensions).
-- Max Klein, JPMorgan Chase (UI Package, build system, general development, extensions).
-- Gonzalo Peña-Castellanos, QuanSight (general development, i18n, extensions).
-- Fernando Perez, UC Berkeley (co-creator, vision).
-- Steven Silvester, MongoDB (co-creator, release management, packaging,
-  prolific contributions throughout the code base).
-- Jeremy Tuloup, QuantStack (general development, extensions).
-
-Maintainer emeritus:
-
-- Chris Colbert, Project Jupyter (co-creator, application/low-level architecture,
-  technical leadership, vision, PhosphorJS)
-- Jessica Forde, Project Jupyter (demo, documentation)
-- Tim George, Cal Poly (UI/UX design, strategy, management, user needs analysis).
-- Cameron Oelsen, Cal Poly (UI/UX design).
-- Isabela Presedo-Floyd, QuanSight Labs (design/UX).
-- Ian Rose, Quansight/City of LA (general core development, extensions).
-- Andrew Schlaepfer, Bloomberg (general development, extensions).
-- Saul Shanabrook, Quansight (general development, extensions)
-
-This list is provided to give the reader context on who we are and how our team functions.
-To be listed, please submit a pull request with your information.
+5. **Open the AI Assistant**
+   - Click the AI Assistant icon in the left sidebar, or
+   - Use Command Palette: `Cmd/Ctrl + Shift + C` → "AI Assistant: Open Chat"
 
 ---
 
-### Weekly Dev Meeting
+## ⚙️ Configuration
 
-We have videoconference meetings every week where we discuss what we have been working on and get feedback from one another.
+### Setting up your AI Provider
 
-Anyone is welcome to attend, if they would like to discuss a topic or just listen in.
+1. **Open Settings**
+   - Click the settings icon (⚙️) in the AI Assistant panel
+   - Or use Command Palette: "AI Assistant: Configure Settings"
 
-- When: Wednesdays 9:00 AM Pacific Time (USA)
-- Where: [`jovyan` Zoom](https://zoom.us/j/95228013874?pwd=Ep7HIk8t9JP6VToxt1Wj4P7K5PshC0.1)
-- What: [Meeting notes](https://hackmd.io/Y7fBMQPSQ1C08SDGI-fwtg?both)
+2. **Choose your provider**
+   - **OpenRouter** (Recommended): Access to multiple models with one API key
+   - **OpenAI**: Direct access to GPT models
+   - **Anthropic**: Claude models
+   - **Local**: Self-hosted models (Ollama, LM Studio, etc.)
 
-> Notes are archived on [GitHub Jupyter Frontends team compass](https://github.com/jupyterlab/frontends-team-compass/issues).
+3. **Enter your API key**
+   - Get your API key from your chosen provider
+   - Paste it in the settings dialog
+   - Click "Save"
+
+### Provider Setup Guides
+
+#### OpenRouter (Recommended)
+```bash
+# Get your API key from https://openrouter.ai
+# Supports GPT-4, Claude, Llama, and 100+ other models
+```
+
+#### OpenAI
+```bash
+# Get your API key from https://platform.openai.com
+# Supports GPT-4, GPT-3.5-turbo, and other OpenAI models
+```
+
+#### Local Models
+```bash
+# Install Ollama: https://ollama.ai
+ollama pull llama2
+# Set base URL to: http://localhost:11434
+```
+
+---
+
+## 🏗️ Architecture
+
+Tqrar is built with modern web technologies and follows best practices:
+
+```
+tqrar/
+├── packages/
+│   └── ai-assistant/           # Main extension package
+│       ├── src/
+│       │   ├── index.ts        # Extension entry point
+│       │   ├── widget-simple.tsx  # React chat component
+│       │   ├── settings.ts     # Settings management
+│       │   └── types.ts        # TypeScript definitions
+│       ├── style/
+│       │   └── index.css       # Styling
+│       └── schema/
+│           └── plugin.json     # Settings schema
+├── dev_mode/                   # Development environment
+└── docs/                       # Documentation
+```
+
+### Technology Stack
+
+- **Frontend**: React 18, TypeScript 5.5
+- **UI Framework**: JupyterLab 4.5, Lumino Widgets
+- **Build System**: Webpack 5, Yarn Workspaces
+- **Styling**: CSS Variables, JupyterLab Theme System
+- **AI Integration**: OpenAI SDK, Streaming APIs
+
+---
+
+## 🛠️ Development
+
+### Building from Source
+
+```bash
+# Install dependencies
+yarn install
+
+# Build all packages
+yarn build
+
+# Watch mode for development
+yarn watch
+
+# Clean build artifacts
+yarn clean
+```
+
+### Running Tests
+
+```bash
+# Run unit tests
+yarn test
+
+# Run integration tests
+yarn test:integration
+
+# Run with coverage
+yarn test:coverage
+```
+
+### Development Workflow
+
+1. **Make your changes** in `packages/ai-assistant/src/`
+2. **Build the package**: `yarn build`
+3. **Rebuild dev_mode**: `cd dev_mode && yarn build`
+4. **Restart JupyterLab** or refresh your browser
+5. **Test your changes** in the AI Assistant panel
+
+### Code Style
+
+We use ESLint and Prettier for code formatting:
+
+```bash
+# Check code style
+yarn lint
+
+# Fix code style issues
+yarn lint:fix
+
+# Format code
+yarn format
+```
+
+---
+
+## 📚 Documentation
+
+### User Guide
+
+- [Getting Started](docs/getting-started.md)
+- [Configuration Guide](docs/configuration.md)
+- [Keyboard Shortcuts](docs/shortcuts.md)
+- [Troubleshooting](docs/troubleshooting.md)
+
+### Developer Guide
+
+- [Architecture Overview](docs/architecture.md)
+- [Contributing Guidelines](CONTRIBUTING.md)
+- [API Reference](docs/api.md)
+- [Extension Development](docs/extension-dev.md)
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions from the community! Whether it's:
+
+- 🐛 Bug reports
+- 💡 Feature requests
+- 📝 Documentation improvements
+- 🔧 Code contributions
+
+### How to Contribute
+
+1. **Fork the repository**
+2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
+3. **Make your changes** and commit: `git commit -m 'Add amazing feature'`
+4. **Push to your fork**: `git push origin feature/amazing-feature`
+5. **Open a Pull Request**
+
+Please read our [Contributing Guidelines](CONTRIBUTING.md) for more details.
+
+### Development Setup
+
+```bash
+# Fork and clone the repo
+git clone https://github.com/YOUR_USERNAME/tqrar.git
+cd tqrar
+
+# Add upstream remote
+git remote add upstream https://github.com/marsalanjaved1/tqrar.git
+
+# Create a branch
+git checkout -b feature/my-feature
+
+# Make changes and test
+yarn build
+jupyter lab --dev-mode
+
+# Commit and push
+git add .
+git commit -m "Description of changes"
+git push origin feature/my-feature
+```
+
+---
+
+## 🗺️ Roadmap
+
+### Version 1.0 (Current)
+- ✅ Basic chat interface
+- ✅ Streaming responses
+- ✅ Settings management
+- ✅ Theme integration
+
+### Version 1.1 (Planned)
+- 🔄 Notebook context awareness
+- 🔄 Code execution capabilities
+- 🔄 Variable inspection
+- 🔄 Cell output analysis
+
+### Version 2.0 (Future)
+- 📋 Tool calling / Function execution
+- 📊 Data visualization generation
+- 🔍 Semantic code search
+- 🤖 Multi-agent workflows
+- 🌐 Collaborative features
+
+---
+
+## 🙏 Acknowledgments
+
+Tqrar is built on the shoulders of giants:
+
+- **[JupyterLab](https://jupyterlab.readthedocs.io)** - The foundation of modern data science
+- **[React](https://reactjs.org)** - For the beautiful UI
+- **[TypeScript](https://www.typescriptlang.org)** - For type safety and developer experience
+- **[OpenAI](https://openai.com)** - For pioneering conversational AI
+- **[Assistant UI](https://github.com/Yonom/assistant-ui)** - For chat UI inspiration
+
+Special thanks to the Jupyter community for creating an amazing ecosystem.
+
+---
+
+## 📄 License
+
+This project is licensed under the **BSD 3-Clause License** - see the [LICENSE](LICENSE) file for details.
+
+This license is compatible with JupyterLab and allows for both commercial and non-commercial use.
+
+---
+
+## 🌟 Support
+
+If you find Tqrar helpful, please consider:
+
+- ⭐ **Starring the repository** on GitHub
+- 🐦 **Sharing on social media** with #Tqrar
+- 💬 **Joining our community** discussions
+- 🐛 **Reporting bugs** to help us improve
+- 📝 **Contributing** to the project
+
+---
+
+## 📞 Contact
+
+- **Website**: [tqrar.dev](https://tqrar.dev)
+- **GitHub**: [@marsalanjaved1](https://github.com/marsalanjaved1)
+- **Issues**: [GitHub Issues](https://github.com/marsalanjaved1/tqrar/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/marsalanjaved1/tqrar/discussions)
+
+---
+
+<div align="center">
+
+**Made with ❤️ for the Data Science Community**
+
+*Iterate. Refine. Perfect. — تِقرار*
+
+</div>

@@ -4,7 +4,9 @@
     "outDir": "lib",
     "rootDir": "src"
   },
-  "include": ["src/*"],
+  "include": [
+    "src/*"
+  ],
   "references": [
     {
       "path": "../application"
@@ -302,6 +304,9 @@
     },
     {
       "path": "../workspaces-extension"
+    },
+    {
+      "path": "../ai-assistant"
     }
   ]
 }

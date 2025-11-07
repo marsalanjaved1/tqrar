@@ -1,0 +1,7 @@
+/*-----------------------------------------------------------------------------
+| Assistant UI Base Styles
+| Imported from @assistant-ui/react
+|----------------------------------------------------------------------------*/
+
+/* Import the base Assistant UI styles directly */
+@import '@assistant-ui/react/dist/styles/index.css';

@@ -148,6 +148,7 @@
     "yjs": "^13.5.40"
   },
   "dependencies": {
+    "@jupyterlab/ai-assistant": "~0.1.0",
     "@jupyterlab/application": "~4.5.0-rc.0",
     "@jupyterlab/application-extension": "~4.5.0-rc.0",
     "@jupyterlab/apputils-extension": "~4.5.0-rc.0",
@@ -234,6 +235,7 @@
     "name": "JupyterLab",
     "version": "4.5.0rc0",
     "extensions": {
+      "@jupyterlab/ai-assistant": "",
       "@jupyterlab/application-extension": "",
       "@jupyterlab/apputils-extension": "",
       "@jupyterlab/audio-extension": "",
