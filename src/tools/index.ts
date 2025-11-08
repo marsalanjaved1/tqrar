@@ -8,4 +8,5 @@ export * from './execution';
 export * from './kernel';
 export * from './file';
 export * from './inspection';
+export * from './ToolExecutionTracker';
 

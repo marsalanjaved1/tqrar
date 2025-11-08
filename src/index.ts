@@ -41,6 +41,7 @@ const tqrarIcon = new LabIcon({
 import { ConversationManager } from './conversation';
 import { LLMClient } from './llm/client';
 import { ToolRegistry } from './tools/registry';
+import { ToolExecutionTracker } from './tools/ToolExecutionTracker';
 import { ContextManager } from './context';
 import { DebouncedHistorySaver, HistoryStorage } from './history';
 import { ISettings } from './types';
@@ -86,6 +87,11 @@ const plugin: JupyterFrontEndPlugin<void> = {
     let contextManager: ContextManager | null = null;
     let historyStorage: HistoryStorage | null = null;
     let historySaver: DebouncedHistorySaver | null = null;
+    let toolExecutionTracker: ToolExecutionTracker | null = null;
+
+    // Initialize tool execution tracker
+    toolExecutionTracker = new ToolExecutionTracker();
+    console.log('[AI Assistant] Tool execution tracker initialized');
 
     // Initialize history storage
     historyStorage = new HistoryStorage(stateDB);
@@ -185,7 +191,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           console.log('[AI Assistant] LLM client initialized with decrypted API key');
 
           // Initialize conversation manager if all dependencies are ready
-          if (llmClient && toolRegistry && contextManager && historyStorage && historySaver) {
+          if (llmClient && toolRegistry && contextManager && historyStorage && historySaver && toolExecutionTracker) {
             // Load conversation history from storage
             const savedHistory = await historyStorage.load();
 
@@ -193,6 +199,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
               llmClient,
               toolRegistry,
               contextManager,
+              toolExecutionTracker,
               initialHistory: savedHistory.length > 0 ? savedHistory : undefined,
               onHistoryChange: (messages) => {
                 // Save history whenever it changes (debounced)
@@ -229,7 +236,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
             }
 
             // Reinitialize conversation manager
-            if (llmClient && toolRegistry && contextManager && historyStorage && historySaver) {
+            if (llmClient && toolRegistry && contextManager && historyStorage && historySaver && toolExecutionTracker) {
               // Load conversation history from storage
               const savedHistory = await historyStorage.load();
 
@@ -237,6 +244,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
                 llmClient,
                 toolRegistry,
                 contextManager,
+                toolExecutionTracker,
                 initialHistory: savedHistory.length > 0 ? savedHistory : undefined,
                 onHistoryChange: (messages) => {
                   // Save history whenever it changes (debounced)
@@ -313,7 +321,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
                 return streamDemoResponse();
               }
             },
-            rendermime: rendermime || undefined
+            rendermime: rendermime || undefined,
+            toolExecutionTracker: toolExecutionTracker || undefined
           });
 
           chatWidget.id = 'ai-assistant-chat';

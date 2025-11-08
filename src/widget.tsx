@@ -7,11 +7,20 @@ import { IMessage } from './types';
 import { settingsIcon } from '@jupyterlab/ui-components';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import React from 'react';
-import { AssistantRuntimeProvider, Thread, useLocalRuntime } from '@assistant-ui/react';
+import {
+  AssistantRuntimeProvider,
+  Thread,
+  useLocalRuntime,
+  makeAssistantToolUI,
+  AssistantMessage
+} from '@assistant-ui/react';
 import type { ChatModelAdapter, ChatModelRunOptions, ChatModelRunResult } from '@assistant-ui/react';
+import { ToolExecutionTracker } from './tools/ToolExecutionTracker';
+import { ToolExecutionPanel } from './components/ToolExecutionPanel';
 
 // Import CSS
 import '../style/widget.css';
+import '../style/tool-execution.css';
 
 /**
  * Options for creating a ChatWidget
@@ -31,6 +40,11 @@ export interface IChatWidgetOptions {
    * RenderMime registry for rendering rich content
    */
   rendermime?: IRenderMimeRegistry;
+
+  /**
+   * Tool execution tracker for monitoring tool calls
+   */
+  toolExecutionTracker?: ToolExecutionTracker;
 }
 
 /**
@@ -39,9 +53,11 @@ export interface IChatWidgetOptions {
  */
 class JupyterLabChatAdapter implements ChatModelAdapter {
   private _onMessageSend?: (content: string) => Promise<AsyncGenerator<string>>;
+  private _toolExecutionTracker?: ToolExecutionTracker;
 
-  constructor(onMessageSend?: (content: string) => Promise<AsyncGenerator<string>>) {
+  constructor(onMessageSend?: (content: string) => Promise<AsyncGenerator<string>>, toolExecutionTracker?: ToolExecutionTracker) {
     this._onMessageSend = onMessageSend;
+    this._toolExecutionTracker = toolExecutionTracker;
   }
 
   /**
@@ -76,6 +92,22 @@ class JupyterLabChatAdapter implements ChatModelAdapter {
     }
 
     try {
+      // Track active tool executions during this message
+      const activeToolExecutions: string[] = [];
+
+      // Listen for tool executions that start during this message
+      const handleToolStart = (event: import('./types').IToolExecutionEvent) => {
+        console.log('[JupyterLabChatAdapter] Tool execution started:', event.toolCall.function.name, event.id);
+        activeToolExecutions.push(event.id);
+      };
+
+      if (this._toolExecutionTracker) {
+        console.log('[JupyterLabChatAdapter] Setting up tool execution listener');
+        this._toolExecutionTracker.on('execution:start', handleToolStart);
+      } else {
+        console.log('[JupyterLabChatAdapter] No tool execution tracker available');
+      }
+
       // Get the streaming response from the conversation manager
       const stream = await this._onMessageSend(content);
 
@@ -91,6 +123,40 @@ class JupyterLabChatAdapter implements ChatModelAdapter {
         fullText += chunk;
 
         // Yield the updated content
+        yield {
+          content: [
+            {
+              type: 'text' as const,
+              text: fullText
+            }
+          ]
+        };
+      }
+
+      console.log('[JupyterLabChatAdapter] Streaming complete. Active tool executions:', activeToolExecutions.length);
+
+      // Clean up listener
+      if (this._toolExecutionTracker) {
+        this._toolExecutionTracker.off('execution:start', handleToolStart);
+      }
+
+      // After streaming completes, add tool execution summaries to the message
+      if (activeToolExecutions.length > 0 && this._toolExecutionTracker) {
+        console.log('[JupyterLabChatAdapter] Adding tool summaries for', activeToolExecutions.length, 'executions');
+        let toolSummary = '\n\n**Tools Used:**';
+        for (const execId of activeToolExecutions) {
+          const execution = this._toolExecutionTracker.getExecution(execId);
+          console.log('[JupyterLabChatAdapter] Execution', execId, ':', execution?.status);
+          if (execution) {
+            const status = execution.status === 'success' ? '✓' : execution.status === 'error' ? '✗' : '⚙️';
+            const duration = execution.duration ? ` (${(execution.duration / 1000).toFixed(2)}s)` : '';
+            toolSummary += `\n- ${status} ${execution.toolCall.function.name}${duration}`;
+          }
+        }
+
+        fullText += toolSummary;
+        console.log('[JupyterLabChatAdapter] Final text with tool summary:', fullText.substring(Math.max(0, fullText.length - 200)));
+
         yield {
           content: [
             {
@@ -116,16 +182,91 @@ class JupyterLabChatAdapter implements ChatModelAdapter {
 }
 
 /**
+ * Tool execution context provider
+ * Makes tool execution tracker available to child components
+ */
+const ToolExecutionContext = React.createContext<ToolExecutionTracker | undefined>(undefined);
+
+/**
+ * Hook to access tool execution tracker
+ */
+const useToolExecutionTracker = () => {
+  return React.useContext(ToolExecutionContext);
+};
+
+/**
+ * Custom tool UI component that renders inline with messages
+ * This integrates with Assistant UI's tool rendering system
+ */
+const InlineToolUI: React.FC<{ toolName: string; toolCallId: string }> = ({ toolName, toolCallId }) => {
+  const tracker = useToolExecutionTracker();
+  const [execution, setExecution] = React.useState<import('./types').IToolExecutionEvent | null>(null);
+
+  // Find the execution for this tool call
+  React.useEffect(() => {
+    if (!tracker) {
+      console.log('[InlineToolUI] No tracker available');
+      return;
+    }
+
+    console.log('[InlineToolUI] Looking for execution with toolCallId:', toolCallId);
+
+    // Find execution by tool call ID using the new method
+    const findExecution = () => {
+      const found = tracker.getExecutionByToolCallId(toolCallId);
+      if (found) {
+        console.log('[InlineToolUI] Found execution:', found.id, found.status);
+        setExecution(found);
+      } else {
+        console.log('[InlineToolUI] No execution found for toolCallId:', toolCallId);
+      }
+    };
+
+    // Initial search
+    findExecution();
+
+    // Listen for updates
+    const handleUpdate = (event: import('./types').IToolExecutionEvent) => {
+      if (event.toolCall.id === toolCallId) {
+        console.log('[InlineToolUI] Received update for toolCallId:', toolCallId, event.status);
+        setExecution(event);
+      }
+    };
+
+    tracker.on('execution:start', handleUpdate);
+    tracker.on('execution:update', handleUpdate);
+    tracker.on('execution:complete', handleUpdate);
+    tracker.on('execution:error', handleUpdate);
+
+    return () => {
+      tracker.off('execution:start', handleUpdate);
+      tracker.off('execution:update', handleUpdate);
+      tracker.off('execution:complete', handleUpdate);
+      tracker.off('execution:error', handleUpdate);
+    };
+  }, [tracker, toolCallId]);
+
+  if (!execution) {
+    console.log('[InlineToolUI] No execution to render for toolCallId:', toolCallId);
+    return null;
+  }
+
+  console.log('[InlineToolUI] Rendering execution:', execution.id);
+  return <ToolExecutionPanel execution={execution} />;
+};
+
+/**
  * React component for the chat interface
  * Integrates Assistant UI with JupyterLab theming and layout
  */
 const ChatComponent: React.FC<{
   onSettingsClick?: () => void;
   onMessageSend?: (content: string) => Promise<AsyncGenerator<string>>;
-}> = ({ onSettingsClick, onMessageSend }) => {
+  toolExecutionTracker?: ToolExecutionTracker;
+}> = ({ onSettingsClick, onMessageSend, toolExecutionTracker }) => {
   // Create the runtime with our custom adapter
   const runtime = useLocalRuntime(
-    new JupyterLabChatAdapter(onMessageSend)
+    new JupyterLabChatAdapter(onMessageSend, toolExecutionTracker)
   );
 
   return (
@@ -142,7 +283,7 @@ const ChatComponent: React.FC<{
           />
         </div>
 
-        {/* Assistant UI Thread component - handles message display and input */}
+        {/* Assistant UI Thread component */}
         <div className="jp-AIAssistant-thread-container">
           <Thread />
         </div>
@@ -157,6 +298,7 @@ const ChatComponent: React.FC<{
 export class ChatWidget extends ReactWidget {
   private _onSettingsClick?: () => void;
   private _onMessageSend?: (content: string) => Promise<AsyncGenerator<string>>;
+  private _toolExecutionTracker?: ToolExecutionTracker;
 
   /**
    * Construct a new chat widget
@@ -171,6 +313,7 @@ export class ChatWidget extends ReactWidget {
 
     this._onSettingsClick = options.onSettingsClick;
     this._onMessageSend = options.onMessageSend;
+    this._toolExecutionTracker = options.toolExecutionTracker;
   }
 
   /**
@@ -181,6 +324,7 @@ export class ChatWidget extends ReactWidget {
       <ChatComponent
         onSettingsClick={this._onSettingsClick}
         onMessageSend={this._onMessageSend}
+        toolExecutionTracker={this._toolExecutionTracker}
       />
     );
   }
@@ -199,6 +343,12 @@ export class ChatWidget extends ReactWidget {
    * Clear all messages (for backward compatibility)
    */
   clear(): void {
+    // Clear tool execution history when conversation is cleared
+    if (this._toolExecutionTracker) {
+      this._toolExecutionTracker.clear();
+      console.log('[ChatWidget] Cleared tool execution history');
+    }
+
     // This would need to be implemented by resetting the runtime
     console.log('Clear messages (to be implemented with runtime reset)');
   }

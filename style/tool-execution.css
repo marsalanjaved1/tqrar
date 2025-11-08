@@ -1,0 +1,1058 @@
+/*-----------------------------------------------------------------------------
+| Tool Execution Panel Styles
+|----------------------------------------------------------------------------*/
+
+/* Main panel container */
+.jp-ToolExecutionPanel {
+  background: var(--jp-layout-color2);
+  border: 1px solid var(--jp-border-color1);
+  border-radius: 6px;
+  margin: 12px 0;
+  padding: 12px;
+  font-family: var(--jp-ui-font-family);
+  font-size: var(--jp-ui-font-size1);
+  color: var(--jp-ui-font-color1);
+}
+
+/*-----------------------------------------------------------------------------
+| Header Section
+|----------------------------------------------------------------------------*/
+
+.jp-ToolExecutionPanel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--jp-border-color2);
+}
+
+.jp-ToolExecutionPanel-headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jp-ToolExecutionPanel-headerRight {
+  display: flex;
+  align-items: center;
+}
+
+/* Tool icon */
+.jp-ToolExecutionPanel-icon {
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jp-ToolIcon-notebook {
+  color: var(--jp-info-color1);
+}
+
+.jp-ToolIcon-file {
+  color: var(--jp-warn-color1);
+}
+
+.jp-ToolIcon-inspection {
+  color: var(--jp-accent-color1);
+}
+
+.jp-ToolIcon-other {
+  color: var(--jp-ui-font-color2);
+}
+
+/* Tool name */
+.jp-ToolExecutionPanel-toolName {
+  font-weight: 600;
+  font-size: var(--jp-ui-font-size2);
+  color: var(--jp-ui-font-color1);
+  font-family: var(--jp-code-font-family);
+}
+
+/* Status badge */
+.jp-ToolExecutionPanel-statusBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: var(--jp-ui-font-size0);
+  font-weight: 500;
+}
+
+.jp-ToolStatus-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.jp-ToolStatus-label {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.jp-ToolStatus-pending {
+  background: var(--jp-layout-color3);
+  color: var(--jp-ui-font-color2);
+  border: 1px solid var(--jp-border-color2);
+}
+
+.jp-ToolStatus-running {
+  background: var(--jp-brand-color3);
+  color: var(--jp-brand-color1);
+  border: 1px solid var(--jp-brand-color2);
+}
+
+.jp-ToolStatus-success {
+  background: var(--jp-success-color3);
+  color: var(--jp-success-color1);
+  border: 1px solid var(--jp-success-color2);
+}
+
+.jp-ToolStatus-error {
+  background: var(--jp-error-color3);
+  color: var(--jp-error-color1);
+  border: 1px solid var(--jp-error-color2);
+}
+
+/* Running animation - optimized with CSS transforms and will-change */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.jp-ToolStatus-running .jp-ToolStatus-icon {
+  animation: spin 2s linear infinite;
+  display: inline-block;
+  /* Performance optimizations */
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU acceleration */
+  backface-visibility: hidden; /* Prevent flickering */
+}
+
+/*-----------------------------------------------------------------------------
+| Collapsible Sections
+|----------------------------------------------------------------------------*/
+
+.jp-ToolExecutionPanel-section {
+  margin: 8px 0;
+}
+
+.jp-ToolExecutionPanel-sectionHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  background: var(--jp-layout-color3);
+  border: 1px solid var(--jp-border-color2);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--jp-ui-font-family);
+  font-size: var(--jp-ui-font-size1);
+  font-weight: 500;
+  color: var(--jp-ui-font-color1);
+  /* Optimized transition using transform instead of background-color */
+  transition: transform 0.1s ease, background-color 0.1s ease;
+  will-change: transform;
+}
+
+.jp-ToolExecutionPanel-sectionHeader:hover {
+  background: var(--jp-layout-color4);
+  /* Subtle scale effect using transform for better performance */
+  transform: translateZ(0) scale(1.01);
+}
+
+.jp-ToolExecutionPanel-sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.jp-ToolExecutionPanel-sectionContent {
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--jp-layout-color1);
+  border: 1px solid var(--jp-border-color1);
+  border-radius: 4px;
+}
+
+/*-----------------------------------------------------------------------------
+| Parameters Display
+|----------------------------------------------------------------------------*/
+
+/* Simple parameters */
+.jp-ToolExecutionPanel-parametersSimple {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.jp-ToolParameter-item {
+  display: flex;
+  gap: 6px;
+  font-family: var(--jp-code-font-family);
+  font-size: var(--jp-code-font-size);
+}
+
+.jp-ToolParameter-key {
+  color: var(--jp-info-color1);
+  font-weight: 600;
+}
+
+.jp-ToolParameter-value {
+  color: var(--jp-ui-font-color1);
+  word-break: break-word;
+}
+
+/* Complex parameters */
+.jp-ToolExecutionPanel-parametersComplex {
+  font-family: var(--jp-code-font-family);
+  font-size: var(--jp-code-font-size);
+}
+
+.jp-ToolParameter-json {
+  margin: 0;
+  padding: 8px;
+  background: var(--jp-layout-color0);
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.jp-ToolParameter-json code {
+  font-family: var(--jp-code-font-family);
+  font-size: var(--jp-code-font-size);
+}
+
+/* JSON syntax highlighting */
+.jp-json-key {
+  color: var(--jp-info-color1);
+  font-weight: 600;
+}
+
+.jp-json-string {
+  color: var(--jp-success-color1);
+}
+
+.jp-json-number {
+  color: var(--jp-accent-color1);
+}
+
+.jp-json-keyword {
+  color: var(--jp-warn-color1);
+  font-weight: 600;
+}
+
+/* Raw parameters */
+.jp-ToolExecutionPanel-parametersRaw pre {
+  margin: 0;
+  padding: 8px;
+  background: var(--jp-layout-color0);
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: var(--jp-code-font-family);
+  font-size: var(--jp-code-font-size);
+}
+
+/*-----------------------------------------------------------------------------
+| Result Display
+|----------------------------------------------------------------------------*/
+
+/* Success message */
+.jp-ToolResult-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: var(--jp-success-color3);
+  border: 1px solid var(--jp-success-color2);
+  border-radius: 4px;
+  color: var(--jp-success-color1);
+}
+
+.jp-ToolResult-successIcon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.jp-ToolResult-successText {
+  font-weight: 500;
+}
+
+/* Message result */
+.jp-ToolResult-message {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jp-ToolResult-messageIcon {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--jp-success-color1);
+}
+
+.jp-ToolResult-messageText {
+  font-weight: 500;
+  color: var(--jp-ui-font-color1);
+}
+
+.jp-ToolResult-additionalData {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--jp-border-color2);
+}
+
+/* Structured result */
+.jp-ToolResult-structured {
+  font-family: var(--jp-code-font-family);
+  font-size: var(--jp-code-font-size);
+}
+
+.jp-ToolResult-json {
+  margin: 0;
+  padding: 8px;
+  background: var(--jp-layout-color0);
+  border-radius: 4px;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.jp-ToolResult-lengthy .jp-ToolResult-json {
+  max-height: 300px;
+}
+
+.jp-ToolResult-lengthyNote {
+  margin-top: 4px;
+  font-size: var(--jp-ui-font-size0);
+  color: var(--jp-ui-font-color3);
+  text-align: right;
+}
+
+.jp-ToolResult-empty {
+  color: var(--jp-ui-font-color3);
+  font-style: italic;
+}
+
+/*-----------------------------------------------------------------------------
+| Error Display
+|----------------------------------------------------------------------------*/
+
+.jp-ToolExecutionPanel-errorSection {
+  margin-top: 8px;
+}
+
+.jp-ToolExecutionPanel-error {
+  background: var(--jp-error-color3);
+  border: 1px solid var(--jp-error-color1);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.jp-ToolError-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.jp-ToolError-icon {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--jp-error-color1);
+}
+
+.jp-ToolError-type {
+  font-weight: 600;
+  font-size: var(--jp-ui-font-size2);
+  color: var(--jp-error-color1);
+}
+
+.jp-ToolError-message {
+  color: var(--jp-error-color1);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* Error suggestions */
+.jp-ToolError-suggestions {
+  margin-top: 12px;
+  padding: 8px;
+  background: var(--jp-layout-color1);
+  border-radius: 4px;
+}
+
+.jp-ToolError-suggestionsTitle {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--jp-ui-font-color1);
+}
+
+.jp-ToolError-suggestionsList {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--jp-ui-font-color1);
+}
+
+.jp-ToolError-suggestionItem {
+  margin: 4px 0;
+  line-height: 1.5;
+}
+
+/* Stack trace */
+.jp-ToolError-stackTrace {
+  margin-top: 12px;
+}
+
+.jp-ToolError-stackSummary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--jp-ui-font-color1);
+  padding: 6px;
+  background: var(--jp-layout-color1);
+  border-radius: 4px;
+  user-select: none;
+}
+
+.jp-ToolError-stackSummary:hover {
+  background: var(--jp-layout-color2);
+}
+
+.jp-ToolError-stackContent {
+  margin: 8px 0 0 0;
+  padding: 8px;
+  background: var(--jp-layout-color0);
+  border-radius: 4px;
+  overflow-x: auto;
+  font-family: var(--jp-code-font-family);
+  font-size: var(--jp-code-font-size);
+  color: var(--jp-ui-font-color2);
+}
+
+/*-----------------------------------------------------------------------------
+| Footer Section
+|----------------------------------------------------------------------------*/
+
+.jp-ToolExecutionPanel-footer {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--jp-border-color2);
+}
+
+.jp-ToolExecutionPanel-timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--jp-ui-font-size0);
+  color: var(--jp-ui-font-color2);
+}
+
+.jp-ToolTimer-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.jp-ToolTimer-text {
+  font-weight: 500;
+}
+
+.jp-ToolTimer-pending {
+  color: var(--jp-ui-font-color3);
+}
+
+.jp-ToolTimer-running {
+  color: var(--jp-brand-color1);
+}
+
+.jp-ToolTimer-spinner {
+  animation: spin 2s linear infinite;
+  display: inline-block;
+  /* Performance optimizations */
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU acceleration */
+  backface-visibility: hidden; /* Prevent flickering */
+}
+
+.jp-ToolTimer-complete {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.jp-ToolTimer-success {
+  color: var(--jp-success-color1);
+}
+
+.jp-ToolTimer-error {
+  color: var(--jp-error-color1);
+}
+
+/*-----------------------------------------------------------------------------
+| Dark Theme Adjustments
+|----------------------------------------------------------------------------*/
+
+body[data-jp-theme-light='false'] .jp-ToolExecutionPanel {
+  background: var(--jp-layout-color1);
+}
+
+body[data-jp-theme-light='false'] .jp-ToolExecutionPanel-sectionContent {
+  background: var(--jp-layout-color0);
+}
+
+body[data-jp-theme-light='false'] .jp-ToolParameter-json {
+  background: var(--jp-layout-color0);
+}
+
+body[data-jp-theme-light='false'] .jp-ToolResult-json {
+  background: var(--jp-layout-color0);
+}
+
+/*-----------------------------------------------------------------------------
+| Responsive Adjustments
+|----------------------------------------------------------------------------*/
+
+@media (max-width: 600px) {
+  .jp-ToolExecutionPanel {
+    padding: 8px;
+  }
+
+  .jp-ToolExecutionPanel-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .jp-ToolExecutionPanel-headerRight {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
+
+/*-----------------------------------------------------------------------------
+| Accessibility
+|----------------------------------------------------------------------------*/
+
+/* Focus indicators for keyboard navigation */
+.jp-ToolExecutionPanel-sectionHeader:focus {
+  outline: 2px solid var(--jp-brand-color1);
+  outline-offset: 2px;
+}
+
+.jp-ToolExecutionPanel-sectionHeader:focus-visible {
+  outline: 2px solid var(--jp-brand-color1);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px var(--jp-brand-color3);
+}
+
+.jp-ToolError-stackSummary:focus {
+  outline: 2px solid var(--jp-brand-color1);
+  outline-offset: 2px;
+}
+
+.jp-ToolError-stackSummary:focus-visible {
+  outline: 2px solid var(--jp-brand-color1);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px var(--jp-brand-color3);
+}
+
+/* Ensure panel is focusable but doesn't show focus ring unless keyboard navigated */
+.jp-ToolExecutionPanel:focus {
+  outline: none;
+}
+
+.jp-ToolExecutionPanel:focus-visible {
+  outline: 2px solid var(--jp-brand-color1);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .jp-ToolExecutionPanel {
+    border-width: 2px;
+  }
+
+  .jp-ToolExecutionPanel-statusBadge {
+    border-width: 2px;
+  }
+
+  .jp-ToolExecutionPanel-sectionHeader:focus,
+  .jp-ToolExecutionPanel-sectionHeader:focus-visible {
+    outline-width: 3px;
+  }
+
+  .jp-ToolError-stackSummary:focus,
+  .jp-ToolError-stackSummary:focus-visible {
+    outline-width: 3px;
+  }
+}
+
+/*-----------------------------------------------------------------------------
+| ToolIcon Component Styles
+|----------------------------------------------------------------------------*/
+
+.jp-ToolIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 18px;
+  line-height: 1;
+  user-select: none;
+}
+
+/* Category-specific colors */
+.jp-ToolIcon.jp-ToolIcon-notebook {
+  color: var(--jp-info-color1);
+}
+
+.jp-ToolIcon.jp-ToolIcon-file {
+  color: var(--jp-warn-color1);
+}
+
+.jp-ToolIcon.jp-ToolIcon-inspection {
+  color: var(--jp-accent-color1);
+}
+
+.jp-ToolIcon.jp-ToolIcon-other {
+  color: var(--jp-ui-font-color2);
+}
+
+/* SVG icon support */
+.jp-ToolIcon svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+/*-----------------------------------------------------------------------------
+| StatusBadge Component Styles
+|----------------------------------------------------------------------------*/
+
+.jp-ToolStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: var(--jp-ui-font-size0);
+  font-weight: 600;
+  line-height: 1.4;
+  transition: all 0.2s ease-in-out;
+}
+
+.jp-ToolStatus-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.jp-ToolStatus-label {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 11px;
+}
+
+/* Pending state - gray with clock */
+.jp-ToolStatus.jp-ToolStatus-pending {
+  background: var(--jp-layout-color3);
+  color: var(--jp-ui-font-color2);
+  border: 1px solid var(--jp-border-color2);
+}
+
+/* Running state - blue with spinner */
+.jp-ToolStatus.jp-ToolStatus-running {
+  background: var(--jp-brand-color3);
+  color: var(--jp-brand-color1);
+  border: 1px solid var(--jp-brand-color2);
+}
+
+.jp-ToolStatus-running .jp-ToolStatus-iconAnimated {
+  animation: spin 2s linear infinite;
+  display: inline-block;
+}
+
+/* Success state - green with checkmark */
+.jp-ToolStatus.jp-ToolStatus-success {
+  background: var(--jp-success-color3);
+  color: var(--jp-success-color1);
+  border: 1px solid var(--jp-success-color2);
+}
+
+/* Error state - red with X */
+.jp-ToolStatus.jp-ToolStatus-error {
+  background: var(--jp-error-color3);
+  color: var(--jp-error-color1);
+  border: 1px solid var(--jp-error-color2);
+}
+
+/* Smooth transitions between states - optimized with GPU acceleration */
+.jp-ToolStatus {
+  animation: statusFadeIn 0.2s ease-in-out;
+  will-change: transform, opacity;
+  transform: translateZ(0); /* Force GPU acceleration */
+}
+
+@keyframes statusFadeIn {
+  from {
+    opacity: 0;
+    transform: translateZ(0) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateZ(0) scale(1);
+  }
+}
+
+/*-----------------------------------------------------------------------------
+| CollapsibleSection Component Styles
+|----------------------------------------------------------------------------*/
+
+.jp-CollapsibleSection {
+  margin: 8px 0;
+}
+
+.jp-CollapsibleSection-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--jp-layout-color3);
+  border: 1px solid var(--jp-border-color2);
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--jp-ui-font-family);
+  font-size: var(--jp-ui-font-size1);
+  font-weight: 500;
+  color: var(--jp-ui-font-color1);
+  text-align: left;
+  /* Optimized transitions - only animate transform and background */
+  transition: transform 0.15s ease-in-out, background-color 0.15s ease-in-out;
+  user-select: none;
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU acceleration */
+}
+
+.jp-CollapsibleSection-header:hover {
+  background: var(--jp-layout-color4);
+  border-color: var(--jp-border-color1);
+}
+
+.jp-CollapsibleSection-header:focus {
+  outline: 2px solid var(--jp-brand-color1);
+  outline-offset: 2px;
+}
+
+.jp-CollapsibleSection-header:active {
+  /* Use transform for better performance */
+  transform: translateZ(0) scale(0.98);
+}
+
+.jp-CollapsibleSection-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  line-height: 1;
+  /* Optimized transition using transform */
+  transition: transform 0.2s ease-in-out;
+  color: var(--jp-ui-font-color2);
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU acceleration */
+}
+
+.jp-CollapsibleSection-expanded .jp-CollapsibleSection-icon {
+  transform: rotate(0deg);
+}
+
+.jp-CollapsibleSection-collapsed .jp-CollapsibleSection-icon {
+  transform: rotate(-90deg);
+}
+
+.jp-CollapsibleSection-title {
+  flex: 1;
+  font-weight: 500;
+}
+
+.jp-CollapsibleSection-content {
+  overflow: hidden;
+}
+
+.jp-CollapsibleSection-contentInner {
+  padding: 12px;
+  background: var(--jp-layout-color1);
+  border: 1px solid var(--jp-border-color1);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  margin-top: -1px;
+}
+
+/* Expanded state styling */
+.jp-CollapsibleSection-expanded .jp-CollapsibleSection-header {
+  border-radius: 6px 6px 0 0;
+}
+
+/* Animation states - optimized for GPU acceleration */
+.jp-CollapsibleSection[data-animating='true'] .jp-CollapsibleSection-content {
+  will-change: max-height, opacity, transform;
+  transform: translateZ(0); /* Force GPU acceleration */
+  backface-visibility: hidden; /* Prevent flickering */
+}
+
+/*-----------------------------------------------------------------------------
+| Keyboard Navigation Support
+|----------------------------------------------------------------------------*/
+
+/* Focus indicators for keyboard navigation */
+.jp-CollapsibleSection-header:focus-visible {
+  outline: 2px solid var(--jp-brand-color1);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px var(--jp-brand-color3);
+}
+
+/* Ensure focus is visible in high contrast mode */
+@media (prefers-contrast: high) {
+  .jp-CollapsibleSection-header:focus {
+    outline-width: 3px;
+  }
+}
+
+/*-----------------------------------------------------------------------------
+| Dark Theme Adjustments for New Components
+|----------------------------------------------------------------------------*/
+
+body[data-jp-theme-light='false'] .jp-CollapsibleSection-header {
+  background: var(--jp-layout-color2);
+}
+
+body[data-jp-theme-light='false'] .jp-CollapsibleSection-header:hover {
+  background: var(--jp-layout-color3);
+}
+
+body[data-jp-theme-light='false'] .jp-CollapsibleSection-contentInner {
+  background: var(--jp-layout-color0);
+}
+
+/*-----------------------------------------------------------------------------
+| Accessibility Enhancements
+|----------------------------------------------------------------------------*/
+
+/* Screen reader only text */
+.jp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Ensure minimum contrast ratios (WCAG AA: 4.5:1 for normal text, 3:1 for large text) */
+.jp-ToolExecutionPanel {
+  /* Ensure text has sufficient contrast against background */
+  color: var(--jp-ui-font-color1);
+}
+
+.jp-ToolExecutionPanel-toolName {
+  /* Large text (18px+) needs 3:1 contrast minimum */
+  color: var(--jp-ui-font-color0);
+  font-weight: 600;
+}
+
+.jp-ToolStatus-label {
+  /* Ensure status labels have good contrast */
+  font-weight: 600;
+}
+
+/* Status indicators use both color AND icons for accessibility */
+.jp-ToolStatus-pending {
+  /* Gray background with darker text */
+  background: var(--jp-layout-color3);
+  color: var(--jp-ui-font-color1);
+  border: 1px solid var(--jp-border-color1);
+}
+
+.jp-ToolStatus-running {
+  /* Blue background with darker blue text */
+  background: var(--jp-brand-color3);
+  color: var(--jp-brand-color0);
+  border: 1px solid var(--jp-brand-color1);
+}
+
+.jp-ToolStatus-success {
+  /* Green background with darker green text */
+  background: var(--jp-success-color3);
+  color: var(--jp-success-color0);
+  border: 1px solid var(--jp-success-color1);
+}
+
+.jp-ToolStatus-error {
+  /* Red background with darker red text */
+  background: var(--jp-error-color3);
+  color: var(--jp-error-color0);
+  border: 1px solid var(--jp-error-color1);
+}
+
+/* Ensure error messages have sufficient contrast */
+.jp-ToolError-message {
+  color: var(--jp-error-color0);
+  font-weight: 500;
+}
+
+.jp-ToolError-type {
+  color: var(--jp-error-color0);
+  font-weight: 700;
+}
+
+/* Support for text resizing up to 200% */
+.jp-ToolExecutionPanel {
+  /* Use relative units for sizing */
+  font-size: var(--jp-ui-font-size1);
+  line-height: 1.5;
+}
+
+.jp-ToolExecutionPanel-toolName {
+  font-size: var(--jp-ui-font-size2);
+  line-height: 1.4;
+}
+
+.jp-ToolParameter-item,
+.jp-ToolResult-message {
+  line-height: 1.6;
+}
+
+/* Ensure interactive elements have minimum touch target size (44x44px) */
+.jp-ToolExecutionPanel-sectionHeader {
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+.jp-ToolError-stackSummary {
+  min-height: 44px;
+  padding: 8px 12px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .jp-ToolStatus,
+  .jp-CollapsibleSection-icon,
+  .jp-CollapsibleSection-header,
+  .jp-CollapsibleSection-content {
+    transition: none;
+    animation: none;
+  }
+
+  .jp-ToolStatus-running .jp-ToolStatus-iconAnimated,
+  .jp-ToolTimer-spinner {
+    animation: none;
+  }
+
+  .jp-ToolExecutionPanel-sectionHeader {
+    transition: none;
+  }
+
+  .jp-ToolExecutionPanel-statusBadge {
+    transition: none;
+  }
+}
+
+/* High contrast mode enhancements */
+@media (prefers-contrast: high) {
+  .jp-ToolExecutionPanel {
+    border-width: 2px;
+    border-color: currentColor;
+  }
+
+  .jp-ToolExecutionPanel-statusBadge {
+    border-width: 2px;
+    border-color: currentColor;
+  }
+
+  .jp-ToolExecutionPanel-sectionHeader {
+    border-width: 2px;
+    border-color: currentColor;
+  }
+
+  .jp-ToolExecutionPanel-sectionContent {
+    border-width: 2px;
+    border-color: currentColor;
+  }
+
+  /* Ensure focus indicators are extra visible */
+  .jp-ToolExecutionPanel-sectionHeader:focus,
+  .jp-ToolExecutionPanel-sectionHeader:focus-visible {
+    outline-width: 3px;
+    outline-color: currentColor;
+  }
+}
+
+/* Dark mode contrast adjustments */
+body[data-jp-theme-light='false'] .jp-ToolStatus-pending {
+  color: var(--jp-ui-font-color0);
+}
+
+body[data-jp-theme-light='false'] .jp-ToolStatus-running {
+  color: var(--jp-brand-color0);
+}
+
+body[data-jp-theme-light='false'] .jp-ToolStatus-success {
+  color: var(--jp-success-color0);
+}
+
+body[data-jp-theme-light='false'] .jp-ToolStatus-error {
+  color: var(--jp-error-color0);
+}
+
+/*-----------------------------------------------------------------------------
+| Performance Optimizations
+|----------------------------------------------------------------------------*/
+
+/*
+ * Performance optimization strategy:
+ * 
+ * 1. GPU Acceleration:
+ *    - Use transform: translateZ(0) to force GPU acceleration
+ *    - Use backface-visibility: hidden to prevent flickering
+ *    - Prefer transform over position/margin changes
+ * 
+ * 2. Will-Change Property:
+ *    - Declare will-change on animated properties
+ *    - Helps browser optimize rendering pipeline
+ *    - Only use on elements that will actually animate
+ * 
+ * 3. CSS Transforms:
+ *    - Use transform for all animations (scale, rotate, translate)
+ *    - Transforms are composited on GPU, not on main thread
+ *    - Avoid animating layout properties (width, height, top, left)
+ * 
+ * 4. Reduced Motion:
+ *    - Respect prefers-reduced-motion for accessibility
+ *    - Disable animations for users who prefer reduced motion
+ * 
+ * These optimizations ensure smooth 60fps animations even on low-end devices.
+ */
+
+/* Use GPU acceleration for collapsible sections */
+.jp-CollapsibleSection-content {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Use GPU acceleration for animated icons */
+.jp-ToolStatus-iconAnimated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}

@@ -136,3 +136,93 @@ export interface ITool {
   schema: IToolSchema;
   execute(args: Record<string, any>): Promise<IToolResult>;
 }
+
+/**
+ * Tool execution status
+ */
+export type ToolExecutionStatus = 'pending' | 'running' | 'success' | 'error';
+
+/**
+ * Tool execution event interface
+ * Contains all information about a tool execution
+ */
+export interface IToolExecutionEvent {
+  /**
+   * Unique execution ID
+   */
+  id: string;
+
+  /**
+   * Original tool call from LLM
+   */
+  toolCall: IToolCall;
+
+  /**
+   * Current execution status
+   */
+  status: ToolExecutionStatus;
+
+  /**
+   * When execution started
+   */
+  startTime: Date;
+
+  /**
+   * When execution completed (if finished)
+   */
+  endTime?: Date;
+
+  /**
+   * Execution duration in milliseconds (if finished)
+   */
+  duration?: number;
+
+  /**
+   * Result if successful
+   */
+  result?: IToolResult;
+
+  /**
+   * Error if failed
+   */
+  error?: {
+    message: string;
+    type: string;
+    stack?: string;
+  };
+}
+
+/**
+ * Tool metadata interface for display and categorization
+ */
+export interface IToolMetadata {
+  /**
+   * Internal tool name (e.g., 'createCell')
+   */
+  name: string;
+
+  /**
+   * Human-readable display name (e.g., 'Create Cell')
+   */
+  displayName: string;
+
+  /**
+   * Tool description
+   */
+  description: string;
+
+  /**
+   * Icon identifier for the tool
+   */
+  icon: string;
+
+  /**
+   * Tool category for grouping and styling
+   */
+  category: 'notebook' | 'file' | 'inspection' | 'other';
+
+  /**
+   * Theme color for the tool (CSS variable or hex)
+   */
+  color: string;
+}

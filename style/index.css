@@ -14,3 +14,6 @@
 @import url('~@jupyterlab/codemirror/style/index.css');
 @import url('~@jupyterlab/cells/style/index.css');
 @import url('~@jupyterlab/notebook/style/index.css');
+
+/* Tool execution panel styles */
+@import url('./tool-execution.css');

@@ -8,6 +8,7 @@ import { IMessage, IToolCall, IToolResult } from './types';
 import { LLMClient } from './llm/client';
 import { ToolRegistry } from './tools/registry';
 import { ContextManager } from './context';
+import { ToolExecutionTracker } from './tools/ToolExecutionTracker';
 
 /**
  * System prompt for the AI Assistant
@@ -146,6 +147,11 @@ export interface IConversationManagerOptions {
   contextManager: ContextManager;
 
   /**
+   * Optional tool execution tracker for UI updates
+   */
+  toolExecutionTracker?: ToolExecutionTracker;
+
+  /**
    * Optional custom system prompt (defaults to built-in prompt)
    */
   systemPrompt?: string;
@@ -170,6 +176,7 @@ export class ConversationManager {
   private _llmClient: LLMClient;
   private _toolRegistry: ToolRegistry;
   private _contextManager: ContextManager;
+  private _toolExecutionTracker: ToolExecutionTracker;
   private _systemPrompt: string;
   private _onHistoryChange?: (messages: IMessage[]) => void;
 
@@ -182,6 +189,7 @@ export class ConversationManager {
     this._llmClient = options.llmClient;
     this._toolRegistry = options.toolRegistry;
     this._contextManager = options.contextManager;
+    this._toolExecutionTracker = options.toolExecutionTracker || new ToolExecutionTracker();
     this._systemPrompt = options.systemPrompt || SYSTEM_PROMPT;
     this._onHistoryChange = options.onHistoryChange;
 
@@ -438,6 +446,9 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
     for (const toolCall of toolCalls) {
       console.log('[ConversationManager] Executing tool:', toolCall.function.name);
 
+      // Start tracking execution
+      const executionId = this._toolExecutionTracker.startExecution(toolCall);
+
       try {
         // Parse tool arguments
         let args: Record<string, any>;
@@ -445,6 +456,14 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
           args = JSON.parse(toolCall.function.arguments);
         } catch (parseError) {
           console.error('[ConversationManager] Failed to parse tool arguments:', parseError);
+          
+          const parseErrorObj = parseError instanceof Error 
+            ? parseError 
+            : new Error('Invalid tool arguments: Unknown error');
+          
+          // Mark execution as failed
+          this._toolExecutionTracker.failExecution(executionId, parseErrorObj);
+          
           results.push({
             role: 'tool',
             content: JSON.stringify({
@@ -471,6 +490,9 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
           success: result.success
         });
 
+        // Mark execution as complete
+        this._toolExecutionTracker.completeExecution(executionId, result);
+
         // Format result as message
         results.push({
           role: 'tool',
@@ -481,6 +503,13 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
 
       } catch (error) {
         console.error('[ConversationManager] Tool execution error:', error);
+        
+        const errorObj = error instanceof Error 
+          ? error 
+          : new Error(String(error));
+        
+        // Mark execution as failed
+        this._toolExecutionTracker.failExecution(executionId, errorObj);
         
         // Add error result
         results.push({
@@ -557,6 +586,16 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
    */
   getSystemPrompt(): string {
     return this._systemPrompt;
+  }
+
+  /**
+   * Get the tool execution tracker
+   * Exposes tracker to widget for UI integration
+   * 
+   * @returns The tool execution tracker
+   */
+  getToolExecutionTracker(): ToolExecutionTracker {
+    return this._toolExecutionTracker;
   }
 
   /**
