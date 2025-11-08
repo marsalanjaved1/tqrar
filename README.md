@@ -2,6 +2,8 @@
 
 <div align="center">
 
+![Tqrar Logo](./ghost-logo.png)
+
 **AI-Powered JupyterLab Extension with Conversational Assistant**
 
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](LICENSE)
