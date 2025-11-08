@@ -30,9 +30,17 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   const [inputValue, setInputValue] = React.useState('');
   // Map of message index to tool executions
   const [messageTools, setMessageTools] = React.useState<Map<number, IToolExecutionEvent[]>>(new Map());
+  // Map of message index to content length when first tool started
+  const [contentBeforeTools, setContentBeforeTools] = React.useState<Map<number, number>>(new Map());
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLTextAreaElement>(null);
   const currentMessageIndexRef = React.useRef<number>(-1);
+  const messagesRef = React.useRef<IMessage[]>(messages);
+
+  // Keep messages ref in sync
+  React.useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // Update current message index when messages change
   React.useEffect(() => {
@@ -65,7 +73,23 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
     const handleStart = (event: IToolExecutionEvent) => {
       const messageIndex = currentMessageIndexRef.current;
       console.log('[ChatInterface] Tool started:', event.toolCall.function.name, 'for message index:', messageIndex);
-      
+
+      // Capture content length when first tool starts for this message
+      setContentBeforeTools(prev => {
+        if (!prev.has(messageIndex) && messageIndex >= 0) {
+          const newMap = new Map(prev);
+          const currentMessages = messagesRef.current;
+          if (messageIndex < currentMessages.length) {
+            const contentLength = currentMessages[messageIndex].content.length;
+            newMap.set(messageIndex, contentLength);
+            console.log('🔍 CAPTURE: Captured content length', contentLength, 'for message', messageIndex);
+            console.log('🔍 CAPTURE: Content at capture time:', currentMessages[messageIndex].content);
+            return newMap;
+          }
+        }
+        return prev;
+      });
+
       setMessageTools(prev => {
         const newMap = new Map(prev);
         const existing = newMap.get(messageIndex) || [];
@@ -77,7 +101,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
 
     const handleUpdate = (event: IToolExecutionEvent) => {
       console.log('[ChatInterface] Tool updated:', event.id, event.status);
-      
+
       setMessageTools(prev => {
         const newMap = new Map(prev);
         // Update the tool in whichever message it belongs to
@@ -154,30 +178,15 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
           const hasTools = toolsForMessage.length > 0;
           let beforeTools = message.content;
           let afterTools = '';
-          
+
           if (hasTools && message.role === 'assistant') {
-            console.log('🔍 SPLIT_DEBUG: Message has tools, attempting to split');
-            console.log('🔍 SPLIT_DEBUG: Full content:', message.content);
-            console.log('🔍 SPLIT_DEBUG: Content length:', message.content.length);
-            
-            // Split by double newline to find natural break point
-            const parts = message.content.split('\n\n');
-            console.log('🔍 SPLIT_DEBUG: Split into', parts.length, 'parts');
-            console.log('🔍 SPLIT_DEBUG: Parts:', parts);
-            
-            if (parts.length > 1) {
-              // Put first part before tools, rest after
-              beforeTools = parts[0];
-              afterTools = parts.slice(1).join('\n\n');
-              console.log('🔍 SPLIT_DEBUG: BEFORE TOOLS:', beforeTools);
-              console.log('🔍 SPLIT_DEBUG: AFTER TOOLS:', afterTools);
-            } else {
-              console.log('🔍 SPLIT_DEBUG: No \\n\\n found, showing all content before tools');
+            const capturedLength = contentBeforeTools.get(index);
+
+            if (capturedLength !== undefined) {
+              // Split based on captured content length
+              beforeTools = message.content.substring(0, capturedLength);
+              afterTools = message.content.substring(capturedLength);
             }
-            
-            console.log('🔍 SPLIT_DEBUG: FINAL beforeTools length:', beforeTools.length);
-            console.log('🔍 SPLIT_DEBUG: FINAL afterTools length:', afterTools.length);
-            console.log('🔍 SPLIT_DEBUG: afterTools is truthy?', !!afterTools);
           }
 
           return (
@@ -200,38 +209,32 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
               </div>
 
               {/* Tool executions inline in the middle */}
-              {toolsForMessage.map(execution => {
-                console.log('🔍 RENDER_DEBUG: Rendering tool execution:', execution.toolCall.function.name, execution.status);
-                return (
-                  <div key={execution.id} className="jp-ChatMessage jp-ChatMessage-tool">
-                    <div className="jp-ChatMessage-avatar">🔧</div>
-                    <div className="jp-ChatMessage-content">
-                      <ToolExecutionPanel execution={execution} />
-                    </div>
+              {toolsForMessage.map(execution => (
+                <div key={execution.id} className="jp-ChatMessage jp-ChatMessage-tool">
+                  <div className="jp-ChatMessage-avatar">🔧</div>
+                  <div className="jp-ChatMessage-content">
+                    <ToolExecutionPanel execution={execution} />
                   </div>
-                );
-              })}
-              
+                </div>
+              ))}
+
               {/* Message content after tools */}
               {hasTools && afterTools && (
-                <>
-                  {console.log('🔍 RENDER_DEBUG: Rendering afterTools, length:', afterTools.length)}
-                  <div className={`jp-ChatMessage jp-ChatMessage-${message.role}`}>
-                    <div className="jp-ChatMessage-avatar">
-                      {message.role === 'user' ? '👤' : '🤖'}
-                    </div>
-                    <div className="jp-ChatMessage-content">
-                      <div className="jp-ChatMessage-text">
-                        {afterTools}
-                      </div>
-                      {message.timestamp && (
-                        <div className="jp-ChatMessage-timestamp">
-                          {new Date(message.timestamp).toLocaleTimeString()}
-                        </div>
-                      )}
-                    </div>
+                <div className={`jp-ChatMessage jp-ChatMessage-${message.role}`}>
+                  <div className="jp-ChatMessage-avatar">
+                    {message.role === 'user' ? '👤' : '🤖'}
                   </div>
-                </>
+                  <div className="jp-ChatMessage-content">
+                    <div className="jp-ChatMessage-text">
+                      {afterTools}
+                    </div>
+                    {message.timestamp && (
+                      <div className="jp-ChatMessage-timestamp">
+                        {new Date(message.timestamp).toLocaleTimeString()}
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
             </React.Fragment>
           );
