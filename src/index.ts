@@ -317,7 +317,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
           });
 
           chatWidget.id = 'ai-assistant-chat';
-          chatWidget.title.label = 'AI Assistant';
+          chatWidget.title.label = ''; // No label, just icon
+          chatWidget.title.caption = 'Tqrar - AI Assistant'; // Tooltip on hover
           chatWidget.title.icon = tqrarIcon;
           chatWidget.title.closable = true;
         }
