@@ -39,11 +39,35 @@ This is a **native JupyterLab extension**, not a standalone application. It inte
 
 ## Installation
 
-### As a JupyterLab Extension (Development)
+### For Users (Recommended)
 
 **Prerequisites:**
 - JupyterLab >= 4.0.0
-- Node.js >= 20.0.0 (for building)
+- Python >= 3.8
+
+**Install via pip:**
+
+```bash
+pip install tqrar
+```
+
+That's it! The extension will be automatically installed and enabled in JupyterLab.
+
+**Launch JupyterLab:**
+
+```bash
+jupyter lab
+```
+
+The AI Assistant icon will appear in the left sidebar.
+
+### For Developers
+
+If you want to contribute or modify the extension:
+
+**Prerequisites:**
+- JupyterLab >= 4.0.0
+- Node.js >= 20.0.0
 - Python >= 3.8
 
 **Install from source:**
@@ -66,7 +90,7 @@ jupyter labextension develop . --overwrite
 jupyter lab build
 ```
 
-### Development Mode with Watch
+**Development Mode with Watch:**
 
 For active development with auto-rebuild:
 

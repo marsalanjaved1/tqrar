@@ -25,9 +25,19 @@ import { ICommandPalette } from '@jupyterlab/apputils';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { INotebookTracker } from '@jupyterlab/notebook';
 import { IStateDB } from '@jupyterlab/statedb';
+import { LabIcon } from '@jupyterlab/ui-components';
 
 import { showSettingsDialogWithValidation, loadSettings } from './settings';
 import { ChatWidget } from './widget';
+
+// Import the icon
+import iconSvgStr from '../style/icon.svg';
+
+// Create the icon
+const tqrarIcon = new LabIcon({
+  name: 'tqrar:icon',
+  svgstr: iconSvgStr
+});
 import { ConversationManager } from './conversation';
 import { LLMClient } from './llm/client';
 import { ToolRegistry } from './tools/registry';
@@ -308,6 +318,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
           chatWidget.id = 'ai-assistant-chat';
           chatWidget.title.label = 'AI Assistant';
+          chatWidget.title.icon = tqrarIcon;
           chatWidget.title.closable = true;
         }
 
