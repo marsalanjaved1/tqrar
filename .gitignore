@@ -90,3 +90,6 @@ start_phoenix.sh
 .yarn/cache/protobufjs-*
 .yarn/cache/require-in-the-middle-*
 .yarn/cache/shimmer-*
+
+# Jupyter Notebooks
+*.ipynb

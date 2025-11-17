@@ -195,6 +195,9 @@ export class ConversationManager {
     this._systemPrompt = options.systemPrompt || SYSTEM_PROMPT;
     this._onHistoryChange = options.onHistoryChange;
 
+    // Start Phoenix session for this conversation
+    this._phoenixClient.startSession('chat_session');
+
     // Initialize conversation with system prompt or restore from initial history
     if (options.initialHistory && options.initialHistory.length > 0) {
       // Restore from saved history
@@ -224,14 +227,16 @@ export class ConversationManager {
    * @returns Async generator yielding response chunks
    */
   async *sendMessage(content: string): AsyncGenerator<string> {
-    // Start Phoenix trace for the entire agent turn
+    // Start Phoenix trace for the entire agent turn (child of session)
+    const sessionSpanId = this._phoenixClient.getSessionSpanId();
     const agentSpanId = this._phoenixClient.startTrace(
       'agent_turn',
       'agent',
       { 
         user_message: content,
         message_length: content.length 
-      }
+      },
+      sessionSpanId  // Parent is the session span
     );
 
     // Add user message to history
@@ -423,6 +428,19 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
           messagesWithContextAfterTools.push(contextMessage);
         }
 
+        // Start Phoenix trace for final LLM call (after tools)
+        const finalLlmSpanId = this._phoenixClient.startTrace(
+          'llm_completion_final',
+          'llm',
+          {
+            model: this._llmClient.getSettings().model,
+            temperature: this._llmClient.getSettings().temperature,
+            message_count: messagesWithContextAfterTools.length,
+            after_tool_execution: true
+          },
+          agentSpanId  // Parent span ID
+        );
+
         // Stream the final response from LLM
         let finalResponse = '';
         for await (const chunk of this._llmClient.streamCompletion(messagesWithContextAfterTools, tools)) {
@@ -432,6 +450,12 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
             yield choice.delta.content;
           }
         }
+
+        // End final LLM trace
+        this._phoenixClient.endTrace(finalLlmSpanId, {
+          response: finalResponse.substring(0, 500),
+          response_length: finalResponse.length
+        });
         
         // If no response was generated, yield a default message
         if (!finalResponse.trim()) {
@@ -615,6 +639,15 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
    */
   clear(): void {
     console.log('[ConversationManager] Clearing conversation history');
+    
+    // End current Phoenix session
+    this._phoenixClient.endSession({
+      total_messages: this._messages.length - 1, // Exclude system prompt
+      session_duration: 'completed'
+    });
+    
+    // Start new session
+    this._phoenixClient.startSession('chat_session');
     
     this._messages = [
       {

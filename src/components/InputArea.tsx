@@ -1,10 +1,14 @@
 /**
  * Input Area Component
- * Enhanced input with context pills and action buttons
+ * Simple input area with subtle model selector
  */
 
 import React from 'react';
-import { ContextPills, IContextItem } from './ContextPills';
+
+export interface IModelConfig {
+  provider: 'openrouter' | 'openai' | 'anthropic';
+  model: string;
+}
 
 export interface IInputAreaProps {
   value: string;
@@ -12,8 +16,8 @@ export interface IInputAreaProps {
   onSubmit: () => void;
   disabled?: boolean;
   placeholder?: string;
-  onAttachFile?: () => void;
-  onAddContext?: () => void;
+  currentModel?: IModelConfig;
+  onModelChange?: (config: IModelConfig) => void;
 }
 
 export const InputArea: React.FC<IInputAreaProps> = ({
@@ -22,11 +26,14 @@ export const InputArea: React.FC<IInputAreaProps> = ({
   onSubmit,
   disabled = false,
   placeholder = 'Ask Tqrar...',
-  onAttachFile,
-  onAddContext
+  currentModel = { provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' },
+  onModelChange
 }) => {
-  const [contextItems, setContextItems] = React.useState<IContextItem[]>([]);
+  const [showModelSelector, setShowModelSelector] = React.useState(false);
+  const [dropdownPosition, setDropdownPosition] = React.useState({ top: 0, left: 0 });
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const modelButtonRef = React.useRef<HTMLButtonElement>(null);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
 
   // Auto-resize textarea
   React.useEffect(() => {
@@ -37,6 +44,33 @@ export const InputArea: React.FC<IInputAreaProps> = ({
     }
   }, [value]);
 
+  // Calculate dropdown position and close on outside click
+  React.useEffect(() => {
+    if (showModelSelector && modelButtonRef.current) {
+      const rect = modelButtonRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.top - 8, // Position above button with small gap
+        left: rect.left
+      });
+    }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        modelButtonRef.current && 
+        !modelButtonRef.current.contains(event.target as Node) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowModelSelector(false);
+      }
+    };
+
+    if (showModelSelector) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showModelSelector]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -46,60 +80,23 @@ export const InputArea: React.FC<IInputAreaProps> = ({
     }
   };
 
-  const handleRemoveContext = (id: string) => {
-    setContextItems(prev => prev.filter(item => item.id !== id));
-  };
-
-  const handleAttachFile = () => {
-    // Demo: Add a sample file context
-    const newItem: IContextItem = {
-      id: `file-${Date.now()}`,
-      type: 'file',
-      name: 'notebook.ipynb',
-      path: '/path/to/notebook.ipynb'
+  const getModelDisplayText = (): string => {
+    const modelMap: Record<string, string> = {
+      'claude-3-5-sonnet-20241022': 'Claude Sonnet 4.5',
+      'claude-3-5-haiku-20241022': 'Claude Haiku 4.5',
+      'claude-3-opus-20240229': 'Claude Opus',
+      'gpt-4o': 'GPT-4o',
+      'gpt-4o-mini': 'GPT-4o Mini',
+      'gpt-4-turbo': 'GPT-4 Turbo',
+      'gpt-3.5-turbo': 'GPT-3.5 Turbo'
     };
-    setContextItems(prev => [...prev, newItem]);
-    onAttachFile?.();
-  };
-
-  const handleAddContext = () => {
-    // Demo: Add a sample folder context
-    const newItem: IContextItem = {
-      id: `folder-${Date.now()}`,
-      type: 'folder',
-      name: 'data',
-      path: '/path/to/data'
-    };
-    setContextItems(prev => [...prev, newItem]);
-    onAddContext?.();
+    
+    return modelMap[currentModel.model] || currentModel.model;
   };
 
   return (
     <div className="jp-InputArea">
-      <ContextPills items={contextItems} onRemove={handleRemoveContext} />
-      
       <div className="jp-InputContainer">
-        <div className="jp-InputActions">
-          <button
-            className="jp-InputAction-button"
-            onClick={handleAttachFile}
-            title="Attach file"
-            aria-label="Attach file"
-            disabled={disabled}
-          >
-            📎
-          </button>
-          <button
-            className="jp-InputAction-button"
-            onClick={handleAddContext}
-            title="Add context"
-            aria-label="Add context"
-            disabled={disabled}
-          >
-            @
-          </button>
-        </div>
-        
         <textarea
           ref={textareaRef}
           className="jp-InputArea-textarea"
@@ -112,15 +109,82 @@ export const InputArea: React.FC<IInputAreaProps> = ({
           aria-label="Message input"
         />
         
-        <button
-          className="jp-InputArea-send"
-          onClick={onSubmit}
-          disabled={!value.trim() || disabled}
-          title="Send message"
-          aria-label="Send message"
-        >
-          <span className="jp-InputArea-sendIcon">↑</span>
-        </button>
+        <div className="jp-InputArea-actions">
+          <div className="jp-InputArea-modelWrapper">
+            <button
+              ref={modelButtonRef}
+              className={`jp-InputArea-modelButton ${showModelSelector ? 'jp-InputArea-modelButton-active' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowModelSelector(!showModelSelector);
+              }}
+              disabled={disabled}
+              title="Select model"
+            >
+              {getModelDisplayText()}
+            </button>
+
+            {showModelSelector && (
+              <div 
+                ref={dropdownRef}
+                className="jp-InputArea-modelDropdown"
+                style={{
+                  top: `${dropdownPosition.top}px`,
+                  left: `${dropdownPosition.left}px`,
+                  transform: 'translateY(-100%)'
+                }}
+              >
+                <div className="jp-InputArea-modelGroup">
+                  <div className="jp-InputArea-modelGroupTitle">Anthropic</div>
+                  <button
+                    className={`jp-InputArea-modelOption ${
+                      currentModel.provider === 'anthropic' && currentModel.model === 'claude-3-5-sonnet-20241022'
+                        ? 'jp-InputArea-modelOption-selected'
+                        : ''
+                    }`}
+                    onClick={() => onModelChange?.({ provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' })}
+                  >
+                    Claude Sonnet 4.5
+                  </button>
+                  <button
+                    className={`jp-InputArea-modelOption ${
+                      currentModel.provider === 'anthropic' && currentModel.model === 'claude-3-5-haiku-20241022'
+                        ? 'jp-InputArea-modelOption-selected'
+                        : ''
+                    }`}
+                    onClick={() => onModelChange?.({ provider: 'anthropic', model: 'claude-3-5-haiku-20241022' })}
+                  >
+                    Claude Haiku 4.5
+                  </button>
+                </div>
+
+                <div className="jp-InputArea-modelGroup">
+                  <div className="jp-InputArea-modelGroupTitle">OpenAI</div>
+                  <button
+                    className={`jp-InputArea-modelOption ${
+                      currentModel.provider === 'openai' && currentModel.model === 'gpt-4o'
+                        ? 'jp-InputArea-modelOption-selected'
+                        : ''
+                    }`}
+                    onClick={() => onModelChange?.({ provider: 'openai', model: 'gpt-4o' })}
+                  >
+                    GPT-4o
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <button
+            className="jp-InputArea-send"
+            onClick={onSubmit}
+            disabled={!value.trim() || disabled}
+            title="Send message"
+            aria-label="Send message"
+          >
+            <span className="jp-InputArea-sendIcon">↑</span>
+          </button>
+        </div>
       </div>
     </div>
   );

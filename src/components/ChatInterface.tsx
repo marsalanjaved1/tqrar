@@ -324,6 +324,11 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
         }}
         disabled={isStreaming}
         placeholder="Ask Tqrar..."
+        currentModel={{ provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' }}
+        onModelChange={(config) => {
+          console.log('Model changed:', config);
+          // TODO: Implement model change handler
+        }}
       />
     </div>
   );
