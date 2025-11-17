@@ -17,4 +17,3 @@ import '@jupyterlab/notebook/style/index.js';
 
 // Import extension styles
 import './widget.css';
-import './assistant-ui.css';
