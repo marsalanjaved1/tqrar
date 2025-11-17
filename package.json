@@ -10,9 +10,9 @@
     "assistant",
     "tqrar"
   ],
-  "homepage": "https://github.com/yourusername/tqrar",
+  "homepage": "https://github.com/marsalanjaved1/tqrar",
   "bugs": {
-    "url": "https://github.com/yourusername/tqrar/issues"
+    "url": "https://github.com/marsalanjaved1/tqrar/issues"
   },
   "license": "BSD-3-Clause",
   "author": {
@@ -30,7 +30,7 @@
   "style": "style/index.css",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/tqrar.git"
+    "url": "https://github.com/marsalanjaved1/tqrar.git"
   },
   "scripts": {
     "build": "jlpm build:lib && jlpm build:labextension:dev",
@@ -45,6 +45,7 @@
     "clean:labextension": "rimraf tqrar/labextension tqrar/_version.py",
     "clean:all": "jlpm clean:lib && jlpm clean:labextension && jlpm clean:lintcache",
     "install:extension": "jlpm build",
+    "dev": "jlpm build && jupyter labextension develop . --overwrite",
     "watch": "run-p watch:src watch:labextension",
     "watch:src": "tsc -w --sourceMap",
     "watch:labextension": "jupyter labextension watch ."
