@@ -9,6 +9,7 @@ import { LLMClient } from './llm/client';
 import { ToolRegistry } from './tools/registry';
 import { ContextManager } from './context';
 import { ToolExecutionTracker } from './tools/ToolExecutionTracker';
+import { getPhoenixClient } from './observability/phoenix';
 
 /**
  * System prompt for the AI Assistant
@@ -179,6 +180,7 @@ export class ConversationManager {
   private _toolExecutionTracker: ToolExecutionTracker;
   private _systemPrompt: string;
   private _onHistoryChange?: (messages: IMessage[]) => void;
+  private _phoenixClient = getPhoenixClient();
 
   /**
    * Create a new ConversationManager
@@ -222,6 +224,16 @@ export class ConversationManager {
    * @returns Async generator yielding response chunks
    */
   async *sendMessage(content: string): AsyncGenerator<string> {
+    // Start Phoenix trace for the entire agent turn
+    const agentSpanId = this._phoenixClient.startTrace(
+      'agent_turn',
+      'agent',
+      { 
+        user_message: content,
+        message_length: content.length 
+      }
+    );
+
     // Add user message to history
     const userMessage: IMessage = {
       role: 'user',
@@ -271,6 +283,19 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
         };
         messagesWithContext.push(contextMessage);
       }
+
+      // Start Phoenix trace for LLM call (child of agent turn)
+      const llmSpanId = this._phoenixClient.startTrace(
+        'llm_completion',
+        'llm',
+        {
+          model: this._llmClient.getSettings().model,
+          temperature: this._llmClient.getSettings().temperature,
+          message_count: messagesWithContext.length,
+          tools_count: tools.length
+        },
+        agentSpanId  // Parent span ID
+      );
 
       // Stream completion from LLM
       let assistantMessage = '';
@@ -338,6 +363,17 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
         }));
       }
 
+      // End LLM trace
+      this._phoenixClient.addAttributes(llmSpanId, {
+        response_length: assistantMessage.length,
+        tool_calls_count: toolCalls.length,
+        finish_reason: finishReason
+      });
+      this._phoenixClient.endTrace(llmSpanId, {
+        content: assistantMessage.substring(0, 500),
+        tool_calls: toolCalls.length
+      });
+
       // Add assistant message to history
       const assistantMsg: IMessage = {
         role: 'assistant',
@@ -358,8 +394,8 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
       if (finishReason === 'tool_calls' && toolCalls.length > 0) {
         console.log('[ConversationManager] Executing tool calls:', toolCalls.length);
         
-        // Execute tool calls and get results
-        const toolResults = await this.handleToolCalls(toolCalls);
+        // Execute tool calls and get results (pass parent span ID)
+        const toolResults = await this.handleToolCalls(toolCalls, agentSpanId);
         
         // Add tool result messages to history
         for (const result of toolResults) {
@@ -414,8 +450,20 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
         console.log('[ConversationManager] Final response after tools:', finalResponse.substring(0, 100));
       }
 
+      // End agent trace successfully
+      this._phoenixClient.addAttributes(agentSpanId, {
+        response_length: assistantMessage.length,
+        tool_calls_executed: toolCalls.length
+      });
+      this._phoenixClient.endTrace(agentSpanId, {
+        assistant_message: assistantMessage.substring(0, 500)
+      });
+
     } catch (error) {
       console.error('[ConversationManager] Error in sendMessage:', error);
+      
+      // End agent trace with error
+      this._phoenixClient.endTraceWithError(agentSpanId, error as Error);
       
       // Yield error message to user
       const errorMessage = error instanceof Error 
@@ -438,13 +486,26 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
    * Execute multiple tool calls in sequence
    * 
    * @param toolCalls - Array of tool calls to execute
+   * @param parentSpanId - Optional parent span ID for tracing
    * @returns Array of tool result messages
    */
-  async handleToolCalls(toolCalls: IToolCall[]): Promise<IMessage[]> {
+  async handleToolCalls(toolCalls: IToolCall[], parentSpanId?: string): Promise<IMessage[]> {
     const results: IMessage[] = [];
 
     for (const toolCall of toolCalls) {
       console.log('[ConversationManager] Executing tool:', toolCall.function.name);
+
+      // Start Phoenix trace for tool execution (child of agent turn)
+      const toolSpanId = this._phoenixClient.startTrace(
+        `tool.${toolCall.function.name}`,
+        'tool',
+        {
+          tool_name: toolCall.function.name,
+          arguments: toolCall.function.arguments,
+          call_id: toolCall.id
+        },
+        parentSpanId  // Parent span ID
+      );
 
       // Start tracking execution
       const executionId = this._toolExecutionTracker.startExecution(toolCall);
@@ -490,6 +551,12 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
           success: result.success
         });
 
+        // End Phoenix trace for tool
+        this._phoenixClient.addAttributes(toolSpanId, {
+          success: result.success
+        });
+        this._phoenixClient.endTrace(toolSpanId, result);
+
         // Mark execution as complete
         this._toolExecutionTracker.completeExecution(executionId, result);
 
@@ -507,6 +574,9 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
         const errorObj = error instanceof Error 
           ? error 
           : new Error(String(error));
+        
+        // End Phoenix trace with error
+        this._phoenixClient.endTraceWithError(toolSpanId, errorObj);
         
         // Mark execution as failed
         this._toolExecutionTracker.failExecution(executionId, errorObj);

@@ -3,7 +3,7 @@
 |----------------------------------------------------------------------------*/
 
 /* Main panel container */
-.jp-ToolExecutionPanel {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel {
   background: var(--jp-layout-color2);
   border: 1px solid var(--jp-border-color1);
   border-radius: 6px;
@@ -18,7 +18,7 @@
 | Header Section
 |----------------------------------------------------------------------------*/
 
-.jp-ToolExecutionPanel-header {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -27,19 +27,19 @@
   border-bottom: 1px solid var(--jp-border-color2);
 }
 
-.jp-ToolExecutionPanel-headerLeft {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-headerLeft {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.jp-ToolExecutionPanel-headerRight {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-headerRight {
   display: flex;
   align-items: center;
 }
 
 /* Tool icon */
-.jp-ToolExecutionPanel-icon {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-icon {
   font-size: 18px;
   line-height: 1;
   display: flex;
@@ -47,24 +47,24 @@
   justify-content: center;
 }
 
-.jp-ToolIcon-notebook {
+.jp-AIAssistant .jp-ToolIcon-notebook {
   color: var(--jp-info-color1);
 }
 
-.jp-ToolIcon-file {
+.jp-AIAssistant .jp-ToolIcon-file {
   color: var(--jp-warn-color1);
 }
 
-.jp-ToolIcon-inspection {
+.jp-AIAssistant .jp-ToolIcon-inspection {
   color: var(--jp-accent-color1);
 }
 
-.jp-ToolIcon-other {
+.jp-AIAssistant .jp-ToolIcon-other {
   color: var(--jp-ui-font-color2);
 }
 
 /* Tool name */
-.jp-ToolExecutionPanel-toolName {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-toolName {
   font-weight: 600;
   font-size: var(--jp-ui-font-size2);
   color: var(--jp-ui-font-color1);
@@ -72,7 +72,7 @@
 }
 
 /* Status badge */
-.jp-ToolExecutionPanel-statusBadge {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-statusBadge {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -82,35 +82,35 @@
   font-weight: 500;
 }
 
-.jp-ToolStatus-icon {
+.jp-AIAssistant .jp-ToolStatus-icon {
   font-size: 14px;
   line-height: 1;
 }
 
-.jp-ToolStatus-label {
+.jp-AIAssistant .jp-ToolStatus-label {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.jp-ToolStatus-pending {
+.jp-AIAssistant .jp-ToolStatus-pending {
   background: var(--jp-layout-color3);
   color: var(--jp-ui-font-color2);
   border: 1px solid var(--jp-border-color2);
 }
 
-.jp-ToolStatus-running {
+.jp-AIAssistant .jp-ToolStatus-running {
   background: var(--jp-brand-color3);
   color: var(--jp-brand-color1);
   border: 1px solid var(--jp-brand-color2);
 }
 
-.jp-ToolStatus-success {
+.jp-AIAssistant .jp-ToolStatus-success {
   background: var(--jp-success-color3);
   color: var(--jp-success-color1);
   border: 1px solid var(--jp-success-color2);
 }
 
-.jp-ToolStatus-error {
+.jp-AIAssistant .jp-ToolStatus-error {
   background: var(--jp-error-color3);
   color: var(--jp-error-color1);
   border: 1px solid var(--jp-error-color2);
@@ -126,7 +126,7 @@
   }
 }
 
-.jp-ToolStatus-running .jp-ToolStatus-icon {
+.jp-AIAssistant .jp-ToolStatus-running .jp-ToolStatus-icon {
   animation: spin 2s linear infinite;
   display: inline-block;
   /* Performance optimizations */
@@ -139,11 +139,11 @@
 | Collapsible Sections
 |----------------------------------------------------------------------------*/
 
-.jp-ToolExecutionPanel-section {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-section {
   margin: 8px 0;
 }
 
-.jp-ToolExecutionPanel-sectionHeader {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-sectionHeader {
   width: 100%;
   display: flex;
   align-items: center;
@@ -162,19 +162,19 @@
   will-change: transform;
 }
 
-.jp-ToolExecutionPanel-sectionHeader:hover {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-sectionHeader:hover {
   background: var(--jp-layout-color4);
   /* Subtle scale effect using transform for better performance */
   transform: translateZ(0) scale(1.01);
 }
 
-.jp-ToolExecutionPanel-sectionTitle {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-sectionTitle {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
-.jp-ToolExecutionPanel-sectionContent {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-sectionContent {
   margin-top: 8px;
   padding: 8px;
   background: var(--jp-layout-color1);
@@ -187,36 +187,36 @@
 |----------------------------------------------------------------------------*/
 
 /* Simple parameters */
-.jp-ToolExecutionPanel-parametersSimple {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-parametersSimple {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.jp-ToolParameter-item {
+.jp-AIAssistant .jp-ToolParameter-item {
   display: flex;
   gap: 6px;
   font-family: var(--jp-code-font-family);
   font-size: var(--jp-code-font-size);
 }
 
-.jp-ToolParameter-key {
+.jp-AIAssistant .jp-ToolParameter-key {
   color: var(--jp-info-color1);
   font-weight: 600;
 }
 
-.jp-ToolParameter-value {
+.jp-AIAssistant .jp-ToolParameter-value {
   color: var(--jp-ui-font-color1);
   word-break: break-word;
 }
 
 /* Complex parameters */
-.jp-ToolExecutionPanel-parametersComplex {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-parametersComplex {
   font-family: var(--jp-code-font-family);
   font-size: var(--jp-code-font-size);
 }
 
-.jp-ToolParameter-json {
+.jp-AIAssistant .jp-ToolParameter-json {
   margin: 0;
   padding: 8px;
   background: var(--jp-layout-color0);
@@ -224,7 +224,7 @@
   overflow-x: auto;
 }
 
-.jp-ToolParameter-json code {
+.jp-AIAssistant .jp-ToolParameter-json code {
   font-family: var(--jp-code-font-family);
   font-size: var(--jp-code-font-size);
 }
@@ -249,7 +249,7 @@
 }
 
 /* Raw parameters */
-.jp-ToolExecutionPanel-parametersRaw pre {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-parametersRaw pre {
   margin: 0;
   padding: 8px;
   background: var(--jp-layout-color0);
@@ -264,7 +264,7 @@
 |----------------------------------------------------------------------------*/
 
 /* Success message */
-.jp-ToolResult-success {
+.jp-AIAssistant .jp-ToolResult-success {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -275,46 +275,46 @@
   color: var(--jp-success-color1);
 }
 
-.jp-ToolResult-successIcon {
+.jp-AIAssistant .jp-ToolResult-successIcon {
   font-size: 18px;
   line-height: 1;
 }
 
-.jp-ToolResult-successText {
+.jp-AIAssistant .jp-ToolResult-successText {
   font-weight: 500;
 }
 
 /* Message result */
-.jp-ToolResult-message {
+.jp-AIAssistant .jp-ToolResult-message {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.jp-ToolResult-messageIcon {
+.jp-AIAssistant .jp-ToolResult-messageIcon {
   font-size: 18px;
   line-height: 1;
   color: var(--jp-success-color1);
 }
 
-.jp-ToolResult-messageText {
+.jp-AIAssistant .jp-ToolResult-messageText {
   font-weight: 500;
   color: var(--jp-ui-font-color1);
 }
 
-.jp-ToolResult-additionalData {
+.jp-AIAssistant .jp-ToolResult-additionalData {
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--jp-border-color2);
 }
 
 /* Structured result */
-.jp-ToolResult-structured {
+.jp-AIAssistant .jp-ToolResult-structured {
   font-family: var(--jp-code-font-family);
   font-size: var(--jp-code-font-size);
 }
 
-.jp-ToolResult-json {
+.jp-AIAssistant .jp-ToolResult-json {
   margin: 0;
   padding: 8px;
   background: var(--jp-layout-color0);
@@ -324,18 +324,18 @@
   overflow-y: auto;
 }
 
-.jp-ToolResult-lengthy .jp-ToolResult-json {
+.jp-AIAssistant .jp-ToolResult-lengthy .jp-ToolResult-json {
   max-height: 300px;
 }
 
-.jp-ToolResult-lengthyNote {
+.jp-AIAssistant .jp-ToolResult-lengthyNote {
   margin-top: 4px;
   font-size: var(--jp-ui-font-size0);
   color: var(--jp-ui-font-color3);
   text-align: right;
 }
 
-.jp-ToolResult-empty {
+.jp-AIAssistant .jp-ToolResult-empty {
   color: var(--jp-ui-font-color3);
   font-style: italic;
 }
@@ -344,73 +344,73 @@
 | Error Display
 |----------------------------------------------------------------------------*/
 
-.jp-ToolExecutionPanel-errorSection {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-errorSection {
   margin-top: 8px;
 }
 
-.jp-ToolExecutionPanel-error {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-error {
   background: var(--jp-error-color3);
   border: 1px solid var(--jp-error-color1);
   border-radius: 4px;
   padding: 12px;
 }
 
-.jp-ToolError-header {
+.jp-AIAssistant .jp-ToolError-header {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
 }
 
-.jp-ToolError-icon {
+.jp-AIAssistant .jp-ToolError-icon {
   font-size: 18px;
   line-height: 1;
   color: var(--jp-error-color1);
 }
 
-.jp-ToolError-type {
+.jp-AIAssistant .jp-ToolError-type {
   font-weight: 600;
   font-size: var(--jp-ui-font-size2);
   color: var(--jp-error-color1);
 }
 
-.jp-ToolError-message {
+.jp-AIAssistant .jp-ToolError-message {
   color: var(--jp-error-color1);
   margin-bottom: 8px;
   line-height: 1.5;
 }
 
 /* Error suggestions */
-.jp-ToolError-suggestions {
+.jp-AIAssistant .jp-ToolError-suggestions {
   margin-top: 12px;
   padding: 8px;
   background: var(--jp-layout-color1);
   border-radius: 4px;
 }
 
-.jp-ToolError-suggestionsTitle {
+.jp-AIAssistant .jp-ToolError-suggestionsTitle {
   font-weight: 600;
   margin-bottom: 6px;
   color: var(--jp-ui-font-color1);
 }
 
-.jp-ToolError-suggestionsList {
+.jp-AIAssistant .jp-ToolError-suggestionsList {
   margin: 0;
   padding-left: 20px;
   color: var(--jp-ui-font-color1);
 }
 
-.jp-ToolError-suggestionItem {
+.jp-AIAssistant .jp-ToolError-suggestionItem {
   margin: 4px 0;
   line-height: 1.5;
 }
 
 /* Stack trace */
-.jp-ToolError-stackTrace {
+.jp-AIAssistant .jp-ToolError-stackTrace {
   margin-top: 12px;
 }
 
-.jp-ToolError-stackSummary {
+.jp-AIAssistant .jp-ToolError-stackSummary {
   cursor: pointer;
   font-weight: 600;
   color: var(--jp-ui-font-color1);
@@ -420,11 +420,11 @@
   user-select: none;
 }
 
-.jp-ToolError-stackSummary:hover {
+.jp-AIAssistant .jp-ToolError-stackSummary:hover {
   background: var(--jp-layout-color2);
 }
 
-.jp-ToolError-stackContent {
+.jp-AIAssistant .jp-ToolError-stackContent {
   margin: 8px 0 0 0;
   padding: 8px;
   background: var(--jp-layout-color0);
@@ -439,13 +439,13 @@
 | Footer Section
 |----------------------------------------------------------------------------*/
 
-.jp-ToolExecutionPanel-footer {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-footer {
   margin-top: 12px;
   padding-top: 8px;
   border-top: 1px solid var(--jp-border-color2);
 }
 
-.jp-ToolExecutionPanel-timer {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-timer {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -453,24 +453,24 @@
   color: var(--jp-ui-font-color2);
 }
 
-.jp-ToolTimer-icon {
+.jp-AIAssistant .jp-ToolTimer-icon {
   font-size: 14px;
   line-height: 1;
 }
 
-.jp-ToolTimer-text {
+.jp-AIAssistant .jp-ToolTimer-text {
   font-weight: 500;
 }
 
-.jp-ToolTimer-pending {
+.jp-AIAssistant .jp-ToolTimer-pending {
   color: var(--jp-ui-font-color3);
 }
 
-.jp-ToolTimer-running {
+.jp-AIAssistant .jp-ToolTimer-running {
   color: var(--jp-brand-color1);
 }
 
-.jp-ToolTimer-spinner {
+.jp-AIAssistant .jp-ToolTimer-spinner {
   animation: spin 2s linear infinite;
   display: inline-block;
   /* Performance optimizations */
@@ -479,17 +479,17 @@
   backface-visibility: hidden; /* Prevent flickering */
 }
 
-.jp-ToolTimer-complete {
+.jp-AIAssistant .jp-ToolTimer-complete {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.jp-ToolTimer-success {
+.jp-AIAssistant .jp-ToolTimer-success {
   color: var(--jp-success-color1);
 }
 
-.jp-ToolTimer-error {
+.jp-AIAssistant .jp-ToolTimer-error {
   color: var(--jp-error-color1);
 }
 
@@ -539,34 +539,34 @@ body[data-jp-theme-light='false'] .jp-ToolResult-json {
 |----------------------------------------------------------------------------*/
 
 /* Focus indicators for keyboard navigation */
-.jp-ToolExecutionPanel-sectionHeader:focus {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-sectionHeader:focus {
   outline: 2px solid var(--jp-brand-color1);
   outline-offset: 2px;
 }
 
-.jp-ToolExecutionPanel-sectionHeader:focus-visible {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-sectionHeader:focus-visible {
   outline: 2px solid var(--jp-brand-color1);
   outline-offset: 2px;
   box-shadow: 0 0 0 3px var(--jp-brand-color3);
 }
 
-.jp-ToolError-stackSummary:focus {
+.jp-AIAssistant .jp-ToolError-stackSummary:focus {
   outline: 2px solid var(--jp-brand-color1);
   outline-offset: 2px;
 }
 
-.jp-ToolError-stackSummary:focus-visible {
+.jp-AIAssistant .jp-ToolError-stackSummary:focus-visible {
   outline: 2px solid var(--jp-brand-color1);
   outline-offset: 2px;
   box-shadow: 0 0 0 3px var(--jp-brand-color3);
 }
 
 /* Ensure panel is focusable but doesn't show focus ring unless keyboard navigated */
-.jp-ToolExecutionPanel:focus {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel:focus {
   outline: none;
 }
 
-.jp-ToolExecutionPanel:focus-visible {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel:focus-visible {
   outline: 2px solid var(--jp-brand-color1);
   outline-offset: 2px;
   border-radius: 6px;
@@ -597,7 +597,7 @@ body[data-jp-theme-light='false'] .jp-ToolResult-json {
 | ToolIcon Component Styles
 |----------------------------------------------------------------------------*/
 
-.jp-ToolIcon {
+.jp-AIAssistant .jp-ToolIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -609,24 +609,24 @@ body[data-jp-theme-light='false'] .jp-ToolResult-json {
 }
 
 /* Category-specific colors */
-.jp-ToolIcon.jp-ToolIcon-notebook {
+.jp-AIAssistant .jp-ToolIcon.jp-ToolIcon-notebook {
   color: var(--jp-info-color1);
 }
 
-.jp-ToolIcon.jp-ToolIcon-file {
+.jp-AIAssistant .jp-ToolIcon.jp-ToolIcon-file {
   color: var(--jp-warn-color1);
 }
 
-.jp-ToolIcon.jp-ToolIcon-inspection {
+.jp-AIAssistant .jp-ToolIcon.jp-ToolIcon-inspection {
   color: var(--jp-accent-color1);
 }
 
-.jp-ToolIcon.jp-ToolIcon-other {
+.jp-AIAssistant .jp-ToolIcon.jp-ToolIcon-other {
   color: var(--jp-ui-font-color2);
 }
 
 /* SVG icon support */
-.jp-ToolIcon svg {
+.jp-AIAssistant .jp-ToolIcon svg {
   width: 18px;
   height: 18px;
   fill: currentColor;
@@ -636,7 +636,7 @@ body[data-jp-theme-light='false'] .jp-ToolResult-json {
 | StatusBadge Component Styles
 |----------------------------------------------------------------------------*/
 
-.jp-ToolStatus {
+.jp-AIAssistant .jp-ToolStatus {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -648,7 +648,7 @@ body[data-jp-theme-light='false'] .jp-ToolResult-json {
   transition: all 0.2s ease-in-out;
 }
 
-.jp-ToolStatus-icon {
+.jp-AIAssistant .jp-ToolStatus-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -656,47 +656,47 @@ body[data-jp-theme-light='false'] .jp-ToolResult-json {
   line-height: 1;
 }
 
-.jp-ToolStatus-label {
+.jp-AIAssistant .jp-ToolStatus-label {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: 11px;
 }
 
 /* Pending state - gray with clock */
-.jp-ToolStatus.jp-ToolStatus-pending {
+.jp-AIAssistant .jp-ToolStatus.jp-ToolStatus-pending {
   background: var(--jp-layout-color3);
   color: var(--jp-ui-font-color2);
   border: 1px solid var(--jp-border-color2);
 }
 
 /* Running state - blue with spinner */
-.jp-ToolStatus.jp-ToolStatus-running {
+.jp-AIAssistant .jp-ToolStatus.jp-ToolStatus-running {
   background: var(--jp-brand-color3);
   color: var(--jp-brand-color1);
   border: 1px solid var(--jp-brand-color2);
 }
 
-.jp-ToolStatus-running .jp-ToolStatus-iconAnimated {
+.jp-AIAssistant .jp-ToolStatus-running .jp-ToolStatus-iconAnimated {
   animation: spin 2s linear infinite;
   display: inline-block;
 }
 
 /* Success state - green with checkmark */
-.jp-ToolStatus.jp-ToolStatus-success {
+.jp-AIAssistant .jp-ToolStatus.jp-ToolStatus-success {
   background: var(--jp-success-color3);
   color: var(--jp-success-color1);
   border: 1px solid var(--jp-success-color2);
 }
 
 /* Error state - red with X */
-.jp-ToolStatus.jp-ToolStatus-error {
+.jp-AIAssistant .jp-ToolStatus.jp-ToolStatus-error {
   background: var(--jp-error-color3);
   color: var(--jp-error-color1);
   border: 1px solid var(--jp-error-color2);
 }
 
 /* Smooth transitions between states - optimized with GPU acceleration */
-.jp-ToolStatus {
+.jp-AIAssistant .jp-ToolStatus {
   animation: statusFadeIn 0.2s ease-in-out;
   will-change: transform, opacity;
   transform: translateZ(0); /* Force GPU acceleration */
@@ -717,11 +717,11 @@ body[data-jp-theme-light='false'] .jp-ToolResult-json {
 | CollapsibleSection Component Styles
 |----------------------------------------------------------------------------*/
 
-.jp-CollapsibleSection {
+.jp-AIAssistant .jp-CollapsibleSection {
   margin: 8px 0;
 }
 
-.jp-CollapsibleSection-header {
+.jp-AIAssistant .jp-CollapsibleSection-header {
   width: 100%;
   display: flex;
   align-items: center;
@@ -743,22 +743,22 @@ body[data-jp-theme-light='false'] .jp-ToolResult-json {
   transform: translateZ(0); /* Force GPU acceleration */
 }
 
-.jp-CollapsibleSection-header:hover {
+.jp-AIAssistant .jp-CollapsibleSection-header:hover {
   background: var(--jp-layout-color4);
   border-color: var(--jp-border-color1);
 }
 
-.jp-CollapsibleSection-header:focus {
+.jp-AIAssistant .jp-CollapsibleSection-header:focus {
   outline: 2px solid var(--jp-brand-color1);
   outline-offset: 2px;
 }
 
-.jp-CollapsibleSection-header:active {
+.jp-AIAssistant .jp-CollapsibleSection-header:active {
   /* Use transform for better performance */
   transform: translateZ(0) scale(0.98);
 }
 
-.jp-CollapsibleSection-icon {
+.jp-AIAssistant .jp-CollapsibleSection-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -771,24 +771,24 @@ body[data-jp-theme-light='false'] .jp-ToolResult-json {
   transform: translateZ(0); /* Force GPU acceleration */
 }
 
-.jp-CollapsibleSection-expanded .jp-CollapsibleSection-icon {
+.jp-AIAssistant .jp-CollapsibleSection-expanded .jp-CollapsibleSection-icon {
   transform: rotate(0deg);
 }
 
-.jp-CollapsibleSection-collapsed .jp-CollapsibleSection-icon {
+.jp-AIAssistant .jp-CollapsibleSection-collapsed .jp-CollapsibleSection-icon {
   transform: rotate(-90deg);
 }
 
-.jp-CollapsibleSection-title {
+.jp-AIAssistant .jp-CollapsibleSection-title {
   flex: 1;
   font-weight: 500;
 }
 
-.jp-CollapsibleSection-content {
+.jp-AIAssistant .jp-CollapsibleSection-content {
   overflow: hidden;
 }
 
-.jp-CollapsibleSection-contentInner {
+.jp-AIAssistant .jp-CollapsibleSection-contentInner {
   padding: 12px;
   background: var(--jp-layout-color1);
   border: 1px solid var(--jp-border-color1);
@@ -798,12 +798,12 @@ body[data-jp-theme-light='false'] .jp-ToolResult-json {
 }
 
 /* Expanded state styling */
-.jp-CollapsibleSection-expanded .jp-CollapsibleSection-header {
+.jp-AIAssistant .jp-CollapsibleSection-expanded .jp-CollapsibleSection-header {
   border-radius: 6px 6px 0 0;
 }
 
 /* Animation states - optimized for GPU acceleration */
-.jp-CollapsibleSection[data-animating='true'] .jp-CollapsibleSection-content {
+.jp-AIAssistant .jp-CollapsibleSection[data-animating='true'] .jp-CollapsibleSection-content {
   will-change: max-height, opacity, transform;
   transform: translateZ(0); /* Force GPU acceleration */
   backface-visibility: hidden; /* Prevent flickering */
@@ -814,7 +814,7 @@ body[data-jp-theme-light='false'] .jp-ToolResult-json {
 |----------------------------------------------------------------------------*/
 
 /* Focus indicators for keyboard navigation */
-.jp-CollapsibleSection-header:focus-visible {
+.jp-AIAssistant .jp-CollapsibleSection-header:focus-visible {
   outline: 2px solid var(--jp-brand-color1);
   outline-offset: 2px;
   box-shadow: 0 0 0 3px var(--jp-brand-color3);
@@ -861,45 +861,45 @@ body[data-jp-theme-light='false'] .jp-CollapsibleSection-contentInner {
 }
 
 /* Ensure minimum contrast ratios (WCAG AA: 4.5:1 for normal text, 3:1 for large text) */
-.jp-ToolExecutionPanel {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel {
   /* Ensure text has sufficient contrast against background */
   color: var(--jp-ui-font-color1);
 }
 
-.jp-ToolExecutionPanel-toolName {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-toolName {
   /* Large text (18px+) needs 3:1 contrast minimum */
   color: var(--jp-ui-font-color0);
   font-weight: 600;
 }
 
-.jp-ToolStatus-label {
+.jp-AIAssistant .jp-ToolStatus-label {
   /* Ensure status labels have good contrast */
   font-weight: 600;
 }
 
 /* Status indicators use both color AND icons for accessibility */
-.jp-ToolStatus-pending {
+.jp-AIAssistant .jp-ToolStatus-pending {
   /* Gray background with darker text */
   background: var(--jp-layout-color3);
   color: var(--jp-ui-font-color1);
   border: 1px solid var(--jp-border-color1);
 }
 
-.jp-ToolStatus-running {
+.jp-AIAssistant .jp-ToolStatus-running {
   /* Blue background with darker blue text */
   background: var(--jp-brand-color3);
   color: var(--jp-brand-color0);
   border: 1px solid var(--jp-brand-color1);
 }
 
-.jp-ToolStatus-success {
+.jp-AIAssistant .jp-ToolStatus-success {
   /* Green background with darker green text */
   background: var(--jp-success-color3);
   color: var(--jp-success-color0);
   border: 1px solid var(--jp-success-color1);
 }
 
-.jp-ToolStatus-error {
+.jp-AIAssistant .jp-ToolStatus-error {
   /* Red background with darker red text */
   background: var(--jp-error-color3);
   color: var(--jp-error-color0);
@@ -907,40 +907,40 @@ body[data-jp-theme-light='false'] .jp-CollapsibleSection-contentInner {
 }
 
 /* Ensure error messages have sufficient contrast */
-.jp-ToolError-message {
+.jp-AIAssistant .jp-ToolError-message {
   color: var(--jp-error-color0);
   font-weight: 500;
 }
 
-.jp-ToolError-type {
+.jp-AIAssistant .jp-ToolError-type {
   color: var(--jp-error-color0);
   font-weight: 700;
 }
 
 /* Support for text resizing up to 200% */
-.jp-ToolExecutionPanel {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel {
   /* Use relative units for sizing */
   font-size: var(--jp-ui-font-size1);
   line-height: 1.5;
 }
 
-.jp-ToolExecutionPanel-toolName {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-toolName {
   font-size: var(--jp-ui-font-size2);
   line-height: 1.4;
 }
 
-.jp-ToolParameter-item,
-.jp-ToolResult-message {
+.jp-AIAssistant .jp-ToolParameter-item,
+.jp-AIAssistant .jp-ToolResult-message {
   line-height: 1.6;
 }
 
 /* Ensure interactive elements have minimum touch target size (44x44px) */
-.jp-ToolExecutionPanel-sectionHeader {
+.jp-AIAssistant .jp-AIAssistant .jp-ToolExecutionPanel-sectionHeader {
   min-height: 44px;
   padding: 8px 12px;
 }
 
-.jp-ToolError-stackSummary {
+.jp-AIAssistant .jp-ToolError-stackSummary {
   min-height: 44px;
   padding: 8px 12px;
 }
@@ -1046,13 +1046,175 @@ body[data-jp-theme-light='false'] .jp-ToolStatus-error {
  */
 
 /* Use GPU acceleration for collapsible sections */
-.jp-CollapsibleSection-content {
+.jp-AIAssistant .jp-CollapsibleSection-content {
   transform: translateZ(0);
   backface-visibility: hidden;
 }
 
 /* Use GPU acceleration for animated icons */
-.jp-ToolStatus-iconAnimated {
+.jp-AIAssistant .jp-ToolStatus-iconAnimated {
   transform: translateZ(0);
   backface-visibility: hidden;
+}
+
+
+/*-----------------------------------------------------------------------------
+| Tool Call Card - Tqrar Style
+|----------------------------------------------------------------------------*/
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard {
+  background: #1e1e1e;
+  border: 1px solid #3c3c3c;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 4px 0;
+  transition: all 0.2s;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-header {
+  padding: 10px 12px;
+  background: #2d2d30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-header:hover {
+  background: #333333;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  flex: 1;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-icon {
+  font-size: 16px;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-name {
+  color: #dcdcaa;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-weight: 500;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-status {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-status-success {
+  background: rgba(92, 184, 92, 0.2);
+  color: #5cb85c;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-status-error {
+  background: rgba(217, 83, 79, 0.2);
+  color: #d9534f;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-status-running {
+  background: rgba(240, 173, 78, 0.2);
+  color: #f0ad4e;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-status-pending {
+  background: rgba(128, 128, 128, 0.2);
+  color: #858585;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-expandIcon {
+  color: #858585;
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-expanded .jp-ToolCallCard-expandIcon {
+  transform: rotate(0deg);
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-body {
+  padding: 12px;
+  background: #1e1e1e;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-section {
+  margin-bottom: 12px;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-section:last-child {
+  margin-bottom: 0;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-sectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #858585;
+  margin-bottom: 6px;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-parameters,
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-result {
+  background: #1e1e1e;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  padding: 8px;
+  margin: 0;
+  overflow-x: auto;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #ce9178;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-parameters code,
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-result code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-error {
+  background: rgba(217, 83, 79, 0.1);
+  border: 1px solid rgba(217, 83, 79, 0.3);
+  border-radius: 4px;
+  padding: 8px;
+  color: #d9534f;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-footer {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #3c3c3c;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-duration {
+  font-size: 11px;
+  color: #858585;
+  font-family: 'Consolas', 'Monaco', monospace;
 }

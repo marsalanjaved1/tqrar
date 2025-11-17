@@ -23,7 +23,7 @@ import {
 import { ISettingRegistry } from '@jupyterlab/settingregistry';
 import { ICommandPalette } from '@jupyterlab/apputils';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
-import { INotebookTracker } from '@jupyterlab/notebook';
+import { INotebookTracker, NotebookActions } from '@jupyterlab/notebook';
 import { IStateDB } from '@jupyterlab/statedb';
 import { LabIcon } from '@jupyterlab/ui-components';
 
@@ -45,6 +45,7 @@ import { ToolExecutionTracker } from './tools/ToolExecutionTracker';
 import { ContextManager } from './context';
 import { DebouncedHistorySaver, HistoryStorage } from './history';
 import { ISettings } from './types';
+import { CellNumberingManager } from './cellNumbering';
 
 /**
  * The plugin ID
@@ -58,6 +59,8 @@ namespace CommandIDs {
   export const openSettings = 'ai-assistant:open-settings';
   export const openChat = 'ai-assistant:open-chat';
   export const clearHistory = 'ai-assistant:clear-history';
+  export const askAboutCell = 'ai-assistant:ask-about-cell';
+  export const openPhoenixUI = 'ai-assistant:open-phoenix-ui';
 }
 
 /**
@@ -102,6 +105,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
     if (notebookTracker) {
       contextManager = new ContextManager({ notebookTracker });
       console.log('[AI Assistant] Context manager initialized');
+    }
+
+    // Initialize cell numbering manager
+    let cellNumberingManager: CellNumberingManager | null = null;
+    if (notebookTracker) {
+      cellNumberingManager = new CellNumberingManager(notebookTracker);
+      console.log('[AI Assistant] Cell numbering manager initialized');
     }
 
     // Initialize tool registry
@@ -288,6 +298,15 @@ const plugin: JupyterFrontEndPlugin<void> = {
       }
     });
 
+    // Register command to open Phoenix UI
+    app.commands.addCommand(CommandIDs.openPhoenixUI, {
+      label: 'AI Assistant: Open Phoenix Observability',
+      caption: 'Open Phoenix UI to view agent traces and debug interactions',
+      execute: () => {
+        window.open('http://localhost:6006', '_blank');
+      }
+    });
+
     // Register command to open chat
     app.commands.addCommand(CommandIDs.openChat, {
       label: 'AI Assistant: Open Chat',
@@ -344,6 +363,43 @@ const plugin: JupyterFrontEndPlugin<void> = {
       }
     });
 
+    // Register command to ask about a cell
+    app.commands.addCommand(CommandIDs.askAboutCell, {
+      label: 'Ask Tqrar About This Cell',
+      caption: 'Ask the AI assistant to explain what is happening in this cell',
+      execute: () => {
+        const notebook = notebookTracker?.currentWidget?.content;
+        if (!notebook) return;
+
+        const activeCell = notebook.activeCell;
+        if (!activeCell) return;
+
+        const cellIndex = notebook.widgets.indexOf(activeCell);
+        const cellContent = activeCell.model.sharedModel.getSource();
+        
+        // Open chat and send question
+        app.commands.execute(CommandIDs.openChat).then(() => {
+          if (chatWidget && conversationManager) {
+            const question = `What is going on in cell ${cellIndex}?\n\nCell content:\n\`\`\`\n${cellContent}\n\`\`\``;
+            // Trigger message send through the chat widget
+            setTimeout(() => {
+              const event = new CustomEvent('send-message', { detail: question });
+              chatWidget!.node.dispatchEvent(event);
+            }, 100);
+          }
+        });
+      }
+    });
+
+    // Add context menu item for cells
+    if (notebookTracker) {
+      app.contextMenu.addItem({
+        command: CommandIDs.askAboutCell,
+        selector: '.jp-Cell',
+        rank: 10
+      });
+    }
+
     // Add commands to palette
     if (palette) {
       palette.addItem({
@@ -356,6 +412,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
       });
       palette.addItem({
         command: CommandIDs.clearHistory,
+        category: 'AI Assistant'
+      });
+      palette.addItem({
+        command: CommandIDs.askAboutCell,
+        category: 'AI Assistant'
+      });
+      palette.addItem({
+        command: CommandIDs.openPhoenixUI,
         category: 'AI Assistant'
       });
     }

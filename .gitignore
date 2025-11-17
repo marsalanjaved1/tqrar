@@ -63,3 +63,30 @@ venv.bak/
 
 # OS
 .DS_Store
+
+# Kiro IDE
+.kiro/
+
+# Markdown files (except README.md)
+*.md
+!README.md
+
+# Phoenix observability (development only)
+src/observability/
+phoenix_server.py
+requirements-phoenix.txt
+start_phoenix.sh
+
+# Yarn cache for Phoenix dependencies
+.yarn/cache/@arizeai-*
+.yarn/cache/@opentelemetry-*
+.yarn/cache/@protobufjs-*
+.yarn/cache/@types-shimmer-*
+.yarn/cache/acorn-import-attributes-*
+.yarn/cache/cjs-module-lexer-*
+.yarn/cache/import-in-the-middle-*
+.yarn/cache/long-npm-*
+.yarn/cache/module-details-from-path-*
+.yarn/cache/protobufjs-*
+.yarn/cache/require-in-the-middle-*
+.yarn/cache/shimmer-*

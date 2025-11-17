@@ -1,30 +1,33 @@
 /**
- * Custom Chat Interface Styles
+ * Custom Chat Interface Styles - FORCE DARK THEME
  */
 
-.jp-ChatInterface {
+.jp-AIAssistant .jp-ChatInterface {
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
+  background: #1e1e1e !important;
+  color: #cccccc !important;
 }
 
-/* Messages container */
-.jp-ChatInterface-messages {
+/* Messages container - FORCE DARK THEME */
+.jp-AIAssistant .jp-ChatInterface-messages {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  background: #1e1e1e !important;
 }
 
 /* Individual message */
-.jp-ChatMessage {
+.jp-AIAssistant .jp-ChatMessage {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  animation: fadeIn 0.3s ease-in;
+  animation: fadeIn var(--tqrar-transition-normal) ease-in;
 }
 
 @keyframes fadeIn {
@@ -38,8 +41,8 @@
   }
 }
 
-/* Message avatar */
-.jp-ChatMessage-avatar {
+/* Message avatar - DIRECT COLORS ONLY */
+.jp-AIAssistant .jp-ChatMessage-avatar {
   flex-shrink: 0;
   width: 32px;
   height: 32px;
@@ -48,69 +51,163 @@
   justify-content: center;
   font-size: 20px;
   border-radius: 50%;
-  background: var(--jp-layout-color2);
+  background: transparent !important;
 }
 
-/* Message content */
-.jp-ChatMessage-content {
+/* Message content - DIRECT COLORS ONLY */
+.jp-AIAssistant .jp-ChatMessage-content {
   flex: 1;
   min-width: 0;
 }
 
-.jp-ChatMessage-text {
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: var(--jp-layout-color2);
-  color: var(--jp-ui-font-color1);
+.jp-AIAssistant .jp-ChatMessage-text {
+  padding: 8px 0;
+  background: transparent !important;
+  color: #cccccc !important;
   white-space: pre-wrap;
   word-wrap: break-word;
-  line-height: 1.5;
+  line-height: 1.6;
+  font-size: 14px;
 }
 
 /* User message styling */
-.jp-ChatMessage-user .jp-ChatMessage-text {
-  background: var(--jp-brand-color1);
-  color: white;
+.jp-AIAssistant .jp-ChatMessage-user .jp-ChatMessage-text {
+  background: transparent !important;
+  color: #cccccc !important;
 }
 
 /* Assistant message styling */
-.jp-ChatMessage-assistant .jp-ChatMessage-text {
-  background: var(--jp-layout-color2);
+.jp-AIAssistant .jp-ChatMessage-assistant .jp-ChatMessage-text {
+  background: transparent !important;
+  color: #cccccc !important;
+}
+
+/* Inline code - EXACT Tqrar Style */
+.jp-AIAssistant .jp-ChatMessage-inlineCode {
+  background: #2d2d30;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  color: #ce9178;
+}
+
+/* Code blocks - EXACT Tqrar Style */
+.jp-AIAssistant .jp-ChatMessage-codeBlock {
+  background: #1e1e1e;
+  border: 1px solid #3c3c3c;
+  border-radius: 6px;
+  padding: 0;
+  overflow: hidden;
+  margin: 8px 0;
+  position: relative;
+}
+
+.jp-AIAssistant .jp-ChatMessage-codeHeader {
+  background: #2d2d30;
+  border-bottom: 1px solid #3c3c3c;
+  padding: 6px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #858585;
+}
+
+.jp-AIAssistant .jp-ChatMessage-codeLanguage {
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+.jp-AIAssistant .jp-ChatMessage-copyButton {
+  background: transparent;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  padding: 3px 8px;
+  color: #858585;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.jp-AIAssistant .jp-ChatMessage-copyButton:hover {
+  background: #3c3c3c;
+  color: #cccccc;
+}
+
+.jp-AIAssistant .jp-ChatMessage-code {
+  background: none;
+  padding: 12px;
+  display: block;
+  overflow-x: auto;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #cccccc;
 }
 
 /* Tool message styling */
-.jp-ChatMessage-tool .jp-ChatMessage-content {
+.jp-AIAssistant .jp-ChatMessage-tool .jp-ChatMessage-content {
   width: 100%;
 }
 
-/* Timestamp */
-.jp-ChatMessage-timestamp {
+/* Message actions - EXACT Tqrar Style */
+.jp-AIAssistant .jp-ChatMessage-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.jp-AIAssistant .jp-ChatMessage:hover .jp-ChatMessage-actions {
+  opacity: 1;
+}
+
+.jp-AIAssistant .jp-ChatMessage-actionButton {
+  background: transparent;
+  border: 1px solid #3c3c3c;
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: #858585;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.jp-AIAssistant .jp-ChatMessage-actionButton:hover {
+  background: #2d2d30;
+  color: #cccccc;
+  border-color: #555555;
+}
+
+/* Timestamp - DIRECT COLORS ONLY */
+.jp-AIAssistant .jp-ChatMessage-timestamp {
   margin-top: 4px;
   font-size: 11px;
-  color: var(--jp-ui-font-color2);
+  color: #858585 !important;
   opacity: 0.7;
 }
 
-/* Streaming indicator */
-.jp-ChatMessage-streaming {
+/* Streaming indicator - DIRECT COLORS ONLY */
+.jp-AIAssistant .jp-ChatMessage-streaming {
   display: flex;
   gap: 4px;
   padding: 12px 16px;
 }
 
-.jp-ChatMessage-dot {
+.jp-AIAssistant .jp-ChatMessage-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--jp-ui-font-color2);
+  background: #858585 !important;
   animation: pulse 1.4s ease-in-out infinite;
 }
 
-.jp-ChatMessage-dot:nth-child(2) {
+.jp-AIAssistant .jp-ChatMessage-dot:nth-child(2) {
   animation-delay: 0.2s;
 }
 
-.jp-ChatMessage-dot:nth-child(3) {
+.jp-AIAssistant .jp-ChatMessage-dot:nth-child(3) {
   animation-delay: 0.4s;
 }
 
@@ -125,75 +222,222 @@
   }
 }
 
-/* Input form */
-.jp-ChatInterface-input {
-  display: flex;
-  gap: 8px;
-  padding: 16px;
-  border-top: 1px solid var(--jp-border-color1);
-  background: var(--jp-layout-color1);
+/* Input Area - EXACT Tqrar Style */
+.jp-AIAssistant .jp-InputArea {
+  border-top: 1px solid #3c3c3c;
+  padding: 12px 16px 16px;
+  background: #1e1e1e;
 }
 
-.jp-ChatInterface-textarea {
-  flex: 1;
-  min-height: 40px;
-  max-height: 120px;
-  padding: 10px 12px;
-  border: 1px solid var(--jp-border-color1);
+/* Context Pills - EXACT Tqrar Style */
+.jp-AIAssistant .jp-ContextPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+  min-height: 0;
+}
+
+.jp-AIAssistant .jp-ContextPill {
+  background: #2d2d30;
+  border: 1px solid #3c3c3c;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #cccccc;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.jp-AIAssistant .jp-ContextPill:hover {
+  background: #3c3c3c;
+}
+
+.jp-AIAssistant .jp-ContextPill-icon {
+  color: #858585;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.jp-AIAssistant .jp-ContextPill-name {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.jp-AIAssistant .jp-ContextPill-remove {
+  background: none;
+  border: none;
+  color: #858585;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  margin-left: 2px;
+  transition: color 0.2s;
+}
+
+.jp-AIAssistant .jp-ContextPill-remove:hover {
+  color: #cccccc;
+}
+
+/* Input Container - EXACT Tqrar Style */
+.jp-AIAssistant .jp-InputContainer {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  background: #2d2d30;
+  border: 1px solid #3c3c3c;
   border-radius: 8px;
-  background: var(--jp-layout-color2);
-  color: var(--jp-ui-font-color1);
-  font-family: var(--jp-ui-font-family);
-  font-size: var(--jp-ui-font-size1);
+  padding: 8px;
+  transition: border-color 0.2s;
+}
+
+.jp-AIAssistant .jp-InputContainer:focus-within {
+  border-color: #007acc;
+}
+
+/* Input Actions - EXACT Tqrar Style */
+.jp-AIAssistant .jp-InputActions {
+  display: flex;
+  gap: 4px;
+  padding-bottom: 6px;
+}
+
+.jp-AIAssistant .jp-InputAction-button {
+  background: transparent;
+  border: none;
+  color: #858585;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.jp-AIAssistant .jp-InputAction-button:hover:not(:disabled) {
+  background: #3c3c3c;
+  color: #cccccc;
+}
+
+.jp-AIAssistant .jp-InputAction-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Textarea - EXACT Tqrar Style */
+.jp-AIAssistant .jp-InputArea-textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #cccccc;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   resize: none;
+  min-height: 24px;
+  max-height: 200px;
+  line-height: 1.5;
+  padding: 6px 8px;
   outline: none;
 }
 
-.jp-ChatInterface-textarea:focus {
-  border-color: var(--jp-brand-color1);
+.jp-AIAssistant .jp-InputArea-textarea::placeholder {
+  color: #6e6e6e;
 }
 
-.jp-ChatInterface-textarea:disabled {
+.jp-AIAssistant .jp-InputArea-textarea:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.jp-ChatInterface-send {
-  padding: 10px 20px;
+/* Send Button - EXACT Tqrar Style */
+.jp-AIAssistant .jp-InputArea-send {
+  background: #007acc;
   border: none;
-  border-radius: 8px;
-  background: var(--jp-brand-color1);
+  border-radius: 6px;
+  padding: 6px;
   color: white;
-  font-family: var(--jp-ui-font-family);
-  font-size: var(--jp-ui-font-size1);
-  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
 }
 
-.jp-ChatInterface-send:hover:not(:disabled) {
-  background: var(--jp-brand-color0);
+.jp-AIAssistant .jp-InputArea-send:hover:not(:disabled) {
+  background: #1177bb;
 }
 
-.jp-ChatInterface-send:disabled {
-  opacity: 0.5;
+.jp-AIAssistant .jp-InputArea-send:active:not(:disabled) {
+  background: #0d5a8f;
+  transform: scale(0.95);
+}
+
+.jp-AIAssistant .jp-InputArea-send:disabled {
+  background: #3c3c3c;
+  color: #666666;
   cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.jp-AIAssistant .jp-InputArea-sendIcon {
+  font-size: 16px;
+  line-height: 1;
 }
 
 /* Scrollbar styling */
-.jp-ChatInterface-messages::-webkit-scrollbar {
+.jp-AIAssistant .jp-ChatInterface-messages::-webkit-scrollbar {
   width: 8px;
 }
 
-.jp-ChatInterface-messages::-webkit-scrollbar-track {
+.jp-AIAssistant .jp-ChatInterface-messages::-webkit-scrollbar-track {
   background: var(--jp-layout-color1);
 }
 
-.jp-ChatInterface-messages::-webkit-scrollbar-thumb {
+.jp-AIAssistant .jp-ChatInterface-messages::-webkit-scrollbar-thumb {
   background: var(--jp-border-color1);
   border-radius: 4px;
 }
 
-.jp-ChatInterface-messages::-webkit-scrollbar-thumb:hover {
+.jp-AIAssistant .jp-ChatInterface-messages::-webkit-scrollbar-thumb:hover {
   background: var(--jp-border-color2);
+}
+
+
+/*-----------------------------------------------------------------------------
+| Scrollbar Styling - Tqrar Style
+|----------------------------------------------------------------------------*/
+
+/* Messages area scrollbar */
+.jp-AIAssistant .jp-ChatInterface-messages::-webkit-scrollbar {
+  width: 10px;
+}
+
+.jp-AIAssistant .jp-ChatInterface-messages::-webkit-scrollbar-track {
+  background: var(--tqrar-bg-primary);
+}
+
+.jp-AIAssistant .jp-ChatInterface-messages::-webkit-scrollbar-thumb {
+  background: #424242;
+  border-radius: 5px;
+}
+
+.jp-AIAssistant .jp-ChatInterface-messages::-webkit-scrollbar-thumb:hover {
+  background: var(--tqrar-hover-bg);
+}
+
+/* Firefox scrollbar */
+.jp-AIAssistant .jp-ChatInterface-messages {
+  scrollbar-width: thin;
+  scrollbar-color: #424242 var(--tqrar-bg-primary);
 }

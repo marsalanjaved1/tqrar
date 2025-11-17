@@ -5,8 +5,11 @@
 
 import React from 'react';
 import { IMessage } from '../types';
-import { ToolExecutionPanel } from './ToolExecutionPanel';
+import { ToolCallCard } from './ToolCallCard';
 import { ToolExecutionTracker } from '../tools/ToolExecutionTracker';
+import { MessageContent } from './MessageContent';
+import { MessageActions } from './MessageActions';
+import { InputArea } from './InputArea';
 import type { IToolExecutionEvent } from '../types';
 
 export interface IChatInterfaceProps {
@@ -36,6 +39,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   const inputRef = React.useRef<HTMLTextAreaElement>(null);
   const currentMessageIndexRef = React.useRef<number>(-1);
   const messagesRef = React.useRef<IMessage[]>(messages);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   // Keep messages ref in sync
   React.useEffect(() => {
@@ -55,6 +59,29 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
       }
     }
   }, [messages, isStreaming]);
+
+  // Listen for custom send-message events
+  React.useEffect(() => {
+    const handleSendMessage = (event: Event) => {
+      const customEvent = event as CustomEvent<string>;
+      if (customEvent.detail) {
+        setInputValue(customEvent.detail);
+        // Auto-submit after a short delay
+        setTimeout(() => {
+          onSendMessage(customEvent.detail);
+          setInputValue('');
+        }, 100);
+      }
+    };
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('send-message', handleSendMessage);
+      return () => {
+        container.removeEventListener('send-message', handleSendMessage);
+      };
+    }
+  }, [onSendMessage]);
 
   // Auto-scroll to bottom when messages change
   React.useEffect(() => {
@@ -160,7 +187,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   };
 
   return (
-    <div className="jp-ChatInterface">
+    <div className="jp-ChatInterface" ref={containerRef}>
       {/* Messages container */}
       <div className="jp-ChatInterface-messages">
         {messages.map((message, index) => {
@@ -189,6 +216,21 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
             }
           }
 
+          const handleEdit = () => {
+            setInputValue(message.content);
+            inputRef.current?.focus();
+          };
+
+          const handleRegenerate = () => {
+            // Find the previous user message
+            for (let i = index - 1; i >= 0; i--) {
+              if (messages[i].role === 'user') {
+                onSendMessage(messages[i].content);
+                break;
+              }
+            }
+          };
+
           return (
             <React.Fragment key={index}>
               {/* Message content before tools */}
@@ -197,13 +239,21 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
                   {message.role === 'user' ? '👤' : '🤖'}
                 </div>
                 <div className="jp-ChatMessage-content">
-                  <div className="jp-ChatMessage-text">
-                    {beforeTools}
-                  </div>
-                  {!hasTools && message.timestamp && (
-                    <div className="jp-ChatMessage-timestamp">
-                      {new Date(message.timestamp).toLocaleTimeString()}
-                    </div>
+                  <MessageContent content={beforeTools} role={message.role} />
+                  {!hasTools && (
+                    <>
+                      <MessageActions
+                        content={message.content}
+                        role={message.role}
+                        onEdit={message.role === 'user' ? handleEdit : undefined}
+                        onRegenerate={message.role === 'assistant' ? handleRegenerate : undefined}
+                      />
+                      {message.timestamp && (
+                        <div className="jp-ChatMessage-timestamp">
+                          {new Date(message.timestamp).toLocaleTimeString()}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
@@ -213,7 +263,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
                 <div key={execution.id} className="jp-ChatMessage jp-ChatMessage-tool">
                   <div className="jp-ChatMessage-avatar">🔧</div>
                   <div className="jp-ChatMessage-content">
-                    <ToolExecutionPanel execution={execution} />
+                    <ToolCallCard execution={execution} />
                   </div>
                 </div>
               ))}
@@ -225,9 +275,13 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
                     {message.role === 'user' ? '👤' : '🤖'}
                   </div>
                   <div className="jp-ChatMessage-content">
-                    <div className="jp-ChatMessage-text">
-                      {afterTools}
-                    </div>
+                    <MessageContent content={afterTools} role={message.role} />
+                    <MessageActions
+                      content={message.content}
+                      role={message.role}
+                      onEdit={message.role === 'user' ? handleEdit : undefined}
+                      onRegenerate={message.role === 'assistant' ? handleRegenerate : undefined}
+                    />
                     {message.timestamp && (
                       <div className="jp-ChatMessage-timestamp">
                         {new Date(message.timestamp).toLocaleTimeString()}
@@ -257,26 +311,20 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input form */}
-      <form className="jp-ChatInterface-input" onSubmit={handleSubmit}>
-        <textarea
-          ref={inputRef}
-          className="jp-ChatInterface-textarea"
-          value={inputValue}
-          onChange={e => setInputValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
-          rows={1}
-          disabled={isStreaming}
-        />
-        <button
-          type="submit"
-          className="jp-ChatInterface-send"
-          disabled={!inputValue.trim() || isStreaming}
-        >
-          Send
-        </button>
-      </form>
+      {/* Input area */}
+      <InputArea
+        value={inputValue}
+        onChange={setInputValue}
+        onSubmit={() => {
+          if (inputValue.trim() && !isStreaming) {
+            onSendMessage(inputValue.trim());
+            setInputValue('');
+            inputRef.current?.focus();
+          }
+        }}
+        disabled={isStreaming}
+        placeholder="Ask Tqrar..."
+      />
     </div>
   );
 };

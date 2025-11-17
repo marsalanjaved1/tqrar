@@ -15,5 +15,11 @@
 @import url('~@jupyterlab/cells/style/index.css');
 @import url('~@jupyterlab/notebook/style/index.css');
 
+/* Tqrar theme variables */
+@import url('./tqrar-theme.css');
+
+/* Dark theme override - MUST BE FIRST */
+@import url('./dark-theme-override.css');
+
 /* Tool execution panel styles */
 @import url('./tool-execution.css');

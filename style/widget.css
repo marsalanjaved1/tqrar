@@ -7,14 +7,14 @@
 | AI Assistant Widget Styles
 |----------------------------------------------------------------------------*/
 
-/* Main container */
+/* Main container - FORCE DARK THEME */
 .jp-AIAssistant {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--jp-layout-color1);
-  color: var(--jp-ui-font-color1);
-  font-family: var(--jp-ui-font-family);
+  background: #1e1e1e !important;
+  color: #cccccc !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: var(--jp-ui-font-size1);
 }
 
@@ -23,23 +23,25 @@
   flex-direction: column;
   height: 100%;
   width: 100%;
+  background: #1e1e1e !important;
+  color: #cccccc !important;
 }
 
-/* Header */
+/* Header - FORCE DARK THEME */
 .jp-AIAssistant-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  border-bottom: 1px solid var(--jp-border-color1);
-  background: var(--jp-layout-color2);
+  border-bottom: 1px solid #3c3c3c !important;
+  background: #252526 !important;
   flex-shrink: 0;
 }
 
 .jp-AIAssistant-title {
   font-weight: 600;
   font-size: var(--jp-ui-font-size2);
-  color: var(--jp-ui-font-color1);
+  color: #cccccc !importantolor1);
 }
 
 .jp-AIAssistant-settings-button {
