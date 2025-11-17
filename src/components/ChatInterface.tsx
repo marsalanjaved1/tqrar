@@ -10,6 +10,7 @@ import { ToolExecutionTracker } from '../tools/ToolExecutionTracker';
 import { MessageContent } from './MessageContent';
 import { MessageActions } from './MessageActions';
 import { InputArea } from './InputArea';
+import { DebugPanel } from './DebugPanel';
 import type { IToolExecutionEvent } from '../types';
 
 export interface IChatInterfaceProps {
@@ -19,11 +20,6 @@ export interface IChatInterfaceProps {
   toolExecutionTracker?: ToolExecutionTracker;
 }
 
-// Map to track which tool executions belong to which message
-interface MessageWithTools extends IMessage {
-  toolExecutions?: IToolExecutionEvent[];
-}
-
 export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   messages,
   onSendMessage,
@@ -31,34 +27,31 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   toolExecutionTracker
 }) => {
   const [inputValue, setInputValue] = React.useState('');
-  // Map of message index to tool executions
+  // Map of user message index to tool executions (tools appear after user message)
   const [messageTools, setMessageTools] = React.useState<Map<number, IToolExecutionEvent[]>>(new Map());
-  // Map of message index to content length when first tool started
-  const [contentBeforeTools, setContentBeforeTools] = React.useState<Map<number, number>>(new Map());
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLTextAreaElement>(null);
-  const currentMessageIndexRef = React.useRef<number>(-1);
+  const currentUserIndexRef = React.useRef<number>(-1);
+  const activeToolUserIndexRef = React.useRef<number>(-1); // Locked index for active tool execution
   const messagesRef = React.useRef<IMessage[]>(messages);
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const [debugOpen, setDebugOpen] = React.useState(false);
 
   // Keep messages ref in sync
   React.useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
 
-  // Update current message index when messages change
+  // Update current user message index when messages change
   React.useEffect(() => {
-    if (isStreaming) {
-      // Find the last assistant message index
-      for (let i = messages.length - 1; i >= 0; i--) {
-        if (messages[i].role === 'assistant') {
-          currentMessageIndexRef.current = i;
-          console.log('[ChatInterface] Current message index:', i);
-          break;
-        }
+    // Find the last user message index (this is what triggered the current response)
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        currentUserIndexRef.current = i;
+        break;
       }
     }
-  }, [messages, isStreaming]);
+  }, [messages]);
 
   // Listen for custom send-message events
   React.useEffect(() => {
@@ -91,44 +84,36 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   // Track tool executions
   React.useEffect(() => {
     if (!toolExecutionTracker) {
-      console.log('[ChatInterface] No tool execution tracker available');
       return;
     }
 
-    console.log('[ChatInterface] Setting up tool execution listeners');
-
     const handleStart = (event: IToolExecutionEvent) => {
-      const messageIndex = currentMessageIndexRef.current;
-      console.log('[ChatInterface] Tool started:', event.toolCall.function.name, 'for message index:', messageIndex);
-
-      // Capture content length when first tool starts for this message
-      setContentBeforeTools(prev => {
-        if (!prev.has(messageIndex) && messageIndex >= 0) {
-          const newMap = new Map(prev);
-          const currentMessages = messagesRef.current;
-          if (messageIndex < currentMessages.length) {
-            const contentLength = currentMessages[messageIndex].content.length;
-            newMap.set(messageIndex, contentLength);
-            console.log('🔍 CAPTURE: Captured content length', contentLength, 'for message', messageIndex);
-            console.log('🔍 CAPTURE: Content at capture time:', currentMessages[messageIndex].content);
-            return newMap;
-          }
-        }
-        return prev;
+      // Lock to the current user index on first tool execution
+      if (activeToolUserIndexRef.current === -1) {
+        activeToolUserIndexRef.current = currentUserIndexRef.current;
+      }
+      
+      const userIndex = activeToolUserIndexRef.current;
+      
+      console.log('[ChatInterface] Tool execution started:', {
+        toolName: event.toolCall.function.name,
+        userIndex,
+        totalMessages: messagesRef.current.length
       });
 
       setMessageTools(prev => {
         const newMap = new Map(prev);
-        const existing = newMap.get(messageIndex) || [];
-        newMap.set(messageIndex, [...existing, event]);
-        console.log('[ChatInterface] Added tool to message', messageIndex, 'total tools:', newMap.get(messageIndex)?.length);
+        const existing = newMap.get(userIndex) || [];
+        newMap.set(userIndex, [...existing, event]);
+        console.log('[ChatInterface] Updated messageTools:', {
+          userIndex,
+          toolCount: existing.length + 1
+        });
         return newMap;
       });
     };
 
     const handleUpdate = (event: IToolExecutionEvent) => {
-      console.log('[ChatInterface] Tool updated:', event.id, event.status);
-
       setMessageTools(prev => {
         const newMap = new Map(prev);
         // Update the tool in whichever message it belongs to
@@ -138,7 +123,6 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
             const updatedTools = [...tools];
             updatedTools[toolIndex] = event;
             newMap.set(index, updatedTools);
-            console.log('[ChatInterface] Updated tool in message', index);
             break;
           }
         }
@@ -147,13 +131,20 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
     };
 
     const handleComplete = (event: IToolExecutionEvent) => {
-      console.log('[ChatInterface] Tool completed:', event.id);
       handleUpdate(event);
+      // Reset the locked index when all tools complete
+      // (This is a simple heuristic - could be improved)
+      setTimeout(() => {
+        activeToolUserIndexRef.current = -1;
+      }, 100);
     };
 
     const handleError = (event: IToolExecutionEvent) => {
-      console.log('[ChatInterface] Tool failed:', event.id);
       handleUpdate(event);
+      // Reset the locked index on error
+      setTimeout(() => {
+        activeToolUserIndexRef.current = -1;
+      }, 100);
     };
 
     toolExecutionTracker.on('execution:start', handleStart);
@@ -162,7 +153,6 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
     toolExecutionTracker.on('execution:error', handleError);
 
     return () => {
-      console.log('[ChatInterface] Cleaning up tool execution listeners');
       toolExecutionTracker.off('execution:start', handleStart);
       toolExecutionTracker.off('execution:update', handleUpdate);
       toolExecutionTracker.off('execution:complete', handleComplete);
@@ -179,42 +169,75 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
-  };
-
   return (
     <div className="jp-ChatInterface" ref={containerRef}>
+      
       {/* Messages container */}
       <div className="jp-ChatInterface-messages">
+        {/* Welcome screen when no messages */}
+        {messages.filter(m => m.role !== 'system').length === 0 && (
+          <div className="jp-ChatInterface-welcome">
+            <div className="jp-ChatInterface-welcomeContent">
+              <img 
+                src="https://raw.githubusercontent.com/marsalanjaved1/tqrar/main/ghost-logo.png" 
+                alt="Tqrar Logo" 
+                className="jp-ChatInterface-welcomeLogo"
+              />
+              <h2 className="jp-ChatInterface-welcomeTitle">Welcome to Tqrar</h2>
+              <p className="jp-ChatInterface-welcomeSubtitle">Your AI assistant for JupyterLab</p>
+              
+              <div className="jp-ChatInterface-welcomePrompts">
+                <button 
+                  className="jp-ChatInterface-promptCard"
+                  onClick={() => {
+                    const prompt = "Load the iris dataset and show me the first 5 rows";
+                    onSendMessage(prompt);
+                  }}
+                >
+                  <span className="jp-ChatInterface-promptIcon">📊</span>
+                  <span className="jp-ChatInterface-promptText">Load the iris dataset</span>
+                </button>
+                
+                <button 
+                  className="jp-ChatInterface-promptCard"
+                  onClick={() => {
+                    const prompt = "Create a scatter plot of sepal length vs width";
+                    onSendMessage(prompt);
+                  }}
+                >
+                  <span className="jp-ChatInterface-promptIcon">📈</span>
+                  <span className="jp-ChatInterface-promptText">Create a visualization</span>
+                </button>
+                
+                <button 
+                  className="jp-ChatInterface-promptCard"
+                  onClick={() => {
+                    const prompt = "Explain what this code does";
+                    onSendMessage(prompt);
+                  }}
+                >
+                  <span className="jp-ChatInterface-promptIcon">💡</span>
+                  <span className="jp-ChatInterface-promptText">Explain my code</span>
+                </button>
+                
+                <button 
+                  className="jp-ChatInterface-promptCard"
+                  onClick={() => {
+                    const prompt = "Help me debug this error";
+                    onSendMessage(prompt);
+                  }}
+                >
+                  <span className="jp-ChatInterface-promptIcon">🐛</span>
+                  <span className="jp-ChatInterface-promptText">Debug an error</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {messages.map((message, index) => {
           // Skip system messages
           if (message.role === 'system') return null;
-
-          // Get tools for this message
-          const toolsForMessage = messageTools.get(index) || [];
-
-          if (toolsForMessage.length > 0) {
-            console.log('[ChatInterface] Rendering', toolsForMessage.length, 'tools for message', index);
-          }
-
-          // For assistant messages with tools, split content to show tools in the middle
-          const hasTools = toolsForMessage.length > 0;
-          let beforeTools = message.content;
-          let afterTools = '';
-
-          if (hasTools && message.role === 'assistant') {
-            const capturedLength = contentBeforeTools.get(index);
-
-            if (capturedLength !== undefined) {
-              // Split based on captured content length
-              beforeTools = message.content.substring(0, capturedLength);
-              afterTools = message.content.substring(capturedLength);
-            }
-          }
 
           const handleEdit = () => {
             setInputValue(message.content);
@@ -231,56 +254,22 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
             }
           };
 
-          return (
-            <React.Fragment key={index}>
-              {/* Message content before tools */}
-              <div className={`jp-ChatMessage jp-ChatMessage-${message.role}`}>
-                <div className="jp-ChatMessage-avatar">
-                  {message.role === 'user' ? '👤' : '🤖'}
-                </div>
-                <div className="jp-ChatMessage-content">
-                  <MessageContent content={beforeTools} role={message.role} />
-                  {!hasTools && (
-                    <>
-                      <MessageActions
-                        content={message.content}
-                        role={message.role}
-                        onEdit={message.role === 'user' ? handleEdit : undefined}
-                        onRegenerate={message.role === 'assistant' ? handleRegenerate : undefined}
-                      />
-                      {message.timestamp && (
-                        <div className="jp-ChatMessage-timestamp">
-                          {new Date(message.timestamp).toLocaleTimeString()}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
+          // For user messages, show the message followed by any tool executions
+          if (message.role === 'user') {
+            // Get tools stored at this user message index
+            const toolsForThisUser = messageTools.get(index) || [];
 
-              {/* Tool executions inline in the middle */}
-              {toolsForMessage.map(execution => (
-                <div key={execution.id} className="jp-ChatMessage jp-ChatMessage-tool">
-                  <div className="jp-ChatMessage-avatar">🔧</div>
-                  <div className="jp-ChatMessage-content">
-                    <ToolCallCard execution={execution} />
-                  </div>
-                </div>
-              ))}
-
-              {/* Message content after tools */}
-              {hasTools && afterTools && (
+            return (
+              <React.Fragment key={index}>
+                {/* User message */}
                 <div className={`jp-ChatMessage jp-ChatMessage-${message.role}`}>
-                  <div className="jp-ChatMessage-avatar">
-                    {message.role === 'user' ? '👤' : '🤖'}
-                  </div>
+                  <div className="jp-ChatMessage-avatar">👤</div>
                   <div className="jp-ChatMessage-content">
-                    <MessageContent content={afterTools} role={message.role} />
+                    <MessageContent content={message.content} role={message.role} />
                     <MessageActions
                       content={message.content}
                       role={message.role}
-                      onEdit={message.role === 'user' ? handleEdit : undefined}
-                      onRegenerate={message.role === 'assistant' ? handleRegenerate : undefined}
+                      onEdit={handleEdit}
                     />
                     {message.timestamp && (
                       <div className="jp-ChatMessage-timestamp">
@@ -289,9 +278,47 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
                     )}
                   </div>
                 </div>
-              )}
-            </React.Fragment>
-          );
+
+                {/* Tool executions that belong to this user message */}
+                {toolsForThisUser.length > 0 && toolsForThisUser.map(execution => (
+                  <div key={execution.id} className="jp-ChatMessage jp-ChatMessage-tool">
+                    <div className="jp-ChatMessage-avatar">🔧</div>
+                    <div className="jp-ChatMessage-content">
+                      <ToolCallCard execution={execution} />
+                    </div>
+                  </div>
+                ))}
+              </React.Fragment>
+            );
+          }
+
+          // For assistant messages, just show the final response
+          // (tools were already shown after the user message)
+          if (message.role === 'assistant') {
+            return (
+              <div key={index} className={`jp-ChatMessage jp-ChatMessage-${message.role}`}>
+                <div className="jp-ChatMessage-avatar">
+                  <img src="https://raw.githubusercontent.com/marsalanjaved1/tqrar/main/ghost-logo.png" alt="Tqrar" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
+                </div>
+                <div className="jp-ChatMessage-content">
+                  <MessageContent content={message.content} role={message.role} />
+                  <MessageActions
+                    content={message.content}
+                    role={message.role}
+                    onRegenerate={handleRegenerate}
+                  />
+                  {message.timestamp && (
+                    <div className="jp-ChatMessage-timestamp">
+                      {new Date(message.timestamp).toLocaleTimeString()}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          }
+
+          // For tool messages (shouldn't normally render these directly)
+          return null;
         })}
 
         {/* Streaming indicator */}
@@ -311,6 +338,14 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Debug Panel */}
+      {/* <DebugPanel
+        messages={messages}
+        messageTools={messageTools}
+        isOpen={debugOpen}
+        onToggle={() => setDebugOpen(!debugOpen)}
+      /> */}
+
       {/* Input area */}
       <InputArea
         value={inputValue}
@@ -326,7 +361,6 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
         placeholder="Ask Tqrar..."
         currentModel={{ provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' }}
         onModelChange={(config) => {
-          console.log('Model changed:', config);
           // TODO: Implement model change handler
         }}
       />

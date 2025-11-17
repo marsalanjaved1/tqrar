@@ -17,3 +17,4 @@ import '@jupyterlab/notebook/style/index.js';
 
 // Import extension styles
 import './widget.css';
+import './debug-panel.css';

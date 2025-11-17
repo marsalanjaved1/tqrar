@@ -14,52 +14,57 @@
 
 ---
 
+## 🎬 Demo
+
+[![Watch the demo](https://img.youtube.com/vi/gLvrSClj-Fk/maxresdefault.jpg)](https://youtu.be/gLvrSClj-Fk)
+
+*Click to watch Tqrar in action*
+
+---
+
 ## About
 
-**Tqrar** (تِقرار) — meaning "conversation" or "discussion" in Arabic and Urdu — is a **JupyterLab extension** that brings AI-powered conversational assistance directly into your data science workflow.
+**Tqrar** (تِقرار) — meaning "conversation" or "discussion" in Arabic and Urdu — is a native JupyterLab extension that brings AI assistance directly into your data science workflow.
 
-This is a **native JupyterLab extension**, not a standalone application. It integrates seamlessly into your existing JupyterLab environment, adding an AI assistant panel to help with:
+Unlike standalone AI tools, Tqrar integrates seamlessly into JupyterLab, adding an AI assistant panel that understands your notebook context. It can analyze code, explain errors, generate visualizations, and manipulate cells through natural language.
 
-- 📝 **Code Analysis**: Get explanations and suggestions for your code
-- 🔍 **Data Insights**: Ask questions about your datasets and visualizations  
-- 🐛 **Error Debugging**: Intelligent assistance with error messages
-- 📚 **Documentation**: Quick access to library docs and examples
-- 🤖 **Notebook Manipulation**: Create, modify, and manage notebook cells via natural language
+### What it does
 
-### Key Features
+- Analyzes and explains your code
+- Helps debug errors with context-aware suggestions
+- Generates data visualizations and analysis code
+- Creates and modifies notebook cells on command
+- Answers questions about your datasets and libraries
 
-- **Context-Aware**: Understands your active notebook, cells, and execution state
-- **Tool Integration**: Can read/write files, create/modify cells, and execute code
-- **Multiple LLM Providers**: OpenRouter, OpenAI, Anthropic, or local models
-- **Streaming Responses**: Real-time AI responses with smooth streaming
-- **Conversation History**: Persistent chat history across sessions
-- **Theme Integration**: Automatically adapts to JupyterLab's light/dark themes
+### Key capabilities
+
+- Context-aware: Understands your active notebook and execution state
+- Tool integration: Reads/writes files, creates/modifies cells, executes code
+- Multiple LLM providers: Works with OpenRouter, OpenAI, Anthropic, or local models
+- Streaming responses: Real-time AI interaction
+- Persistent history: Conversation history saved across sessions
+- Theme integration: Adapts to JupyterLab's light/dark themes
 
 ---
 
 ## Installation
 
-### For Users (Recommended)
+### Requirements
 
-**Prerequisites:**
-- JupyterLab >= 4.0.0
-- Python >= 3.8
+- JupyterLab 4.0.0 or higher
+- Python 3.8 or higher
 
-**Install via pip:**
+### Install
 
 ```bash
 pip install tqrar
 ```
 
-That's it! The extension will be automatically installed and enabled in JupyterLab.
-
-**Launch JupyterLab:**
+The extension installs automatically. Launch JupyterLab and look for the AI Assistant icon in the left sidebar.
 
 ```bash
 jupyter lab
 ```
-
-The AI Assistant icon will appear in the left sidebar.
 
 ### For Developers
 
@@ -108,77 +113,71 @@ Refresh your browser after changes to see updates.
 
 ## Configuration
 
-### Setting up your AI Provider
+### Setting up your AI provider
 
-1. **Open JupyterLab** and click the AI Assistant icon in the left sidebar
-2. **Click the settings/gear icon** in the chat panel
-3. **Choose your provider:**
-   - **OpenRouter** (Recommended): Access multiple models with one API key
-   - **OpenAI**: Direct access to GPT models
-   - **Anthropic**: Claude models  
-   - **Local**: Self-hosted models (Ollama, LM Studio, etc.)
-4. **Enter your API key** and select a model
-5. **Click Save**
+1. Open JupyterLab and click the AI Assistant icon in the left sidebar
+2. Click the settings icon in the chat panel
+3. Choose your provider:
+   - OpenRouter (recommended): Access 100+ models with one API key
+   - OpenAI: Direct access to GPT models
+   - Anthropic: Claude models  
+   - Local: Self-hosted models (Ollama, LM Studio, etc.)
+4. Enter your API key and select a model
+5. Save
 
-### Supported Models
+### Supported models
 
-**Free/Low-Cost:**
-- DeepSeek V3.1 (Free - $0)
-- Gemini 1.5 Flash (Free - $0)
-- Llama 3.1 8B (Free - $0)
-- Claude 3 Haiku (Low Cost)
-- Claude 4.5 Haiku (Low Cost)
+Free/Low-cost options:
+- DeepSeek V3.1 (Free)
+- Gemini 1.5 Flash (Free)
+- Llama 3.1 8B (Free)
+- Claude 3 Haiku
+- Claude 4.5 Haiku
 
-**Premium:**
+Premium options:
 - Claude 3.5 Sonnet
 - GPT-4 Turbo
 - GPT-4
-- And many more via OpenRouter
+- Many more via OpenRouter
 
-### Get API Keys
+### Get API keys
 
-- **OpenRouter**: https://openrouter.ai (supports 100+ models)
-- **OpenAI**: https://platform.openai.com
-- **Anthropic**: https://console.anthropic.com
+- OpenRouter: https://openrouter.ai
+- OpenAI: https://platform.openai.com
+- Anthropic: https://console.anthropic.com
 
 ---
 
 ## Usage
 
-### Basic Workflow
+### Getting started
 
-1. **Open a notebook** in JupyterLab
-2. **Click the AI Assistant icon** in the left sidebar
-3. **Start chatting:**
+1. Open a notebook in JupyterLab
+2. Click the AI Assistant icon in the left sidebar
+3. Start chatting:
    - "Create a cell that loads a CSV file and shows the first 5 rows"
    - "Explain what this pandas groupby operation does"
    - "Why is my model overfitting?"
    - "Generate a visualization for this dataset"
 
-### Available Tools
+### Available tools
 
-The AI can use these tools to interact with your notebooks:
+The AI can interact with your notebooks through these tools:
 
-**Notebook Tools:**
-- `createCell` - Add new cells
-- `updateCell` - Modify existing cells
-- `getCells` - View all cells
-- `deleteCell` - Remove cells
-- `moveCells` - Reorder cells
-- `mergeCells` - Combine cells
-- `splitCell` - Split a cell
+Notebook operations:
+- Create, update, delete, and move cells
+- Merge and split cells
+- View all cells in a notebook
 
-**File System Tools:**
-- `listFiles` - List files and directories
-- `readFile` - Read file contents
-- `writeFile` - Create/update files
-- `deleteFile` - Delete files
-- `createDirectory` - Create directories
+File system operations:
+- List, read, write, and delete files
+- Create directories
+- Navigate your workspace
 
-**Code Inspection Tools:**
-- `getCompletions` - Code completion suggestions
-- `getDocumentation` - Get docs for functions/classes
-- `inspectCode` - Analyze code structure
+Code inspection:
+- Get code completions
+- Access function and class documentation
+- Analyze code structure
 
 ---
 
@@ -262,38 +261,38 @@ For active development, use `jlpm watch` to auto-rebuild on file changes.
 
 ## Contributing
 
-We welcome contributions! Whether it's:
+Contributions are welcome. We accept:
 
-- 🐛 Bug reports
-- ✨ Feature requests
-- 📝 Documentation improvements
-- 💻 Code contributions
+- Bug reports
+- Feature requests
+- Documentation improvements
+- Code contributions
 
-### How to Contribute
+To contribute:
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes and commit: `git commit -m 'Add amazing feature'`
-4. Push to your fork: `git push origin feature/amazing-feature`
+2. Create a feature branch: `git checkout -b feature/your-feature`
+3. Make your changes and commit: `git commit -m 'Add your feature'`
+4. Push to your fork: `git push origin feature/your-feature`
 5. Open a Pull Request
 
 ---
 
 ## Roadmap
 
-### Current (v0.1.0)
-- ✅ Basic chat interface with streaming
-- ✅ Context-aware notebook understanding
-- ✅ Tool calling (file, notebook, inspection)
-- ✅ Multiple LLM provider support
-- ✅ Conversation history persistence
+Current (v0.1.0):
+- Chat interface with streaming responses
+- Context-aware notebook understanding
+- Tool calling for files, notebooks, and code inspection
+- Multiple LLM provider support
+- Persistent conversation history
 
-### Planned
-- 🔄 Cell execution and output analysis
-- 🔄 Variable inspection and debugging
-- 🔄 Data visualization generation
-- 🔄 Semantic code search
-- 🔄 Multi-agent workflows
+Planned:
+- Cell execution and output analysis
+- Variable inspection and debugging
+- Enhanced data visualization generation
+- Semantic code search
+- Multi-agent workflows
 
 ---
 
@@ -331,27 +330,18 @@ This project is licensed under the **BSD 3-Clause License** - see the [LICENSE](
 
 ## Acknowledgments
 
-Built on the shoulders of giants:
-
-- **[JupyterLab](https://jupyterlab.readthedocs.io)** - The foundation
-- **[React](https://reactjs.org)** - UI framework
-- **[TypeScript](https://www.typescriptlang.org)** - Type safety
-- **[OpenAI](https://openai.com)** - AI capabilities
-
----
+Built with JupyterLab, React, TypeScript, and OpenAI-compatible APIs.
 
 ## Contact
 
-- **GitHub**: [@marsalanjaved1](https://github.com/marsalanjaved1)
-- **Issues**: [GitHub Issues](https://github.com/marsalanjaved1/tqrar/issues)
-- **Repository**: [github.com/marsalanjaved1/tqrar](https://github.com/marsalanjaved1/tqrar)
+- GitHub: [@marsalanjaved1](https://github.com/marsalanjaved1)
+- Issues: [GitHub Issues](https://github.com/marsalanjaved1/tqrar/issues)
+- Repository: [github.com/marsalanjaved1/tqrar](https://github.com/marsalanjaved1/tqrar)
 
 ---
 
 <div align="center">
 
-**Made for the Data Science Community**
-
-*Iterate. Refine. Perfect. — تِقرار*
+Made for the data science community
 
 </div>

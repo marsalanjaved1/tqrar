@@ -22,6 +22,78 @@
   background: #1e1e1e !important;
 }
 
+/* Welcome Screen */
+.jp-AIAssistant .jp-ChatInterface-welcome {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 40px 20px;
+}
+
+.jp-AIAssistant .jp-ChatInterface-welcomeContent {
+  text-align: center;
+  max-width: 600px;
+}
+
+.jp-AIAssistant .jp-ChatInterface-welcomeLogo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 24px;
+  opacity: 0.9;
+}
+
+.jp-AIAssistant .jp-ChatInterface-welcomeTitle {
+  font-size: 28px;
+  font-weight: 600;
+  color: #cccccc;
+  margin: 0 0 8px 0;
+}
+
+.jp-AIAssistant .jp-ChatInterface-welcomeSubtitle {
+  font-size: 16px;
+  color: #858585;
+  margin: 0 0 32px 0;
+}
+
+.jp-AIAssistant .jp-ChatInterface-welcomePrompts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.jp-AIAssistant .jp-ChatInterface-promptCard {
+  background: #2d2d30;
+  border: 1px solid #3c3c3c;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.jp-AIAssistant .jp-ChatInterface-promptCard:hover {
+  background: #3c3c3c;
+  border-color: #007acc;
+  transform: translateY(-2px);
+}
+
+.jp-AIAssistant .jp-ChatInterface-promptIcon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.jp-AIAssistant .jp-ChatInterface-promptText {
+  font-size: 14px;
+  color: #cccccc;
+  font-weight: 500;
+}
+
 /* Individual message */
 .jp-AIAssistant .jp-ChatMessage {
   display: flex;
