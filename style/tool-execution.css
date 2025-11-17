@@ -1063,7 +1063,7 @@ body[data-jp-theme-light='false'] .jp-ToolStatus-error {
 |----------------------------------------------------------------------------*/
 
 .jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard {
-  background: #1e1e1e;
+  background: #252525;
   border: 1px solid #3c3c3c;
   border-radius: 6px;
   overflow: hidden;
@@ -1144,7 +1144,7 @@ body[data-jp-theme-light='false'] .jp-ToolStatus-error {
 
 .jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-body {
   padding: 12px;
-  background: #1e1e1e;
+  background: #252525;
   animation: slideDown 0.2s ease-out;
 }
 
@@ -1176,7 +1176,7 @@ body[data-jp-theme-light='false'] .jp-ToolStatus-error {
 
 .jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-parameters,
 .jp-AIAssistant .jp-AIAssistant .jp-ToolCallCard-result {
-  background: #1e1e1e;
+  background: #1a1a1a;
   border: 1px solid #3c3c3c;
   border-radius: 4px;
   padding: 8px;
