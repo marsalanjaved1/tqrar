@@ -19,7 +19,8 @@ export const SessionTabs: React.FC<ISessionTabsProps> = ({
   onSessionSelect,
   onSessionClose
 }) => {
-  if (sessions.length === 0) {
+  // Always show the tabs container if there's an active session, even if sessions array is empty
+  if (sessions.length === 0 && !activeSessionId) {
     return null;
   }
 

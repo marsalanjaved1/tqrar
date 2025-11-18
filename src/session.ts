@@ -30,6 +30,7 @@ export interface ISessionWithHistory extends ISession {
  */
 const SESSION_KEY_PREFIX = 'ai-assistant:session';
 const SESSION_LIST_KEY = 'ai-assistant:session-list';
+const ACTIVE_SESSION_KEY = 'ai-assistant:active-session';
 
 /**
  * Session Manager
@@ -50,6 +51,7 @@ export class SessionManager {
   async initialize(): Promise<void> {
     try {
       await this.loadSessionList();
+      await this.loadActiveSession();
       console.log('[SessionManager] Initialized with', this._sessions.size, 'sessions');
     } catch (error) {
       console.error('[SessionManager] Failed to initialize:', error);
@@ -86,8 +88,27 @@ export class SessionManager {
    * Get a session by ID
    */
   async getSession(id: string): Promise<ISessionWithHistory | null> {
+    // Check if session exists in memory
     if (this._sessions.has(id)) {
-      return this._sessions.get(id)!;
+      const session = this._sessions.get(id)!;
+      
+      // If messages are empty, load from storage
+      if (session.messages.length === 0 && session.messageCount > 0) {
+        try {
+          const key = `${SESSION_KEY_PREFIX}:${id}`;
+          const data = await this._stateDB.fetch(key);
+          
+          if (data) {
+            const fullSession = this.deserializeSession(data as any);
+            this._sessions.set(id, fullSession);
+            return fullSession;
+          }
+        } catch (error) {
+          console.error('[SessionManager] Failed to load session messages:', error);
+        }
+      }
+      
+      return session;
     }
 
     // Try loading from storage
@@ -169,8 +190,13 @@ export class SessionManager {
   /**
    * Set active session
    */
-  setActiveSession(id: string): void {
+  async setActiveSession(id: string): Promise<void> {
     this._activeSessionId = id;
+    try {
+      await this._stateDB.save(ACTIVE_SESSION_KEY, id);
+    } catch (error) {
+      console.error('[SessionManager] Failed to save active session:', error);
+    }
   }
 
   /**
@@ -229,6 +255,20 @@ export class SessionManager {
       }
     } catch (error) {
       console.error('[SessionManager] Failed to load session list:', error);
+    }
+  }
+
+  /**
+   * Load active session from storage
+   */
+  private async loadActiveSession(): Promise<void> {
+    try {
+      const data = await this._stateDB.fetch(ACTIVE_SESSION_KEY);
+      if (data && typeof data === 'string') {
+        this._activeSessionId = data;
+      }
+    } catch (error) {
+      console.error('[SessionManager] Failed to load active session:', error);
     }
   }
 

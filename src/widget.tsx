@@ -91,23 +91,43 @@ const ChatComponent: React.FC<{
   const [activeSessionId, setActiveSessionId] = React.useState<string | null>(null);
   const [showHistory, setShowHistory] = React.useState(false);
 
-  // Load sessions on mount (with delay to ensure initialization)
+  // Load sessions list on mount (but don't auto-load any session)
   React.useEffect(() => {
     if (sessionManager) {
-      // Small delay to ensure session manager is initialized
-      setTimeout(() => {
+      const loadSessions = async () => {
         try {
+          // Wait a bit for session manager to initialize
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
           const sessions = sessionManager.getAllSessions();
           setAllSessions(sessions);
-          const activeId = sessionManager.getActiveSessionId();
-          if (activeId) {
-            setActiveSessionId(activeId);
-            setActiveSessions(sessions.filter(s => s.id === activeId));
-          }
+          
+          // Don't auto-load any session - start fresh
+          // User can load from history sidebar if they want
+          console.log('[ChatComponent] Loaded', sessions.length, 'sessions from history');
         } catch (error) {
           console.error('[ChatComponent] Failed to load sessions:', error);
         }
-      }, 100);
+      };
+      loadSessions();
+      
+      // Listen for session initialization events
+      const handleSessionInit = async (event: any) => {
+        const sessionId = event.detail?.sessionId;
+        if (sessionId && sessionManager) {
+          const session = await sessionManager.getSession(sessionId);
+          if (session) {
+            setActiveSessionId(sessionId);
+            setActiveSessions([session]);
+            setAllSessions(sessionManager.getAllSessions());
+          }
+        }
+      };
+      
+      window.addEventListener('session-initialized', handleSessionInit);
+      return () => {
+        window.removeEventListener('session-initialized', handleSessionInit);
+      };
     }
   }, [sessionManager]);
 
@@ -162,15 +182,8 @@ const ChatComponent: React.FC<{
   }, [isStreaming, streamingContent]);
 
   const handleNewSession = async () => {
-    if (!sessionManager) return;
-    
-    const newSession = await sessionManager.createSession();
-    setActiveSessionId(newSession.id);
-    setActiveSessions([...activeSessions, newSession]);
-    setAllSessions(sessionManager.getAllSessions());
-    sessionManager.setActiveSession(newSession.id);
-    
-    // Clear messages for new session
+    // Just clear the UI - don't create session until user types
+    setActiveSessionId(null);
     setMessages([]);
     baseMessagesRef.current = [];
     
@@ -184,12 +197,15 @@ const ChatComponent: React.FC<{
     
     const session = await sessionManager.getSession(sessionId);
     if (session) {
+      console.log('[ChatComponent] Selecting session:', sessionId, 'Current active sessions:', activeSessions.length);
       setActiveSessionId(sessionId);
-      sessionManager.setActiveSession(sessionId);
+      await sessionManager.setActiveSession(sessionId);
       
       // Add to active sessions if not already there
       if (!activeSessions.find(s => s.id === sessionId)) {
-        setActiveSessions([...activeSessions, session]);
+        const newActiveSessions = [...activeSessions, session];
+        console.log('[ChatComponent] Adding session to active sessions. New count:', newActiveSessions.length);
+        setActiveSessions(newActiveSessions);
       }
       
       // Load session messages
@@ -234,6 +250,16 @@ const ChatComponent: React.FC<{
       };
       setMessages(prev => [...prev, demoMessage]);
       return;
+    }
+
+    // Create new session if none is active (user clicked + and is now typing)
+    if (!activeSessionId && sessionManager) {
+      const newSession = await sessionManager.createSession();
+      setActiveSessionId(newSession.id);
+      setActiveSessions([...activeSessions, newSession]);
+      setAllSessions(sessionManager.getAllSessions());
+      await sessionManager.setActiveSession(newSession.id);
+      console.log('[ChatComponent] Created new session on first message:', newSession.id);
     }
 
     // Add user message immediately

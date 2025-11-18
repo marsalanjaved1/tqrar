@@ -57,11 +57,7 @@ const PLUGIN_ID = 'tqrar:plugin';
  * Command IDs
  */
 namespace CommandIDs {
-  export const openSettings = 'ai-assistant:open-settings';
-  export const openChat = 'ai-assistant:open-chat';
-  export const clearHistory = 'ai-assistant:clear-history';
-  export const askAboutCell = 'ai-assistant:ask-about-cell';
-  export const openPhoenixUI = 'ai-assistant:open-phoenix-ui';
+  export const openChat = 'tqrar:open-chat';
 }
 
 /**
@@ -98,18 +94,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
     toolExecutionTracker = new ToolExecutionTracker();
     console.log('[AI Assistant] Tool execution tracker initialized');
 
-    // Initialize session manager (FEATURE FLAG - set to false to disable)
-    const ENABLE_SESSIONS = false; // TODO: Enable once stable
-    
-    if (ENABLE_SESSIONS) {
-      sessionManager = new SessionManager(stateDB);
-      sessionManager.initialize().catch(error => {
-        console.error('[AI Assistant] Failed to initialize session manager:', error);
-      });
-      console.log('[AI Assistant] Session manager created (initializing in background)');
-    } else {
-      console.log('[AI Assistant] Session management disabled');
-    }
+    // Initialize session manager (non-blocking)
+    sessionManager = new SessionManager(stateDB);
+    sessionManager.initialize().catch(error => {
+      console.error('[AI Assistant] Failed to initialize session manager:', error);
+    });
+    console.log('[AI Assistant] Session manager created (initializing in background)');
 
     // Initialize history storage
     historyStorage = new HistoryStorage(stateDB);
@@ -303,51 +293,17 @@ const plugin: JupyterFrontEndPlugin<void> = {
         console.error('Failed to load AI Assistant settings:', reason);
       });
 
-    // Register command to open settings
-    app.commands.addCommand(CommandIDs.openSettings, {
-      label: 'AI Assistant: Configure Settings',
-      caption: 'Configure AI Assistant settings and API key',
-      execute: async () => {
-        await showSettingsDialogWithValidation(settingRegistry, PLUGIN_ID);
-      }
-    });
-
-    // Register command to clear conversation history
-    app.commands.addCommand(CommandIDs.clearHistory, {
-      label: 'AI Assistant: Clear Conversation History',
-      caption: 'Clear the conversation history and start fresh',
-      execute: async () => {
-        if (conversationManager) {
-          conversationManager.clear();
-          console.log('[AI Assistant] Conversation history cleared');
-        }
-
-        if (historyStorage) {
-          await historyStorage.clear();
-          console.log('[AI Assistant] Stored history cleared');
-        }
-      }
-    });
-
-    // Register command to open Phoenix UI
-    app.commands.addCommand(CommandIDs.openPhoenixUI, {
-      label: 'AI Assistant: Open Phoenix Observability',
-      caption: 'Open Phoenix UI to view agent traces and debug interactions',
-      execute: () => {
-        window.open('http://localhost:6006', '_blank');
-      }
-    });
 
     // Register command to open chat
     app.commands.addCommand(CommandIDs.openChat, {
       label: 'AI Assistant: Open Chat',
       caption: 'Open the AI Assistant chat panel',
-      execute: () => {
+      execute: async () => {
         if (!chatWidget || chatWidget.isDisposed) {
           // Create new chat widget with streaming support
           chatWidget = new ChatWidget({
             onSettingsClick: () => {
-              void app.commands.execute(CommandIDs.openSettings);
+              void showSettingsDialogWithValidation(settingRegistry, PLUGIN_ID);
             },
             onMessageSend: async (content: string) => {
               console.log('[AI Assistant] Message sent:', content);
@@ -380,11 +336,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
               if (sessionManager && conversationManager) {
                 const session = await sessionManager.getSession(sessionId);
                 if (session) {
-                  conversationManager.clear();
-                  // Load session messages into conversation manager
-                  for (const msg of session.messages) {
-                    // Messages are already in conversation manager format
-                  }
+                  console.log('[AI Assistant] Loading session with', session.messages.length, 'messages');
+                  conversationManager.loadHistory(session.messages);
                 }
               }
             },
@@ -397,18 +350,9 @@ const plugin: JupyterFrontEndPlugin<void> = {
             }
           });
 
-          // Create initial session if none exist (non-blocking)
-          if (sessionManager) {
-            const sessions = sessionManager.getAllSessions();
-            if (sessions.length === 0) {
-              sessionManager.createSession().then(initialSession => {
-                sessionManager!.setActiveSession(initialSession.id);
-                console.log('[AI Assistant] Created initial session');
-              }).catch(error => {
-                console.error('[AI Assistant] Failed to create initial session:', error);
-              });
-            }
-          }
+          // Don't auto-load sessions on startup - start fresh
+          // Sessions are available in history sidebar if user wants to load them
+          console.log('[AI Assistant] Widget initialized - starting with empty chat');
 
           chatWidget.id = 'ai-assistant-chat';
           chatWidget.title.label = ''; // No label, just icon
@@ -429,63 +373,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
       }
     });
 
-    // Register command to ask about a cell
-    app.commands.addCommand(CommandIDs.askAboutCell, {
-      label: 'Ask Tqrar About This Cell',
-      caption: 'Ask the AI assistant to explain what is happening in this cell',
-      execute: () => {
-        const notebook = notebookTracker?.currentWidget?.content;
-        if (!notebook) return;
-
-        const activeCell = notebook.activeCell;
-        if (!activeCell) return;
-
-        const cellIndex = notebook.widgets.indexOf(activeCell);
-        const cellContent = activeCell.model.sharedModel.getSource();
-        
-        // Open chat and send question
-        app.commands.execute(CommandIDs.openChat).then(() => {
-          if (chatWidget && conversationManager) {
-            const question = `What is going on in cell ${cellIndex}?\n\nCell content:\n\`\`\`\n${cellContent}\n\`\`\``;
-            // Trigger message send through the chat widget
-            setTimeout(() => {
-              const event = new CustomEvent('send-message', { detail: question });
-              chatWidget!.node.dispatchEvent(event);
-            }, 100);
-          }
-        });
-      }
-    });
-
-    // Add context menu item for cells
-    if (notebookTracker) {
-      app.contextMenu.addItem({
-        command: CommandIDs.askAboutCell,
-        selector: '.jp-Cell',
-        rank: 10
-      });
-    }
-
     // Add commands to palette
     if (palette) {
       palette.addItem({
         command: CommandIDs.openChat,
-        category: 'AI Assistant'
-      });
-      palette.addItem({
-        command: CommandIDs.openSettings,
-        category: 'AI Assistant'
-      });
-      palette.addItem({
-        command: CommandIDs.clearHistory,
-        category: 'AI Assistant'
-      });
-      palette.addItem({
-        command: CommandIDs.askAboutCell,
-        category: 'AI Assistant'
-      });
-      palette.addItem({
-        command: CommandIDs.openPhoenixUI,
         category: 'AI Assistant'
       });
     }

@@ -538,7 +538,9 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
         // Parse tool arguments
         let args: Record<string, any>;
         try {
-          args = JSON.parse(toolCall.function.arguments);
+          // Handle empty string as empty object (for tools with no required parameters)
+          const argsString = toolCall.function.arguments.trim();
+          args = argsString === '' ? {} : JSON.parse(argsString);
         } catch (parseError) {
           console.error('[ConversationManager] Failed to parse tool arguments:', parseError);
           
