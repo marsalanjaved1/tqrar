@@ -9,11 +9,15 @@ import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import React from 'react';
 import { ToolExecutionTracker } from './tools/ToolExecutionTracker';
 import { ChatInterface } from './components/ChatInterface';
+import { SessionTabs } from './components/SessionTabs';
+import { HistorySidebar } from './components/HistorySidebar';
+import { SessionManager, ISession } from './session';
 
 // Import CSS
 import '../style/widget.css';
 import '../style/chat-interface.css';
 import '../style/tool-execution.css';
+import '../style/sessions.css';
 
 /**
  * Options for creating a ChatWidget
@@ -48,6 +52,21 @@ export interface IChatWidgetOptions {
    * Callback to subscribe to messages changes from conversation manager
    */
   onMessagesChange?: (callback: (messages: IMessage[]) => void) => void;
+
+  /**
+   * Session manager for handling multiple conversations
+   */
+  sessionManager?: SessionManager;
+
+  /**
+   * Callback when session changes
+   */
+  onSessionChange?: (sessionId: string) => void;
+
+  /**
+   * Callback when new session is created
+   */
+  onNewSession?: () => void;
 }
 
 /**
@@ -59,11 +78,38 @@ const ChatComponent: React.FC<{
   toolExecutionTracker?: ToolExecutionTracker;
   initialMessages?: IMessage[];
   onMessagesChange?: (callback: (messages: IMessage[]) => void) => void;
-}> = ({ onSettingsClick, onMessageSend, toolExecutionTracker, initialMessages = [], onMessagesChange }) => {
+  sessionManager?: SessionManager;
+  onSessionChange?: (sessionId: string) => void;
+  onNewSession?: () => void;
+}> = ({ onSettingsClick, onMessageSend, toolExecutionTracker, initialMessages = [], onMessagesChange, sessionManager, onSessionChange, onNewSession }) => {
   const [messages, setMessages] = React.useState<IMessage[]>(initialMessages);
   const [isStreaming, setIsStreaming] = React.useState(false);
   const [streamingContent, setStreamingContent] = React.useState<string>('');
   const baseMessagesRef = React.useRef<IMessage[]>(initialMessages);
+  const [activeSessions, setActiveSessions] = React.useState<ISession[]>([]);
+  const [allSessions, setAllSessions] = React.useState<ISession[]>([]);
+  const [activeSessionId, setActiveSessionId] = React.useState<string | null>(null);
+  const [showHistory, setShowHistory] = React.useState(false);
+
+  // Load sessions on mount (with delay to ensure initialization)
+  React.useEffect(() => {
+    if (sessionManager) {
+      // Small delay to ensure session manager is initialized
+      setTimeout(() => {
+        try {
+          const sessions = sessionManager.getAllSessions();
+          setAllSessions(sessions);
+          const activeId = sessionManager.getActiveSessionId();
+          if (activeId) {
+            setActiveSessionId(activeId);
+            setActiveSessions(sessions.filter(s => s.id === activeId));
+          }
+        } catch (error) {
+          console.error('[ChatComponent] Failed to load sessions:', error);
+        }
+      }, 100);
+    }
+  }, [sessionManager]);
 
   // Subscribe to messages changes from conversation manager
   React.useEffect(() => {
@@ -75,9 +121,20 @@ const ChatComponent: React.FC<{
         if (!isStreaming) {
           setMessages(newMessages);
         }
+        // Update session with new messages
+        if (sessionManager && activeSessionId) {
+          sessionManager.updateSession(activeSessionId, newMessages).catch(error => {
+            console.error('[ChatComponent] Failed to update session:', error);
+          });
+          try {
+            setAllSessions(sessionManager.getAllSessions());
+          } catch (error) {
+            console.error('[ChatComponent] Failed to get sessions:', error);
+          }
+        }
       });
     }
-  }, [onMessagesChange, isStreaming]);
+  }, [onMessagesChange, isStreaming, sessionManager, activeSessionId]);
 
   // Merge streaming content with base messages
   React.useEffect(() => {
@@ -103,6 +160,69 @@ const ChatComponent: React.FC<{
       setMessages(baseMessagesRef.current);
     }
   }, [isStreaming, streamingContent]);
+
+  const handleNewSession = async () => {
+    if (!sessionManager) return;
+    
+    const newSession = await sessionManager.createSession();
+    setActiveSessionId(newSession.id);
+    setActiveSessions([...activeSessions, newSession]);
+    setAllSessions(sessionManager.getAllSessions());
+    sessionManager.setActiveSession(newSession.id);
+    
+    // Clear messages for new session
+    setMessages([]);
+    baseMessagesRef.current = [];
+    
+    if (onNewSession) {
+      onNewSession();
+    }
+  };
+
+  const handleSessionSelect = async (sessionId: string) => {
+    if (!sessionManager) return;
+    
+    const session = await sessionManager.getSession(sessionId);
+    if (session) {
+      setActiveSessionId(sessionId);
+      sessionManager.setActiveSession(sessionId);
+      
+      // Add to active sessions if not already there
+      if (!activeSessions.find(s => s.id === sessionId)) {
+        setActiveSessions([...activeSessions, session]);
+      }
+      
+      // Load session messages
+      setMessages(session.messages);
+      baseMessagesRef.current = session.messages;
+      
+      if (onSessionChange) {
+        onSessionChange(sessionId);
+      }
+    }
+  };
+
+  const handleSessionClose = async (sessionId: string) => {
+    setActiveSessions(activeSessions.filter(s => s.id !== sessionId));
+    
+    // If closing active session, switch to another or create new
+    if (sessionId === activeSessionId) {
+      const remaining = activeSessions.filter(s => s.id !== sessionId);
+      if (remaining.length > 0) {
+        handleSessionSelect(remaining[0].id);
+      } else {
+        handleNewSession();
+      }
+    }
+  };
+
+  const handleSessionDelete = async (sessionId: string) => {
+    if (!sessionManager) return;
+    
+    await sessionManager.deleteSession(sessionId);
+    setAllSessions(sessionManager.getAllSessions());
+    handleSessionClose(sessionId);
+  };
 
   const handleSendMessage = async (content: string) => {
     if (!onMessageSend) {
@@ -146,18 +266,45 @@ const ChatComponent: React.FC<{
     }
   };
 
+  const hasMessages = messages.filter(m => m.role !== 'system').length > 0;
+
   return (
     <div className="jp-AIAssistant-container">
-      {/* Header with settings button */}
+      {/* Header with buttons */}
       <div className="jp-AIAssistant-header">
-        <div className="jp-AIAssistant-title">AI Assistant</div>
-        <button
-          className="jp-AIAssistant-settings-button jp-Button"
-          title="Configure AI Assistant Settings"
-          onClick={() => onSettingsClick?.()}
-          dangerouslySetInnerHTML={{ __html: settingsIcon.svgstr }}
-        />
+        <div className="jp-AIAssistant-title">Tqrar</div>
+        <div className="jp-AIAssistant-headerButtons">
+          <button
+            className="jp-AIAssistant-headerButton jp-AIAssistant-headerButton-new"
+            title="New Chat"
+            onClick={handleNewSession}
+            disabled={!hasMessages}
+          >
+            +
+          </button>
+          <button
+            className="jp-AIAssistant-headerButton"
+            title="Chat History"
+            onClick={() => setShowHistory(true)}
+          >
+            📋
+          </button>
+          <button
+            className="jp-AIAssistant-settings-button jp-Button"
+            title="Settings"
+            onClick={() => onSettingsClick?.()}
+            dangerouslySetInnerHTML={{ __html: settingsIcon.svgstr }}
+          />
+        </div>
       </div>
+
+      {/* Session Tabs */}
+      <SessionTabs
+        sessions={activeSessions}
+        activeSessionId={activeSessionId}
+        onSessionSelect={handleSessionSelect}
+        onSessionClose={handleSessionClose}
+      />
 
       {/* Chat interface */}
       <ChatInterface
@@ -165,6 +312,15 @@ const ChatComponent: React.FC<{
         onSendMessage={handleSendMessage}
         isStreaming={isStreaming}
         toolExecutionTracker={toolExecutionTracker}
+      />
+
+      {/* History Sidebar */}
+      <HistorySidebar
+        sessions={allSessions}
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+        onSessionSelect={handleSessionSelect}
+        onSessionDelete={handleSessionDelete}
       />
     </div>
   );
@@ -180,6 +336,9 @@ export class ChatWidget extends ReactWidget {
   private _initialMessages?: IMessage[];
   private _onMessagesChange?: (callback: (messages: IMessage[]) => void) => void;
   public _messagesCallback?: (messages: IMessage[]) => void;
+  private _sessionManager?: SessionManager;
+  private _onSessionChange?: (sessionId: string) => void;
+  private _onNewSession?: () => void;
 
   /**
    * Construct a new chat widget
@@ -196,6 +355,9 @@ export class ChatWidget extends ReactWidget {
     this._onMessageSend = options.onMessageSend;
     this._toolExecutionTracker = options.toolExecutionTracker;
     this._initialMessages = options.initialMessages;
+    this._sessionManager = options.sessionManager;
+    this._onSessionChange = options.onSessionChange;
+    this._onNewSession = options.onNewSession;
     this._onMessagesChange = (callback) => {
       this._messagesCallback = callback;
     };
@@ -212,6 +374,9 @@ export class ChatWidget extends ReactWidget {
         toolExecutionTracker={this._toolExecutionTracker}
         initialMessages={this._initialMessages}
         onMessagesChange={this._onMessagesChange}
+        sessionManager={this._sessionManager}
+        onSessionChange={this._onSessionChange}
+        onNewSession={this._onNewSession}
       />
     );
   }

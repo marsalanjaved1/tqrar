@@ -44,6 +44,7 @@ import { ToolRegistry } from './tools/registry';
 import { ToolExecutionTracker } from './tools/ToolExecutionTracker';
 import { ContextManager } from './context';
 import { DebouncedHistorySaver, HistoryStorage } from './history';
+import { SessionManager } from './session';
 import { ISettings } from './types';
 import { CellNumberingManager } from './cellNumbering';
 
@@ -91,10 +92,24 @@ const plugin: JupyterFrontEndPlugin<void> = {
     let historyStorage: HistoryStorage | null = null;
     let historySaver: DebouncedHistorySaver | null = null;
     let toolExecutionTracker: ToolExecutionTracker | null = null;
+    let sessionManager: SessionManager | null = null;
 
     // Initialize tool execution tracker
     toolExecutionTracker = new ToolExecutionTracker();
     console.log('[AI Assistant] Tool execution tracker initialized');
+
+    // Initialize session manager (FEATURE FLAG - set to false to disable)
+    const ENABLE_SESSIONS = false; // TODO: Enable once stable
+    
+    if (ENABLE_SESSIONS) {
+      sessionManager = new SessionManager(stateDB);
+      sessionManager.initialize().catch(error => {
+        console.error('[AI Assistant] Failed to initialize session manager:', error);
+      });
+      console.log('[AI Assistant] Session manager created (initializing in background)');
+    } else {
+      console.log('[AI Assistant] Session management disabled');
+    }
 
     // Initialize history storage
     historyStorage = new HistoryStorage(stateDB);
@@ -202,12 +217,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
           // Initialize conversation manager if all dependencies are ready
           if (llmClient && toolRegistry && contextManager && historyStorage && historySaver && toolExecutionTracker) {
-            // Clear old history due to message structure changes
-            // TODO: Add version checking instead of always clearing
-            await historyStorage.clear();
-            console.log('[AI Assistant] Cleared old history due to structure changes');
+            // Clear old history due to message structure changes (DISABLED - using sessions now)
+            // TODO: Remove this once sessions are stable
+            // await historyStorage.clear();
+            // console.log('[AI Assistant] Cleared old history due to structure changes');
             
-            // Load conversation history from storage (will be empty after clear)
+            // Load conversation history from storage
             const savedHistory = await historyStorage.load();
 
             conversationManager = new ConversationManager({
@@ -256,10 +271,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
             // Reinitialize conversation manager
             if (llmClient && toolRegistry && contextManager && historyStorage && historySaver && toolExecutionTracker) {
-              // Clear old history due to message structure changes
-              await historyStorage.clear();
+              // Clear old history (DISABLED - using sessions now)
+              // await historyStorage.clear();
               
-              // Load conversation history from storage (will be empty after clear)
+              // Load conversation history from storage
               const savedHistory = await historyStorage.load();
 
               conversationManager = new ConversationManager({
@@ -357,8 +372,43 @@ const plugin: JupyterFrontEndPlugin<void> = {
               }
             },
             rendermime: rendermime || undefined,
-            toolExecutionTracker: toolExecutionTracker || undefined
+            toolExecutionTracker: toolExecutionTracker || undefined,
+            sessionManager: sessionManager || undefined,
+            onSessionChange: async (sessionId: string) => {
+              console.log('[AI Assistant] Session changed:', sessionId);
+              // Load session and reinitialize conversation manager
+              if (sessionManager && conversationManager) {
+                const session = await sessionManager.getSession(sessionId);
+                if (session) {
+                  conversationManager.clear();
+                  // Load session messages into conversation manager
+                  for (const msg of session.messages) {
+                    // Messages are already in conversation manager format
+                  }
+                }
+              }
+            },
+            onNewSession: () => {
+              console.log('[AI Assistant] New session created');
+              // Clear conversation manager for new session
+              if (conversationManager) {
+                conversationManager.clear();
+              }
+            }
           });
+
+          // Create initial session if none exist (non-blocking)
+          if (sessionManager) {
+            const sessions = sessionManager.getAllSessions();
+            if (sessions.length === 0) {
+              sessionManager.createSession().then(initialSession => {
+                sessionManager!.setActiveSession(initialSession.id);
+                console.log('[AI Assistant] Created initial session');
+              }).catch(error => {
+                console.error('[AI Assistant] Failed to create initial session:', error);
+              });
+            }
+          }
 
           chatWidget.id = 'ai-assistant-chat';
           chatWidget.title.label = ''; // No label, just icon
