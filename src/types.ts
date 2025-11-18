@@ -15,6 +15,11 @@ export interface IMessage {
     notebookId?: string;
     cellIndex?: number;
   };
+  /**
+   * Content that comes after tool execution (for linear flow)
+   * Only present on assistant messages with toolCalls
+   */
+  finalContent?: string;
 }
 
 /**

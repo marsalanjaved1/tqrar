@@ -43,6 +43,11 @@ export interface IChatWidgetOptions {
    * Initial conversation history
    */
   initialMessages?: IMessage[];
+
+  /**
+   * Callback to subscribe to messages changes from conversation manager
+   */
+  onMessagesChange?: (callback: (messages: IMessage[]) => void) => void;
 }
 
 /**
@@ -53,9 +58,51 @@ const ChatComponent: React.FC<{
   onMessageSend?: (content: string) => Promise<AsyncGenerator<string>>;
   toolExecutionTracker?: ToolExecutionTracker;
   initialMessages?: IMessage[];
-}> = ({ onSettingsClick, onMessageSend, toolExecutionTracker, initialMessages = [] }) => {
+  onMessagesChange?: (callback: (messages: IMessage[]) => void) => void;
+}> = ({ onSettingsClick, onMessageSend, toolExecutionTracker, initialMessages = [], onMessagesChange }) => {
   const [messages, setMessages] = React.useState<IMessage[]>(initialMessages);
   const [isStreaming, setIsStreaming] = React.useState(false);
+  const [streamingContent, setStreamingContent] = React.useState<string>('');
+  const baseMessagesRef = React.useRef<IMessage[]>(initialMessages);
+
+  // Subscribe to messages changes from conversation manager
+  React.useEffect(() => {
+    if (onMessagesChange) {
+      onMessagesChange((newMessages) => {
+        console.log('[ChatComponent] Received messages update from conversation manager:', newMessages.length);
+        baseMessagesRef.current = newMessages;
+        // If not streaming, update messages directly
+        if (!isStreaming) {
+          setMessages(newMessages);
+        }
+      });
+    }
+  }, [onMessagesChange, isStreaming]);
+
+  // Merge streaming content with base messages
+  React.useEffect(() => {
+    if (isStreaming && streamingContent) {
+      const messagesWithStreaming = [...baseMessagesRef.current];
+      const lastMessage = messagesWithStreaming[messagesWithStreaming.length - 1];
+      
+      if (lastMessage && lastMessage.role === 'assistant') {
+        // Update existing assistant message with streaming content
+        lastMessage.content = streamingContent;
+      } else {
+        // Add new assistant message with streaming content
+        messagesWithStreaming.push({
+          role: 'assistant',
+          content: streamingContent,
+          timestamp: new Date()
+        });
+      }
+      
+      setMessages(messagesWithStreaming);
+    } else if (!isStreaming) {
+      // When streaming ends, use base messages from conversation manager
+      setMessages(baseMessagesRef.current);
+    }
+  }, [isStreaming, streamingContent]);
 
   const handleSendMessage = async (content: string) => {
     if (!onMessageSend) {
@@ -69,48 +116,33 @@ const ChatComponent: React.FC<{
       return;
     }
 
-    // Add user message
+    // Add user message immediately
     const userMessage: IMessage = {
       role: 'user',
       content,
       timestamp: new Date()
     };
-    setMessages(prev => [...prev, userMessage]);
+    baseMessagesRef.current = [...baseMessagesRef.current, userMessage];
+    setMessages([...baseMessagesRef.current]);
 
     // Stream assistant response
     setIsStreaming(true);
+    setStreamingContent('');
+    
     try {
       const stream = await onMessageSend(content);
-      let assistantContent = '';
-
+      let accumulatedContent = '';
+      
+      // Stream chunks and update UI in real-time
       for await (const chunk of stream) {
-        assistantContent += chunk;
-        // Update the last message (assistant's response) with streaming content
-        setMessages(prev => {
-          const newMessages = [...prev];
-          const lastMessage = newMessages[newMessages.length - 1];
-          if (lastMessage && lastMessage.role === 'assistant') {
-            lastMessage.content = assistantContent;
-          } else {
-            newMessages.push({
-              role: 'assistant',
-              content: assistantContent,
-              timestamp: new Date()
-            });
-          }
-          return newMessages;
-        });
+        accumulatedContent += chunk;
+        setStreamingContent(accumulatedContent);
       }
     } catch (error) {
       console.error('[ChatComponent] Error streaming response:', error);
-      const errorMessage: IMessage = {
-        role: 'assistant',
-        content: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsStreaming(false);
+      setStreamingContent('');
     }
   };
 
@@ -146,6 +178,8 @@ export class ChatWidget extends ReactWidget {
   private _onMessageSend?: (content: string) => Promise<AsyncGenerator<string>>;
   private _toolExecutionTracker?: ToolExecutionTracker;
   private _initialMessages?: IMessage[];
+  private _onMessagesChange?: (callback: (messages: IMessage[]) => void) => void;
+  public _messagesCallback?: (messages: IMessage[]) => void;
 
   /**
    * Construct a new chat widget
@@ -162,6 +196,9 @@ export class ChatWidget extends ReactWidget {
     this._onMessageSend = options.onMessageSend;
     this._toolExecutionTracker = options.toolExecutionTracker;
     this._initialMessages = options.initialMessages;
+    this._onMessagesChange = (callback) => {
+      this._messagesCallback = callback;
+    };
   }
 
   /**
@@ -174,6 +211,7 @@ export class ChatWidget extends ReactWidget {
         onMessageSend={this._onMessageSend}
         toolExecutionTracker={this._toolExecutionTracker}
         initialMessages={this._initialMessages}
+        onMessagesChange={this._onMessagesChange}
       />
     );
   }

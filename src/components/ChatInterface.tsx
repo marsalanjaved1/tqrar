@@ -27,12 +27,10 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   toolExecutionTracker
 }) => {
   const [inputValue, setInputValue] = React.useState('');
-  // Map of user message index to tool executions (tools appear after user message)
-  const [messageTools, setMessageTools] = React.useState<Map<number, IToolExecutionEvent[]>>(new Map());
+  // Map of tool call ID to execution events for inline rendering
+  const [toolExecutions, setToolExecutions] = React.useState<Map<string, IToolExecutionEvent>>(new Map());
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLTextAreaElement>(null);
-  const currentUserIndexRef = React.useRef<number>(-1);
-  const activeToolUserIndexRef = React.useRef<number>(-1); // Locked index for active tool execution
   const messagesRef = React.useRef<IMessage[]>(messages);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [debugOpen, setDebugOpen] = React.useState(false);
@@ -40,18 +38,16 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   // Keep messages ref in sync
   React.useEffect(() => {
     messagesRef.current = messages;
+    console.log('[ChatInterface] Messages updated:', messages.map((m, i) => ({
+      index: i,
+      role: m.role,
+      hasToolCalls: !!m.toolCalls,
+      toolCallsCount: m.toolCalls?.length || 0,
+      hasFinalContent: !!m.finalContent
+    })));
   }, [messages]);
 
-  // Update current user message index when messages change
-  React.useEffect(() => {
-    // Find the last user message index (this is what triggered the current response)
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].role === 'user') {
-        currentUserIndexRef.current = i;
-        break;
-      }
-    }
-  }, [messages]);
+
 
   // Listen for custom send-message events
   React.useEffect(() => {
@@ -79,84 +75,40 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   // Auto-scroll to bottom when messages change
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, messageTools]);
+  }, [messages, toolExecutions]);
 
-  // Track tool executions
+  // Track tool executions by tool call ID for inline rendering
   React.useEffect(() => {
     if (!toolExecutionTracker) {
       return;
     }
 
-    const handleStart = (event: IToolExecutionEvent) => {
-      // Lock to the current user index on first tool execution
-      if (activeToolUserIndexRef.current === -1) {
-        activeToolUserIndexRef.current = currentUserIndexRef.current;
-      }
-      
-      const userIndex = activeToolUserIndexRef.current;
-      
-      console.log('[ChatInterface] Tool execution started:', {
-        toolName: event.toolCall.function.name,
-        userIndex,
-        totalMessages: messagesRef.current.length
+    const handleExecutionEvent = (event: IToolExecutionEvent) => {
+      console.log('[ChatInterface] Tool execution event:', {
+        id: event.id,
+        toolCallId: event.toolCall.id,
+        status: event.status,
+        toolName: event.toolCall.function.name
       });
-
-      setMessageTools(prev => {
+      
+      setToolExecutions(prev => {
         const newMap = new Map(prev);
-        const existing = newMap.get(userIndex) || [];
-        newMap.set(userIndex, [...existing, event]);
-        console.log('[ChatInterface] Updated messageTools:', {
-          userIndex,
-          toolCount: existing.length + 1
-        });
+        newMap.set(event.toolCall.id, event);
+        console.log('[ChatInterface] Updated toolExecutions, size:', newMap.size);
         return newMap;
       });
     };
 
-    const handleUpdate = (event: IToolExecutionEvent) => {
-      setMessageTools(prev => {
-        const newMap = new Map(prev);
-        // Update the tool in whichever message it belongs to
-        for (const [index, tools] of newMap.entries()) {
-          const toolIndex = tools.findIndex(t => t.id === event.id);
-          if (toolIndex !== -1) {
-            const updatedTools = [...tools];
-            updatedTools[toolIndex] = event;
-            newMap.set(index, updatedTools);
-            break;
-          }
-        }
-        return newMap;
-      });
-    };
-
-    const handleComplete = (event: IToolExecutionEvent) => {
-      handleUpdate(event);
-      // Reset the locked index when all tools complete
-      // (This is a simple heuristic - could be improved)
-      setTimeout(() => {
-        activeToolUserIndexRef.current = -1;
-      }, 100);
-    };
-
-    const handleError = (event: IToolExecutionEvent) => {
-      handleUpdate(event);
-      // Reset the locked index on error
-      setTimeout(() => {
-        activeToolUserIndexRef.current = -1;
-      }, 100);
-    };
-
-    toolExecutionTracker.on('execution:start', handleStart);
-    toolExecutionTracker.on('execution:update', handleUpdate);
-    toolExecutionTracker.on('execution:complete', handleComplete);
-    toolExecutionTracker.on('execution:error', handleError);
+    toolExecutionTracker.on('execution:start', handleExecutionEvent);
+    toolExecutionTracker.on('execution:update', handleExecutionEvent);
+    toolExecutionTracker.on('execution:complete', handleExecutionEvent);
+    toolExecutionTracker.on('execution:error', handleExecutionEvent);
 
     return () => {
-      toolExecutionTracker.off('execution:start', handleStart);
-      toolExecutionTracker.off('execution:update', handleUpdate);
-      toolExecutionTracker.off('execution:complete', handleComplete);
-      toolExecutionTracker.off('execution:error', handleError);
+      toolExecutionTracker.off('execution:start', handleExecutionEvent);
+      toolExecutionTracker.off('execution:update', handleExecutionEvent);
+      toolExecutionTracker.off('execution:complete', handleExecutionEvent);
+      toolExecutionTracker.off('execution:error', handleExecutionEvent);
     };
   }, [toolExecutionTracker]);
 
@@ -254,54 +206,86 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
             }
           };
 
-          // For user messages, show the message followed by any tool executions
+          // User messages
           if (message.role === 'user') {
-            // Get tools stored at this user message index
-            const toolsForThisUser = messageTools.get(index) || [];
-
             return (
-              <React.Fragment key={index}>
-                {/* User message */}
-                <div className={`jp-ChatMessage jp-ChatMessage-${message.role}`}>
-                  <div className="jp-ChatMessage-avatar">👤</div>
-                  <div className="jp-ChatMessage-content">
-                    <MessageContent content={message.content} role={message.role} />
-                    <MessageActions
-                      content={message.content}
-                      role={message.role}
-                      onEdit={handleEdit}
-                    />
-                    {message.timestamp && (
-                      <div className="jp-ChatMessage-timestamp">
-                        {new Date(message.timestamp).toLocaleTimeString()}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Tool executions that belong to this user message */}
-                {toolsForThisUser.length > 0 && toolsForThisUser.map(execution => (
-                  <div key={execution.id} className="jp-ChatMessage jp-ChatMessage-tool">
-                    <div className="jp-ChatMessage-avatar">🔧</div>
-                    <div className="jp-ChatMessage-content">
-                      <ToolCallCard execution={execution} />
+              <div key={index} className={`jp-ChatMessage jp-ChatMessage-${message.role}`}>
+                <div className="jp-ChatMessage-avatar">👤</div>
+                <div className="jp-ChatMessage-content">
+                  <MessageContent content={message.content} role={message.role} />
+                  <MessageActions
+                    content={message.content}
+                    role={message.role}
+                    onEdit={handleEdit}
+                  />
+                  {message.timestamp && (
+                    <div className="jp-ChatMessage-timestamp">
+                      {new Date(message.timestamp).toLocaleTimeString()}
                     </div>
-                  </div>
-                ))}
-              </React.Fragment>
+                  )}
+                </div>
+              </div>
             );
           }
 
-          // For assistant messages, just show the final response
-          // (tools were already shown after the user message)
+          // Assistant messages with linear tool execution flow
           if (message.role === 'assistant') {
+            console.log('[ChatInterface] Rendering assistant message:', {
+              index,
+              hasToolCalls: !!message.toolCalls,
+              toolCallsCount: message.toolCalls?.length || 0,
+              hasFinalContent: !!message.finalContent,
+              content: message.content.substring(0, 50)
+            });
+            
             return (
               <div key={index} className={`jp-ChatMessage jp-ChatMessage-${message.role}`}>
                 <div className="jp-ChatMessage-avatar">
                   <img src="https://raw.githubusercontent.com/marsalanjaved1/tqrar/main/ghost-logo.png" alt="Tqrar" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
                 </div>
                 <div className="jp-ChatMessage-content">
-                  <MessageContent content={message.content} role={message.role} />
+                  {/* Initial content before tool calls */}
+                  {message.content && (
+                    <MessageContent content={message.content} role={message.role} />
+                  )}
+                  
+                  {/* Tool execution cards inline */}
+                  {message.toolCalls && message.toolCalls.length > 0 && (
+                    <div className="jp-ChatMessage-toolCalls">
+                      {message.toolCalls.map(toolCall => {
+                        console.log('[ChatInterface] Rendering tool call:', {
+                          id: toolCall.id,
+                          name: toolCall.function.name,
+                          hasExecution: toolExecutions.has(toolCall.id)
+                        });
+                        
+                        const execution = toolExecutions.get(toolCall.id);
+                        // Show tool card even if execution not found yet (will show as pending)
+                        if (execution) {
+                          return (
+                            <ToolCallCard key={toolCall.id} execution={execution} />
+                          );
+                        } else {
+                          // Create a pending execution for display
+                          const pendingExecution: IToolExecutionEvent = {
+                            id: toolCall.id,
+                            toolCall: toolCall,
+                            status: 'pending',
+                            startTime: new Date()
+                          };
+                          return (
+                            <ToolCallCard key={toolCall.id} execution={pendingExecution} />
+                          );
+                        }
+                      })}
+                    </div>
+                  )}
+                  
+                  {/* Final content after tool execution */}
+                  {message.finalContent && (
+                    <MessageContent content={message.finalContent} role={message.role} />
+                  )}
+                  
                   <MessageActions
                     content={message.content}
                     role={message.role}
@@ -317,7 +301,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
             );
           }
 
-          // For tool messages (shouldn't normally render these directly)
+          // Skip tool messages (they're now part of assistant messages)
           return null;
         })}
 

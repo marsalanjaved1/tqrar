@@ -463,13 +463,13 @@ There is NO createNotebook tool. Work with the notebook that is already open.`,
           yield finalResponse;
         }
 
-        // Add final assistant message to history
-        this._messages.push({
-          role: 'assistant',
-          content: finalResponse,
-          timestamp: new Date()
-        });
-        this._notifyHistoryChange();
+        // UPDATE the existing assistant message with finalContent instead of creating new message
+        // Find the assistant message in the array and update it
+        const assistantMsgIndex = this._messages.findIndex(m => m === assistantMsg);
+        if (assistantMsgIndex !== -1) {
+          this._messages[assistantMsgIndex].finalContent = finalResponse;
+          this._notifyHistoryChange();
+        }
 
         console.log('[ConversationManager] Final response after tools:', finalResponse.substring(0, 100));
       }

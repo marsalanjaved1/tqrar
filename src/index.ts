@@ -202,7 +202,12 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
           // Initialize conversation manager if all dependencies are ready
           if (llmClient && toolRegistry && contextManager && historyStorage && historySaver && toolExecutionTracker) {
-            // Load conversation history from storage
+            // Clear old history due to message structure changes
+            // TODO: Add version checking instead of always clearing
+            await historyStorage.clear();
+            console.log('[AI Assistant] Cleared old history due to structure changes');
+            
+            // Load conversation history from storage (will be empty after clear)
             const savedHistory = await historyStorage.load();
 
             conversationManager = new ConversationManager({
@@ -215,6 +220,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
                 // Save history whenever it changes (debounced)
                 if (historySaver) {
                   historySaver.save(messages);
+                }
+                // Update widget with new messages
+                if (chatWidget && chatWidget._messagesCallback) {
+                  chatWidget._messagesCallback(messages);
                 }
               }
             });
@@ -247,7 +256,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
             // Reinitialize conversation manager
             if (llmClient && toolRegistry && contextManager && historyStorage && historySaver && toolExecutionTracker) {
-              // Load conversation history from storage
+              // Clear old history due to message structure changes
+              await historyStorage.clear();
+              
+              // Load conversation history from storage (will be empty after clear)
               const savedHistory = await historyStorage.load();
 
               conversationManager = new ConversationManager({
@@ -260,6 +272,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
                   // Save history whenever it changes (debounced)
                   if (historySaver) {
                     historySaver.save(messages);
+                  }
+                  // Update widget with new messages
+                  if (chatWidget && chatWidget._messagesCallback) {
+                    chatWidget._messagesCallback(messages);
                   }
                 }
               });
