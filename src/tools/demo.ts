@@ -10,6 +10,7 @@ import { ITool, IToolResult, IToolSchema } from '../types';
  */
 export class EchoTool implements ITool {
   name = 'echo';
+  category: 'read' | 'write' = 'read';
 
   schema: IToolSchema = {
     type: 'function',

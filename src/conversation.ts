@@ -4,7 +4,7 @@
  * Manages conversation history, coordinates LLM interactions, and orchestrates tool calls
  */
 
-import { IMessage, IToolCall, IToolResult } from './types';
+import { IMessage, IToolCall, IToolResult, IExecutionSettings } from './types';
 import { LLMClient } from './llm/client';
 import { ToolRegistry } from './tools/registry';
 import { ContextManager } from './context';
@@ -336,9 +336,10 @@ export class ConversationManager {
    * Coordinates LLM calls and tool execution with agentic loop
    * 
    * @param content - The user's message content
+   * @param executionSettings - Execution settings controlling tool availability and behavior
    * @returns Async generator yielding response chunks
    */
-  async *sendMessage(content: string): AsyncGenerator<string> {
+  async *sendMessage(content: string, executionSettings: IExecutionSettings): AsyncGenerator<string> {
     // Start Phoenix trace for the entire agent turn (child of session)
     const sessionSpanId = this._phoenixClient.getSessionSpanId();
     const agentSpanId = this._phoenixClient.startTrace(
@@ -370,9 +371,14 @@ export class ConversationManager {
     };
 
     try {
-      // Get available tools
-      const tools = this._toolRegistry.getSchemas();
-      console.log('[ConversationManager] Available tools:', tools.length);
+      // Get available tools filtered by execution mode
+      const tools = this._toolRegistry.getSchemas(executionSettings.mode);
+      console.log(`[ConversationManager] Available tools in ${executionSettings.mode} mode:`, tools.length);
+      
+      // In Plan mode, inform user about read-only limitations
+      if (executionSettings.mode === 'plan') {
+        yield `\n_ℹ️ Plan Mode: Read-only operations. Switch to Act mode for write operations._\n\n`;
+      }
 
       // Main agentic loop - continues until no more tool calls or max iterations reached
       while (loopState.continueLoop && loopState.iteration < loopState.maxIterations) {

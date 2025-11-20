@@ -4,7 +4,7 @@
 
 import { JupyterFrontEnd } from '@jupyterlab/application';
 import { INotebookTracker } from '@jupyterlab/notebook';
-import { ITool, IToolResult, IToolSchema } from '../types';
+import { ITool, IToolResult, IToolSchema, ExecutionMode } from '../types';
 
 /**
  * Tool Registry class for managing available tools
@@ -48,8 +48,13 @@ export class ToolRegistry {
     // Validate tool schema
     this._validateToolSchema(tool.schema);
 
+    // Validate tool category
+    if (!['read', 'write'].includes(tool.category)) {
+      throw new Error(`Invalid tool category: ${tool.category}. Must be 'read' or 'write'.`);
+    }
+
     this._tools.set(tool.name, tool);
-    console.log(`Tool registered: ${tool.name}`);
+    console.log(`Tool registered: ${tool.name} (category: ${tool.category})`);
   }
 
   /**
@@ -120,10 +125,33 @@ export class ToolRegistry {
   /**
    * Get all registered tool schemas for LLM function calling
    * 
-   * @returns Array of tool schemas
+   * @param mode - Optional execution mode to filter tools ('act' or 'plan')
+   * @returns Array of tool schemas based on mode
    */
-  getSchemas(): IToolSchema[] {
-    return Array.from(this._tools.values()).map(tool => tool.schema);
+  getSchemas(mode: ExecutionMode = 'act'): IToolSchema[] {
+    const tools = Array.from(this._tools.values());
+    
+    if (mode === 'plan') {
+      // Filter to only read tools in Plan mode
+      const readTools = tools.filter(tool => tool.category === 'read');
+      console.log(`[ToolRegistry] Plan mode: ${readTools.length} read tools available (${tools.length - readTools.length} write tools filtered out)`);
+      return readTools.map(tool => tool.schema);
+    }
+    
+    // Act mode: return all tools
+    console.log(`[ToolRegistry] Act mode: ${tools.length} tools available (read + write)`);
+    return tools.map(tool => tool.schema);
+  }
+
+  /**
+   * Get tools by category
+   * 
+   * @param category - The category to filter by ('read' or 'write')
+   * @returns Array of tools in the specified category
+   */
+  getToolsByCategory(category: 'read' | 'write'): ITool[] {
+    return Array.from(this._tools.values())
+      .filter(tool => tool.category === category);
   }
 
   /**

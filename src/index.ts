@@ -45,7 +45,7 @@ import { ToolExecutionTracker } from './tools/ToolExecutionTracker';
 import { ContextManager } from './context';
 import { DebouncedHistorySaver, HistoryStorage } from './history';
 import { SessionManager } from './session';
-import { ISettings } from './types';
+import { ISettings, IExecutionSettings } from './types';
 import { CellNumberingManager } from './cellNumbering';
 
 /**
@@ -321,12 +321,13 @@ const plugin: JupyterFrontEndPlugin<void> = {
             onSettingsClick: () => {
               void showSettingsDialogWithValidation(settingRegistry, PLUGIN_ID);
             },
-            onMessageSend: async (content: string) => {
+            onMessageSend: async (content: string, executionSettings: IExecutionSettings) => {
               console.log('[AI Assistant] Message sent:', content);
+              console.log('[AI Assistant] Execution settings:', executionSettings);
 
               // Use conversation manager if available, otherwise show demo response
               if (conversationManager) {
-                return conversationManager.sendMessage(content);
+                return conversationManager.sendMessage(content, executionSettings);
               } else {
                 // Demo response when conversation manager is not initialized
                 async function* streamDemoResponse() {
@@ -346,6 +347,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
             rendermime: rendermime || undefined,
             toolExecutionTracker: toolExecutionTracker || undefined,
             sessionManager: sessionManager || undefined,
+            stateDB: stateDB,
             onSessionChange: async (sessionId: string) => {
               console.log('[AI Assistant] Session changed:', sessionId);
               // Load session and reinitialize conversation manager

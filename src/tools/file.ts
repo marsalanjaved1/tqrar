@@ -13,6 +13,7 @@ import { PathValidator, SecurityLogger, SecurityEventType } from '../utils/secur
  */
 abstract class BaseFileTool implements ITool {
   abstract name: string;
+  abstract category: 'read' | 'write';
   abstract schema: IToolSchema;
 
   constructor(
@@ -79,6 +80,7 @@ abstract class BaseFileTool implements ITool {
  */
 export class ListFilesTool extends BaseFileTool {
   name = 'listFiles';
+  category: 'read' | 'write' = 'read';
 
   schema: IToolSchema = {
     type: 'function',
@@ -157,6 +159,7 @@ export class ListFilesTool extends BaseFileTool {
  */
 export class ReadFileTool extends BaseFileTool {
   name = 'readFile';
+  category: 'read' | 'write' = 'read';
 
   schema: IToolSchema = {
     type: 'function',
@@ -238,6 +241,7 @@ export class ReadFileTool extends BaseFileTool {
  */
 export class WriteFileTool extends BaseFileTool {
   name = 'writeFile';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',
@@ -340,6 +344,7 @@ export class WriteFileTool extends BaseFileTool {
  */
 export class DeleteFileTool extends BaseFileTool {
   name = 'deleteFile';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',
@@ -399,6 +404,7 @@ export class DeleteFileTool extends BaseFileTool {
  */
 export class RenameFileTool extends BaseFileTool {
   name = 'renameFile';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',
@@ -474,6 +480,7 @@ export class RenameFileTool extends BaseFileTool {
  */
 export class CreateDirectoryTool extends BaseFileTool {
   name = 'createDirectory';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',
@@ -558,6 +565,7 @@ export class CreateDirectoryTool extends BaseFileTool {
  */
 export class CreateNotebookTool extends BaseFileTool {
   name = 'createNotebook';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',

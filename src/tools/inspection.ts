@@ -12,6 +12,7 @@ import { KernelMessage } from '@jupyterlab/services';
  */
 abstract class BaseInspectionTool implements ITool {
   abstract name: string;
+  abstract category: 'read' | 'write';
   abstract schema: IToolSchema;
 
   constructor(protected notebookTracker: INotebookTracker) {}
@@ -73,6 +74,7 @@ abstract class BaseInspectionTool implements ITool {
  */
 export class GetCompletionsTool extends BaseInspectionTool {
   name = 'getCompletions';
+  category: 'read' | 'write' = 'read';
 
   schema: IToolSchema = {
     type: 'function',
@@ -205,6 +207,7 @@ export class GetCompletionsTool extends BaseInspectionTool {
  */
 export class GetDocumentationTool extends BaseInspectionTool {
   name = 'getDocumentation';
+  category: 'read' | 'write' = 'read';
 
   schema: IToolSchema = {
     type: 'function',
@@ -388,6 +391,7 @@ export class GetDocumentationTool extends BaseInspectionTool {
  */
 export class InspectCodeTool extends BaseInspectionTool {
   name = 'inspectCode';
+  category: 'read' | 'write' = 'read';
 
   schema: IToolSchema = {
     type: 'function',

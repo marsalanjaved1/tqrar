@@ -1,9 +1,12 @@
 /**
  * Input Area Component
- * Simple input area with subtle model selector
+ * Simple input area with subtle model selector and execution mode controls
  */
 
 import React from 'react';
+import { IExecutionSettings } from '../types';
+import { ModeToggle } from './ModeToggle';
+import { AutoModeCheckbox } from './AutoModeCheckbox';
 
 export interface IModelConfig {
   provider: 'openrouter' | 'openai' | 'anthropic';
@@ -18,6 +21,8 @@ export interface IInputAreaProps {
   placeholder?: string;
   currentModel?: IModelConfig;
   onModelChange?: (config: IModelConfig) => void;
+  executionSettings?: IExecutionSettings;
+  onExecutionSettingsChange?: (settings: IExecutionSettings) => void;
 }
 
 export const InputArea: React.FC<IInputAreaProps> = ({
@@ -27,7 +32,9 @@ export const InputArea: React.FC<IInputAreaProps> = ({
   disabled = false,
   placeholder = 'Ask Tqrar...',
   currentModel = { provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' },
-  onModelChange
+  onModelChange,
+  executionSettings = { mode: 'act', autoMode: true },
+  onExecutionSettingsChange
 }) => {
   const [showModelSelector, setShowModelSelector] = React.useState(false);
   const [dropdownPosition, setDropdownPosition] = React.useState({ top: 0, left: 0 });
@@ -110,80 +117,108 @@ export const InputArea: React.FC<IInputAreaProps> = ({
         />
         
         <div className="jp-InputArea-actions">
-          <div className="jp-InputArea-modelWrapper">
-            <button
-              ref={modelButtonRef}
-              className={`jp-InputArea-modelButton ${showModelSelector ? 'jp-InputArea-modelButton-active' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowModelSelector(!showModelSelector);
+          <div className="jp-InputArea-leftControls">
+            {/* Mode Toggle */}
+            <ModeToggle
+              mode={executionSettings.mode}
+              onChange={(mode) => {
+                if (onExecutionSettingsChange) {
+                  onExecutionSettingsChange({ ...executionSettings, mode });
+                }
               }}
               disabled={disabled}
-              title="Select model"
-            >
-              {getModelDisplayText()}
-            </button>
-
-            {showModelSelector && (
-              <div 
-                ref={dropdownRef}
-                className="jp-InputArea-modelDropdown"
-                style={{
-                  top: `${dropdownPosition.top}px`,
-                  left: `${dropdownPosition.left}px`,
-                  transform: 'translateY(-100%)'
+            />
+            
+            {/* Auto Mode Checkbox - only visible in Act mode */}
+            {executionSettings.mode === 'act' && (
+              <AutoModeCheckbox
+                checked={executionSettings.autoMode}
+                onChange={(autoMode) => {
+                  if (onExecutionSettingsChange) {
+                    onExecutionSettingsChange({ ...executionSettings, autoMode });
+                  }
                 }}
-              >
-                <div className="jp-InputArea-modelGroup">
-                  <div className="jp-InputArea-modelGroupTitle">Anthropic</div>
-                  <button
-                    className={`jp-InputArea-modelOption ${
-                      currentModel.provider === 'anthropic' && currentModel.model === 'claude-3-5-sonnet-20241022'
-                        ? 'jp-InputArea-modelOption-selected'
-                        : ''
-                    }`}
-                    onClick={() => onModelChange?.({ provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' })}
-                  >
-                    Claude Sonnet 4.5
-                  </button>
-                  <button
-                    className={`jp-InputArea-modelOption ${
-                      currentModel.provider === 'anthropic' && currentModel.model === 'claude-3-5-haiku-20241022'
-                        ? 'jp-InputArea-modelOption-selected'
-                        : ''
-                    }`}
-                    onClick={() => onModelChange?.({ provider: 'anthropic', model: 'claude-3-5-haiku-20241022' })}
-                  >
-                    Claude Haiku 4.5
-                  </button>
-                </div>
-
-                <div className="jp-InputArea-modelGroup">
-                  <div className="jp-InputArea-modelGroupTitle">OpenAI</div>
-                  <button
-                    className={`jp-InputArea-modelOption ${
-                      currentModel.provider === 'openai' && currentModel.model === 'gpt-4o'
-                        ? 'jp-InputArea-modelOption-selected'
-                        : ''
-                    }`}
-                    onClick={() => onModelChange?.({ provider: 'openai', model: 'gpt-4o' })}
-                  >
-                    GPT-4o
-                  </button>
-                </div>
-              </div>
+                disabled={disabled}
+              />
             )}
           </div>
 
-          <button
-            className="jp-InputArea-send"
-            onClick={onSubmit}
-            disabled={!value.trim() || disabled}
-            title="Send message"
-            aria-label="Send message"
-          >
-            <span className="jp-InputArea-sendIcon">↑</span>
-          </button>
+          <div className="jp-InputArea-rightControls">
+            <div className="jp-InputArea-modelWrapper">
+              <button
+                ref={modelButtonRef}
+                className={`jp-InputArea-modelButton ${showModelSelector ? 'jp-InputArea-modelButton-active' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowModelSelector(!showModelSelector);
+                }}
+                disabled={disabled}
+                title="Select model"
+              >
+                {getModelDisplayText()}
+              </button>
+
+              {showModelSelector && (
+                <div 
+                  ref={dropdownRef}
+                  className="jp-InputArea-modelDropdown"
+                  style={{
+                    top: `${dropdownPosition.top}px`,
+                    left: `${dropdownPosition.left}px`,
+                    transform: 'translateY(-100%)'
+                  }}
+                >
+                  <div className="jp-InputArea-modelGroup">
+                    <div className="jp-InputArea-modelGroupTitle">Anthropic</div>
+                    <button
+                      className={`jp-InputArea-modelOption ${
+                        currentModel.provider === 'anthropic' && currentModel.model === 'claude-3-5-sonnet-20241022'
+                          ? 'jp-InputArea-modelOption-selected'
+                          : ''
+                      }`}
+                      onClick={() => onModelChange?.({ provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' })}
+                    >
+                      Claude Sonnet 4.5
+                    </button>
+                    <button
+                      className={`jp-InputArea-modelOption ${
+                        currentModel.provider === 'anthropic' && currentModel.model === 'claude-3-5-haiku-20241022'
+                          ? 'jp-InputArea-modelOption-selected'
+                          : ''
+                      }`}
+                      onClick={() => onModelChange?.({ provider: 'anthropic', model: 'claude-3-5-haiku-20241022' })}
+                    >
+                      Claude Haiku 4.5
+                    </button>
+                  </div>
+
+                  <div className="jp-InputArea-modelGroup">
+                    <div className="jp-InputArea-modelGroupTitle">OpenAI</div>
+                    <button
+                      className={`jp-InputArea-modelOption ${
+                        currentModel.provider === 'openai' && currentModel.model === 'gpt-4o'
+                          ? 'jp-InputArea-modelOption-selected'
+                          : ''
+                      }`}
+                      onClick={() => onModelChange?.({ provider: 'openai', model: 'gpt-4o' })}
+                    >
+                      GPT-4o
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <button
+              className="jp-InputArea-send"
+              onClick={onSubmit}
+              disabled={!value.trim() || disabled}
+              title="Send message"
+              aria-label="Send message"
+            >
+              <span className="jp-InputArea-sendIcon">↑</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

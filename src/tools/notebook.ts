@@ -12,6 +12,7 @@ import { ErrorHandler } from '../utils/errors';
  */
 abstract class BaseNotebookTool implements ITool {
   abstract name: string;
+  abstract category: 'read' | 'write';
   abstract schema: IToolSchema;
 
   constructor(protected notebookTracker: INotebookTracker) {}
@@ -45,6 +46,7 @@ abstract class BaseNotebookTool implements ITool {
  */
 export class GetCellsTool extends BaseNotebookTool {
   name = 'getCells';
+  category: 'read' | 'write' = 'read';
 
   schema: IToolSchema = {
     type: 'function',
@@ -128,6 +130,7 @@ export class GetCellsTool extends BaseNotebookTool {
  */
 export class GetCellTool extends BaseNotebookTool {
   name = 'getCell';
+  category: 'read' | 'write' = 'read';
 
   schema: IToolSchema = {
     type: 'function',
@@ -219,6 +222,7 @@ export class GetCellTool extends BaseNotebookTool {
  */
 export class CreateCellTool extends BaseNotebookTool {
   name = 'createCell';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',
@@ -335,6 +339,7 @@ export class CreateCellTool extends BaseNotebookTool {
  */
 export class UpdateCellTool extends BaseNotebookTool {
   name = 'updateCell';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',
@@ -471,6 +476,7 @@ export class UpdateCellTool extends BaseNotebookTool {
  */
 export class DeleteCellTool extends BaseNotebookTool {
   name = 'deleteCell';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',
@@ -586,6 +592,7 @@ export class DeleteCellTool extends BaseNotebookTool {
  */
 export class MoveCellsTool extends BaseNotebookTool {
   name = 'moveCells';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',
@@ -755,6 +762,7 @@ export class MoveCellsTool extends BaseNotebookTool {
  */
 export class MergeCellsTool extends BaseNotebookTool {
   name = 'mergeCells';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',
@@ -919,6 +927,7 @@ export class MergeCellsTool extends BaseNotebookTool {
  */
 export class ListNotebooksTool extends BaseNotebookTool {
   name = 'listNotebooks';
+  category: 'read' | 'write' = 'read';
 
   schema: IToolSchema = {
     type: 'function',
@@ -992,6 +1001,7 @@ export class ListNotebooksTool extends BaseNotebookTool {
  */
 export class SplitCellTool extends BaseNotebookTool {
   name = 'splitCell';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',

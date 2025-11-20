@@ -481,12 +481,60 @@
 }
 
 /* Input actions row at bottom */
-.jp-AIAssistant .jp-InputArea-actions {
+.jp-AIAssistant .jp-InputArea-actions,
+.jp-AIAssistant .jp-InputArea-controls {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 8px;
   margin-top: 4px;
+}
+
+/* Left controls - Mode toggle and Auto mode checkbox */
+.jp-AIAssistant .jp-InputArea-leftControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Right controls - Model selector and Send button */
+.jp-AIAssistant .jp-InputArea-rightControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Send button - alias for jp-InputArea-send */
+.jp-AIAssistant .jp-InputArea-sendButton {
+  background: #007acc;
+  border: none;
+  border-radius: 6px;
+  padding: 6px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.jp-AIAssistant .jp-InputArea-sendButton:hover:not(:disabled) {
+  background: #1177bb;
+}
+
+.jp-AIAssistant .jp-InputArea-sendButton:active:not(:disabled) {
+  background: #0d5a8f;
+  transform: scale(0.95);
+}
+
+.jp-AIAssistant .jp-InputArea-sendButton:disabled {
+  background: #3c3c3c;
+  color: #666666;
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .jp-AIAssistant .jp-InputArea-textarea::placeholder {
@@ -680,4 +728,155 @@
 
 .jp-AIAssistant .jp-InputArea-modelOption-selected:hover {
   background: #1177bb;
+}
+
+/*-----------------------------------------------------------------------------
+| Mode Toggle Styles
+|----------------------------------------------------------------------------*/
+
+.jp-AIAssistant .jp-ModeToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.jp-AIAssistant .jp-ModeToggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.jp-AIAssistant .jp-ModeToggle-text {
+  font-size: 12px;
+  color: #858585;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.jp-AIAssistant .jp-ModeToggle-text-active {
+  color: #cccccc;
+}
+
+/* Radix UI Switch Root */
+.jp-AIAssistant .jp-ModeToggle-switch {
+  all: unset;
+  width: 42px;
+  height: 24px;
+  background-color: #3c3c3c;
+  border-radius: 12px;
+  position: relative;
+  transition: background-color 0.2s;
+  cursor: pointer;
+  border: 1px solid #555555;
+}
+
+.jp-AIAssistant .jp-ModeToggle-switch:hover:not([disabled]) {
+  background-color: #4a4a4a;
+}
+
+.jp-AIAssistant .jp-ModeToggle-switch:focus-visible {
+  outline: 2px solid #007acc;
+  outline-offset: 2px;
+}
+
+.jp-AIAssistant .jp-ModeToggle-switch[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Act mode (checked state) - use #cb4830 color */
+.jp-AIAssistant .jp-ModeToggle-switch[data-state='checked'] {
+  background-color: #cb4830;
+  border-color: #cb4830;
+}
+
+.jp-AIAssistant .jp-ModeToggle-switch[data-state='checked']:hover:not([disabled]) {
+  background-color: #d95840;
+}
+
+/* Radix UI Switch Thumb */
+.jp-AIAssistant .jp-ModeToggle-thumb {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-color: white;
+  border-radius: 10px;
+  transition: transform 0.2s;
+  transform: translateX(2px);
+  will-change: transform;
+}
+
+.jp-AIAssistant .jp-ModeToggle-switch[data-state='checked'] .jp-ModeToggle-thumb {
+  transform: translateX(20px);
+}
+
+/* Screen reader only text */
+.jp-AIAssistant .jp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/*-----------------------------------------------------------------------------
+| Auto Mode Checkbox Styles
+|----------------------------------------------------------------------------*/
+
+.jp-AIAssistant .jp-AutoModeCheckbox {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+  user-select: none;
+}
+
+.jp-AIAssistant .jp-AutoModeCheckbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.jp-AIAssistant .jp-AutoModeCheckbox-input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #007acc;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+
+.jp-AIAssistant .jp-AutoModeCheckbox-input:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.jp-AIAssistant .jp-AutoModeCheckbox-input:focus-visible {
+  outline: 2px solid #007acc;
+  outline-offset: 2px;
+}
+
+.jp-AIAssistant .jp-AutoModeCheckbox-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.jp-AIAssistant .jp-AutoModeCheckbox-text {
+  font-size: 12px;
+  color: #858585;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.jp-AIAssistant .jp-AutoModeCheckbox-label:hover .jp-AutoModeCheckbox-text {
+  color: #cccccc;
+}
+
+.jp-AIAssistant .jp-AutoModeCheckbox-input:checked + .jp-AutoModeCheckbox-text {
+  color: #cccccc;
 }

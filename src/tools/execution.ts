@@ -106,6 +106,7 @@ export interface IGetCellOutputResult {
  */
 abstract class BaseExecutionTool implements ITool {
   abstract name: string;
+  abstract category: 'read' | 'write';
   abstract schema: IToolSchema;
 
   constructor(protected notebookTracker: INotebookTracker) {}
@@ -137,6 +138,7 @@ abstract class BaseExecutionTool implements ITool {
  */
 export class ExecuteCellTool extends BaseExecutionTool {
   name = 'executeCell';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',
@@ -402,6 +404,7 @@ export class ExecuteCellTool extends BaseExecutionTool {
  */
 export class SaveNotebookTool extends BaseExecutionTool {
   name = 'saveNotebook';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',
@@ -528,6 +531,7 @@ export class SaveNotebookTool extends BaseExecutionTool {
  */
 export class GetCellOutputTool extends BaseExecutionTool {
   name = 'getCellOutput';
+  category: 'read' | 'write' = 'read';
 
   schema: IToolSchema = {
     type: 'function',

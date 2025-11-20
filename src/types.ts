@@ -145,12 +145,37 @@ export interface ITool {
   name: string;
   schema: IToolSchema;
   execute(args: Record<string, any>): Promise<IToolResult>;
+  category: 'read' | 'write';
 }
 
 /**
  * Tool execution status
  */
 export type ToolExecutionStatus = 'pending' | 'running' | 'success' | 'error';
+
+/**
+ * Execution mode for controlling tool availability
+ */
+export type ExecutionMode = 'act' | 'plan';
+
+/**
+ * Execution settings interface for controlling agent behavior
+ */
+export interface IExecutionSettings {
+  /**
+   * Execution mode - determines which tools are available
+   * - 'act': All tools available (read + write)
+   * - 'plan': Only read tools available
+   */
+  mode: ExecutionMode;
+  
+  /**
+   * Auto mode - controls automatic execution in Act mode
+   * When true, agent executes tools automatically without approval
+   * Only relevant when mode is 'act'
+   */
+  autoMode: boolean;
+}
 
 /**
  * Tool execution event interface

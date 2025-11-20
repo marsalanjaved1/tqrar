@@ -3,9 +3,10 @@
  */
 
 import { ReactWidget } from '@jupyterlab/apputils';
-import { IMessage } from './types';
+import { IMessage, IExecutionSettings, ExecutionMode } from './types';
 import { settingsIcon } from '@jupyterlab/ui-components';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
+import { IStateDB } from '@jupyterlab/statedb';
 import React from 'react';
 import { ToolExecutionTracker } from './tools/ToolExecutionTracker';
 import { ChatInterface } from './components/ChatInterface';
@@ -31,7 +32,7 @@ export interface IChatWidgetOptions {
   /**
    * Callback when a message is sent - returns an async generator for streaming
    */
-  onMessageSend?: (content: string) => Promise<AsyncGenerator<string>>;
+  onMessageSend?: (content: string, executionSettings: IExecutionSettings) => Promise<AsyncGenerator<string>>;
 
   /**
    * RenderMime registry for rendering rich content
@@ -67,6 +68,11 @@ export interface IChatWidgetOptions {
    * Callback when new session is created
    */
   onNewSession?: () => void;
+
+  /**
+   * StateDB for persisting execution settings
+   */
+  stateDB?: IStateDB;
 }
 
 /**
@@ -74,14 +80,16 @@ export interface IChatWidgetOptions {
  */
 const ChatComponent: React.FC<{
   onSettingsClick?: () => void;
-  onMessageSend?: (content: string) => Promise<AsyncGenerator<string>>;
+  onMessageSend?: (content: string, executionSettings: IExecutionSettings) => Promise<AsyncGenerator<string>>;
   toolExecutionTracker?: ToolExecutionTracker;
   initialMessages?: IMessage[];
   onMessagesChange?: (callback: (messages: IMessage[]) => void) => void;
   sessionManager?: SessionManager;
   onSessionChange?: (sessionId: string) => void;
   onNewSession?: () => void;
-}> = ({ onSettingsClick, onMessageSend, toolExecutionTracker, initialMessages = [], onMessagesChange, sessionManager, onSessionChange, onNewSession }) => {
+  executionSettings?: IExecutionSettings;
+  onExecutionSettingsChange?: (settings: IExecutionSettings) => void;
+}> = ({ onSettingsClick, onMessageSend, toolExecutionTracker, initialMessages = [], onMessagesChange, sessionManager, onSessionChange, onNewSession, executionSettings, onExecutionSettingsChange }) => {
   const [messages, setMessages] = React.useState<IMessage[]>(initialMessages);
   const [isStreaming, setIsStreaming] = React.useState(false);
   const [streamingContent, setStreamingContent] = React.useState<string>('');
@@ -440,7 +448,7 @@ const ChatComponent: React.FC<{
     setStreamingContent('');
     
     try {
-      const stream = await onMessageSend(content);
+      const stream = await onMessageSend(content, executionSettings || { mode: 'act', autoMode: true });
       let accumulatedContent = '';
       
       // Stream chunks and update UI in real-time
@@ -504,6 +512,8 @@ const ChatComponent: React.FC<{
         onSendMessage={handleSendMessage}
         isStreaming={isActiveSessionStreaming}
         toolExecutionTracker={toolExecutionTracker}
+        executionSettings={executionSettings}
+        onExecutionSettingsChange={onExecutionSettingsChange}
       />
 
       {/* History Sidebar */}
@@ -523,7 +533,7 @@ const ChatComponent: React.FC<{
  */
 export class ChatWidget extends ReactWidget {
   private _onSettingsClick?: () => void;
-  private _onMessageSend?: (content: string) => Promise<AsyncGenerator<string>>;
+  private _onMessageSend?: (content: string, executionSettings: IExecutionSettings) => Promise<AsyncGenerator<string>>;
   private _toolExecutionTracker?: ToolExecutionTracker;
   private _initialMessages?: IMessage[];
   private _onMessagesChange?: (callback: (messages: IMessage[]) => void) => void;
@@ -531,6 +541,16 @@ export class ChatWidget extends ReactWidget {
   private _sessionManager?: SessionManager;
   private _onSessionChange?: (sessionId: string) => void;
   private _onNewSession?: () => void;
+  private _stateDB?: IStateDB;
+  private _executionSettings: IExecutionSettings = {
+    mode: 'act',
+    autoMode: true
+  };
+
+  /**
+   * StateDB key for storing execution settings
+   */
+  private static readonly EXECUTION_SETTINGS_KEY = 'ai-assistant:execution-settings';
 
   /**
    * Construct a new chat widget
@@ -550,9 +570,15 @@ export class ChatWidget extends ReactWidget {
     this._sessionManager = options.sessionManager;
     this._onSessionChange = options.onSessionChange;
     this._onNewSession = options.onNewSession;
+    this._stateDB = options.stateDB;
     this._onMessagesChange = (callback) => {
       this._messagesCallback = callback;
     };
+
+    // Load execution settings from StateDB
+    this._loadExecutionSettings().catch(error => {
+      console.error('[ChatWidget] Failed to load execution settings:', error);
+    });
   }
 
   /**
@@ -569,6 +595,8 @@ export class ChatWidget extends ReactWidget {
         sessionManager={this._sessionManager}
         onSessionChange={this._onSessionChange}
         onNewSession={this._onNewSession}
+        executionSettings={this._executionSettings}
+        onExecutionSettingsChange={(settings) => this._handleExecutionSettingsChange(settings)}
       />
     );
   }
@@ -597,5 +625,97 @@ export class ChatWidget extends ReactWidget {
   getMessages(): IMessage[] {
     console.log('Get messages');
     return [];
+  }
+
+  /**
+   * Get current execution settings
+   */
+  getExecutionSettings(): IExecutionSettings {
+    return { ...this._executionSettings };
+  }
+
+  /**
+   * Update execution settings
+   */
+  async updateExecutionSettings(settings: Partial<IExecutionSettings>): Promise<void> {
+    this._executionSettings = {
+      ...this._executionSettings,
+      ...settings
+    };
+
+    console.log('[ChatWidget] Execution settings updated:', this._executionSettings);
+
+    // Persist to StateDB
+    await this._saveExecutionSettings();
+
+    // Trigger re-render if needed
+    this.update();
+  }
+
+  /**
+   * Handle execution settings changes from ChatInterface
+   */
+  private _handleExecutionSettingsChange(settings: IExecutionSettings): void {
+    this._executionSettings = settings;
+    console.log('[ChatWidget] Execution settings changed from UI:', this._executionSettings);
+
+    // Persist to StateDB
+    this._saveExecutionSettings().catch(error => {
+      console.error('[ChatWidget] Failed to save execution settings:', error);
+    });
+
+    // Trigger re-render to update UI
+    this.update();
+  }
+
+  /**
+   * Load execution settings from StateDB
+   */
+  private async _loadExecutionSettings(): Promise<void> {
+    if (!this._stateDB) {
+      console.log('[ChatWidget] No StateDB available, using default execution settings');
+      return;
+    }
+
+    try {
+      const data = await this._stateDB.fetch(ChatWidget.EXECUTION_SETTINGS_KEY);
+      
+      if (data && typeof data === 'object' && data !== null) {
+        const settings = data as any;
+        // Validate and extract execution settings
+        if ('mode' in settings && 'autoMode' in settings) {
+          this._executionSettings = {
+            mode: settings.mode as ExecutionMode,
+            autoMode: Boolean(settings.autoMode)
+          };
+          console.log('[ChatWidget] Loaded execution settings from StateDB:', this._executionSettings);
+        } else {
+          console.log('[ChatWidget] Invalid execution settings format, using defaults');
+        }
+      } else {
+        console.log('[ChatWidget] No saved execution settings, using defaults');
+      }
+    } catch (error) {
+      console.error('[ChatWidget] Failed to load execution settings:', error);
+      // Continue with default settings
+    }
+  }
+
+  /**
+   * Save execution settings to StateDB
+   */
+  private async _saveExecutionSettings(): Promise<void> {
+    if (!this._stateDB) {
+      console.log('[ChatWidget] No StateDB available, skipping save');
+      return;
+    }
+
+    try {
+      await this._stateDB.save(ChatWidget.EXECUTION_SETTINGS_KEY, this._executionSettings as any);
+      console.log('[ChatWidget] Saved execution settings to StateDB');
+    } catch (error) {
+      console.error('[ChatWidget] Failed to save execution settings:', error);
+      // Continue with in-memory state
+    }
   }
 }

@@ -12,6 +12,7 @@ import { ErrorHandler } from '../utils/errors';
  */
 abstract class BaseKernelTool implements ITool {
   abstract name: string;
+  abstract category: 'read' | 'write';
   abstract schema: IToolSchema;
 
   constructor(
@@ -48,6 +49,7 @@ abstract class BaseKernelTool implements ITool {
  */
 export class GetKernelInfoTool extends BaseKernelTool {
   name = 'getKernelInfo';
+  category: 'read' | 'write' = 'read';
 
   schema: IToolSchema = {
     type: 'function',
@@ -153,6 +155,7 @@ export class GetKernelInfoTool extends BaseKernelTool {
  */
 export class GetKernelStatusTool extends BaseKernelTool {
   name = 'getKernelStatus';
+  category: 'read' | 'write' = 'read';
 
   schema: IToolSchema = {
     type: 'function',
@@ -259,6 +262,7 @@ export class GetKernelStatusTool extends BaseKernelTool {
  */
 export class ListAvailableKernelsTool extends BaseKernelTool {
   name = 'listAvailableKernels';
+  category: 'read' | 'write' = 'read';
 
   schema: IToolSchema = {
     type: 'function',
@@ -327,6 +331,7 @@ export class ListAvailableKernelsTool extends BaseKernelTool {
  */
 export class RestartKernelTool extends BaseKernelTool {
   name = 'restartKernel';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',
@@ -438,6 +443,7 @@ export class RestartKernelTool extends BaseKernelTool {
  */
 export class InterruptKernelTool extends BaseKernelTool {
   name = 'interruptKernel';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',
@@ -526,6 +532,7 @@ export class InterruptKernelTool extends BaseKernelTool {
  */
 export class ChangeKernelTool extends BaseKernelTool {
   name = 'changeKernel';
+  category: 'read' | 'write' = 'write';
 
   schema: IToolSchema = {
     type: 'function',

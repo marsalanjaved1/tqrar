@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { IMessage } from '../types';
+import { IMessage, IExecutionSettings } from '../types';
 import { ToolCallCard } from './ToolCallCard';
 import { ToolExecutionTracker } from '../tools/ToolExecutionTracker';
 import { MessageContent } from './MessageContent';
@@ -15,16 +15,20 @@ import type { IToolExecutionEvent } from '../types';
 
 export interface IChatInterfaceProps {
   messages: IMessage[];
-  onSendMessage: (content: string) => void;
+  onSendMessage: (content: string, executionSettings: IExecutionSettings) => void;
   isStreaming: boolean;
   toolExecutionTracker?: ToolExecutionTracker;
+  executionSettings?: IExecutionSettings;
+  onExecutionSettingsChange?: (settings: IExecutionSettings) => void;
 }
 
 export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   messages,
   onSendMessage,
   isStreaming,
-  toolExecutionTracker
+  toolExecutionTracker,
+  executionSettings = { mode: 'act', autoMode: true },
+  onExecutionSettingsChange
 }) => {
   console.log('[TQRAR-DEBUG] [ChatInterface] Component render, toolExecutionTracker:', {
     hasTracker: !!toolExecutionTracker,
@@ -62,7 +66,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
         setInputValue(customEvent.detail);
         // Auto-submit after a short delay
         setTimeout(() => {
-          onSendMessage(customEvent.detail);
+          onSendMessage(customEvent.detail, executionSettings);
           setInputValue('');
         }, 100);
       }
@@ -75,7 +79,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
         container.removeEventListener('send-message', handleSendMessage);
       };
     }
-  }, [onSendMessage]);
+  }, [onSendMessage, executionSettings]);
 
   // Auto-scroll to bottom when messages change
   React.useEffect(() => {
@@ -131,7 +135,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim() && !isStreaming) {
-      onSendMessage(inputValue.trim());
+      onSendMessage(inputValue.trim(), executionSettings);
       setInputValue('');
       inputRef.current?.focus();
     }
@@ -159,7 +163,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
                   className="jp-ChatInterface-promptCard"
                   onClick={() => {
                     const prompt = "Load the iris dataset and show me the first 5 rows";
-                    onSendMessage(prompt);
+                    onSendMessage(prompt, executionSettings);
                   }}
                 >
                   <span className="jp-ChatInterface-promptIcon">📊</span>
@@ -170,7 +174,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
                   className="jp-ChatInterface-promptCard"
                   onClick={() => {
                     const prompt = "Create a scatter plot of sepal length vs width";
-                    onSendMessage(prompt);
+                    onSendMessage(prompt, executionSettings);
                   }}
                 >
                   <span className="jp-ChatInterface-promptIcon">📈</span>
@@ -181,7 +185,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
                   className="jp-ChatInterface-promptCard"
                   onClick={() => {
                     const prompt = "Explain what this code does";
-                    onSendMessage(prompt);
+                    onSendMessage(prompt, executionSettings);
                   }}
                 >
                   <span className="jp-ChatInterface-promptIcon">💡</span>
@@ -192,7 +196,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
                   className="jp-ChatInterface-promptCard"
                   onClick={() => {
                     const prompt = "Help me debug this error";
-                    onSendMessage(prompt);
+                    onSendMessage(prompt, executionSettings);
                   }}
                 >
                   <span className="jp-ChatInterface-promptIcon">🐛</span>
@@ -216,7 +220,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
             // Find the previous user message
             for (let i = index - 1; i >= 0; i--) {
               if (messages[i].role === 'user') {
-                onSendMessage(messages[i].content);
+                onSendMessage(messages[i].content, executionSettings);
                 break;
               }
             }
@@ -428,7 +432,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
         onChange={setInputValue}
         onSubmit={() => {
           if (inputValue.trim() && !isStreaming) {
-            onSendMessage(inputValue.trim());
+            onSendMessage(inputValue.trim(), executionSettings);
             setInputValue('');
             inputRef.current?.focus();
           }
@@ -439,6 +443,8 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
         onModelChange={(config) => {
           // TODO: Implement model change handler
         }}
+        executionSettings={executionSettings}
+        onExecutionSettingsChange={onExecutionSettingsChange}
       />
     </div>
   );

@@ -13,3 +13,9 @@ export type { IStatusBadgeProps } from './StatusBadge';
 
 export { CollapsibleSection, useCollapsibleSections, useIndependentCollapsibleSections } from './CollapsibleSection';
 export type { ICollapsibleSectionProps } from './CollapsibleSection';
+
+export { ModeToggle, getModeConfig, isWriteMode, isReadOnlyMode, MODE_CONFIGS } from './ModeToggle';
+export type { IModeToggleProps } from './ModeToggle';
+
+export { AutoModeCheckbox, isAutoModeEnabled, requiresManualApproval } from './AutoModeCheckbox';
+export type { IAutoModeCheckboxProps } from './AutoModeCheckbox';
