@@ -280,7 +280,27 @@ export async function validateApiKey(
     let url: string;
     switch (provider) {
       case 'openrouter':
-        url = 'https://openrouter.ai/api/v1/models';
+        // OpenRouter blocks CORS requests from browsers
+        // Just validate the key format instead
+        if (!apiKey.startsWith('sk-or-')) {
+          SecurityLogger.logEvent(
+            SecurityEventType.API_KEY_VALIDATION,
+            'Invalid OpenRouter API key format',
+            'medium'
+          );
+          return {
+            valid: false,
+            error: 'Invalid OpenRouter API key format (should start with sk-or-)'
+          };
+        }
+        SecurityLogger.logEvent(
+          SecurityEventType.API_KEY_VALIDATION,
+          'OpenRouter API key format validated',
+          'low'
+        );
+        return { valid: true };
+      case 'openai':
+        url = 'https://api.openai.com/v1/models';
         break;
       case 'openai':
         url = 'https://api.openai.com/v1/models';
@@ -333,15 +353,10 @@ export async function validateApiKey(
       'Authorization': `Bearer ${apiKey}`
     };
 
-    // Add OpenRouter-specific headers
-    if (provider === 'openrouter') {
-      headers['HTTP-Referer'] = 'https://jupyterlab.local';
-      headers['X-Title'] = 'JupyterLab AI Assistant';
-    }
-
     const response = await fetch(url, {
       method: 'GET',
-      headers
+      headers,
+      mode: 'cors' // Explicitly set CORS mode
     });
 
     if (response.ok) {

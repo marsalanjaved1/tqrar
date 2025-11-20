@@ -568,9 +568,10 @@ export class ConversationManager {
         this._messages.push(assistantMsg);
         this._notifyHistoryChange();
 
-        console.log('[ConversationManager] Assistant response:', {
+        console.log('[TQRAR-DEBUG] [ConversationManager] Assistant response:', {
           content: assistantMessage.substring(0, 100),
           toolCalls: toolCalls.length,
+          toolCallsData: toolCalls,
           finishReason
         });
 
@@ -875,7 +876,9 @@ export class ConversationManager {
       );
 
       // Start tracking execution
+      console.log('[TQRAR-DEBUG] [ConversationManager] About to call startExecution, tracker exists:', !!this._toolExecutionTracker, 'toolCall:', toolCall.function.name);
       const executionId = this._toolExecutionTracker.startExecution(toolCall);
+      console.log('[TQRAR-DEBUG] [ConversationManager] startExecution returned:', executionId);
 
       try {
         // Parse tool arguments

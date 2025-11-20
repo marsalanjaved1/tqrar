@@ -4,17 +4,20 @@
 
 /* Session Tabs */
 .jp-SessionTabs {
-  display: flex;
+  display: flex !important;
   gap: 4px;
   padding: 8px 12px 0 12px;
   background: #1e1e1e;
   border-bottom: 1px solid #3c3c3c;
   overflow-x: auto;
   overflow-y: hidden;
+  min-height: 40px;
+  flex-shrink: 0;
+  visibility: visible !important;
 }
 
 .jp-SessionTab {
-  display: flex;
+  display: flex !important;
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
@@ -26,6 +29,8 @@
   transition: all 0.2s;
   min-width: 120px;
   max-width: 200px;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .jp-SessionTab:hover {

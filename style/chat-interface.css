@@ -102,6 +102,16 @@
   animation: fadeIn var(--tqrar-transition-normal) ease-in;
 }
 
+/* User messages align right */
+.jp-AIAssistant .jp-ChatMessage-user {
+  flex-direction: row-reverse;
+}
+
+/* Assistant messages align left */
+.jp-AIAssistant .jp-ChatMessage-assistant {
+  flex-direction: row;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -113,7 +123,21 @@
   }
 }
 
-/* Message avatar - DIRECT COLORS ONLY */
+/* User messages - right aligned with dark grey background */
+.jp-AIAssistant .jp-ChatMessage-user {
+  flex-direction: row-reverse;
+  margin-left: auto;
+  max-width: 80%;
+}
+
+/* Assistant messages - left aligned with no background */
+.jp-AIAssistant .jp-ChatMessage-assistant {
+  flex-direction: row;
+  margin-right: auto;
+  max-width: 80%;
+}
+
+/* Message avatar with ghost logo */
 .jp-AIAssistant .jp-ChatMessage-avatar {
   flex-shrink: 0;
   width: 32px;
@@ -121,37 +145,57 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
   border-radius: 50%;
-  background: transparent !important;
+  background-image: url('./ghost-logo.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-/* Message content - DIRECT COLORS ONLY */
+/* Hide avatar for user messages */
+.jp-AIAssistant .jp-ChatMessage-user .jp-ChatMessage-avatar {
+  display: none;
+}
+
+/* Message content */
 .jp-AIAssistant .jp-ChatMessage-content {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* User message content aligned right */
+.jp-AIAssistant .jp-ChatMessage-user .jp-ChatMessage-content {
+  align-items: flex-end;
+}
+
+/* Assistant message content aligned left */
+.jp-AIAssistant .jp-ChatMessage-assistant .jp-ChatMessage-content {
+  align-items: flex-start;
 }
 
 .jp-AIAssistant .jp-ChatMessage-text {
-  padding: 8px 0;
-  background: transparent !important;
-  color: #cccccc !important;
+  padding: 12px 16px;
   white-space: pre-wrap;
   word-wrap: break-word;
   line-height: 1.6;
   font-size: 14px;
+  border-radius: 12px;
+  max-width: 70%;
 }
 
-/* User message styling */
+/* User message styling - dark grey background */
 .jp-AIAssistant .jp-ChatMessage-user .jp-ChatMessage-text {
-  background: transparent !important;
+  background: #2d2d30 !important;
   color: #cccccc !important;
 }
 
-/* Assistant message styling */
+/* Assistant message styling - no background */
 .jp-AIAssistant .jp-ChatMessage-assistant .jp-ChatMessage-text {
   background: transparent !important;
   color: #cccccc !important;
+  padding-left: 0;
 }
 
 /* Inline code - EXACT Tqrar Style */

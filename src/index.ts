@@ -168,6 +168,20 @@ const plugin: JupyterFrontEndPlugin<void> = {
       console.log('[AI Assistant] Notebook tools registered');
     }
 
+    // Register execution tools if notebook tracker is available
+    if (notebookTracker) {
+      const {
+        ExecuteCellTool,
+        SaveNotebookTool,
+        GetCellOutputTool
+      } = await import('./tools/execution');
+
+      toolRegistry.register(new ExecuteCellTool(notebookTracker));
+      toolRegistry.register(new SaveNotebookTool(notebookTracker));
+      toolRegistry.register(new GetCellOutputTool(notebookTracker));
+      console.log('[AI Assistant] Execution tools registered');
+    }
+
     // Register code inspection tools if notebook tracker is available
     if (notebookTracker) {
       const {
@@ -241,16 +255,18 @@ const plugin: JupyterFrontEndPlugin<void> = {
         // Listen for settings changes
         settings.changed.connect(async () => {
           console.log('[AI Assistant] Settings changed, reinitializing...');
-          const newComposite = settings.composite as any;
+          
+          // Load and decrypt settings properly
+          const newSettingsData = await loadSettings(settingRegistry, PLUGIN_ID);
 
-          if (newComposite.apiKey && newComposite.provider) {
+          if (newSettingsData.apiKey && newSettingsData.provider) {
             const newSettings: ISettings = {
-              provider: newComposite.provider,
-              apiKey: newComposite.apiKey,
-              model: newComposite.model,
-              baseUrl: newComposite.baseUrl,
-              temperature: newComposite.temperature,
-              maxTokens: newComposite.maxTokens
+              provider: newSettingsData.provider as ISettings['provider'],
+              apiKey: newSettingsData.apiKey,
+              model: newSettingsData.model || '',
+              baseUrl: newSettingsData.baseUrl || '',
+              temperature: newSettingsData.temperature ?? 0.7,
+              maxTokens: newSettingsData.maxTokens ?? 4096
             };
 
             if (llmClient) {
@@ -391,6 +407,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
         });
       }
     });
+
+    // Automatically open the chat widget on startup
+    // Wait a bit for JupyterLab to finish loading
+    setTimeout(() => {
+      app.commands.execute(CommandIDs.openChat).catch(error => {
+        console.error('[AI Assistant] Failed to auto-open chat widget:', error);
+      });
+    }, 1000);
   }
 };
 

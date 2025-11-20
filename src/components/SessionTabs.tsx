@@ -19,8 +19,16 @@ export const SessionTabs: React.FC<ISessionTabsProps> = ({
   onSessionSelect,
   onSessionClose
 }) => {
-  // Always show the tabs container if there's an active session, even if sessions array is empty
-  if (sessions.length === 0 && !activeSessionId) {
+  // Log render state
+  console.log('🏷️ [TABS] Rendering:', {
+    activeSessionId,
+    sessionCount: sessions.length,
+    sessions: sessions.map(s => ({ id: s.id, title: s.title }))
+  });
+  
+  // Don't show tabs if no active session
+  if (!activeSessionId || sessions.length === 0) {
+    console.log('🚫 [TABS] Not rendering (no active session or empty sessions)');
     return null;
   }
 
@@ -30,13 +38,17 @@ export const SessionTabs: React.FC<ISessionTabsProps> = ({
         <div
           key={session.id}
           className={`jp-SessionTab ${session.id === activeSessionId ? 'jp-SessionTab-active' : ''}`}
-          onClick={() => onSessionSelect(session.id)}
+          onClick={() => {
+            console.log('👆 [TABS] Tab clicked:', session.id);
+            onSessionSelect(session.id);
+          }}
         >
           <span className="jp-SessionTab-title">{session.title}</span>
           <button
             className="jp-SessionTab-close"
             onClick={(e) => {
               e.stopPropagation();
+              console.log('❌ [TABS] Close button clicked:', session.id);
               onSessionClose(session.id);
             }}
             title="Close session"

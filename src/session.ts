@@ -49,12 +49,14 @@ export class SessionManager {
    * Initialize session manager and load sessions
    */
   async initialize(): Promise<void> {
+    console.log('🔧 [SESSION-MGR] Initializing session manager...');
     try {
       await this.loadSessionList();
       await this.loadActiveSession();
-      console.log('[SessionManager] Initialized with', this._sessions.size, 'sessions');
+      console.log('✅ [SESSION-MGR] Initialized with', this._sessions.size, 'sessions');
+      console.log('📊 [SESSION-MGR] Active session:', this._activeSessionId);
     } catch (error) {
-      console.error('[SessionManager] Failed to initialize:', error);
+      console.error('❌ [SESSION-MGR] Failed to initialize:', error);
       // Continue with empty sessions rather than blocking
       this._sessions.clear();
     }
@@ -66,6 +68,8 @@ export class SessionManager {
   async createSession(title?: string): Promise<ISession> {
     const id = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date();
+    
+    console.log('🆕 [SESSION-MGR] Creating new session:', { id, title: title || 'New Chat' });
     
     const session: ISessionWithHistory = {
       id,
@@ -80,7 +84,7 @@ export class SessionManager {
     await this.saveSession(session);
     await this.saveSessionList();
 
-    console.log('[SessionManager] Created session:', id);
+    console.log('✅ [SESSION-MGR] Session created and saved:', id);
     return session;
   }
 
@@ -88,23 +92,35 @@ export class SessionManager {
    * Get a session by ID
    */
   async getSession(id: string): Promise<ISessionWithHistory | null> {
+    console.log('📖 [SESSION-MGR] Getting session:', id);
+    
     // Check if session exists in memory
     if (this._sessions.has(id)) {
       const session = this._sessions.get(id)!;
+      console.log('💾 [SESSION-MGR] Session in memory:', {
+        id: session.id,
+        messageCount: session.messageCount,
+        messagesLength: session.messages.length
+      });
       
-      // If messages are empty, load from storage
+      // If messages are empty but messageCount > 0, load from storage
       if (session.messages.length === 0 && session.messageCount > 0) {
+        console.log('🔄 [SESSION-MGR] Lazy-loading messages from storage...');
         try {
           const key = `${SESSION_KEY_PREFIX}:${id}`;
           const data = await this._stateDB.fetch(key);
           
           if (data) {
+            console.log('✅ [SESSION-MGR] Loaded full session from storage');
             const fullSession = this.deserializeSession(data as any);
+            console.log('📊 [SESSION-MGR] Full session has', fullSession.messages.length, 'messages');
             this._sessions.set(id, fullSession);
             return fullSession;
+          } else {
+            console.warn('⚠️ [SESSION-MGR] No data found in storage for session:', id);
           }
         } catch (error) {
-          console.error('[SessionManager] Failed to load session messages:', error);
+          console.error('❌ [SESSION-MGR] Failed to load session messages:', error);
         }
       }
       
@@ -112,17 +128,22 @@ export class SessionManager {
     }
 
     // Try loading from storage
+    console.log('🔍 [SESSION-MGR] Session not in memory, loading from storage...');
     try {
       const key = `${SESSION_KEY_PREFIX}:${id}`;
       const data = await this._stateDB.fetch(key);
       
       if (data) {
+        console.log('✅ [SESSION-MGR] Loaded session from storage');
         const session = this.deserializeSession(data as any);
+        console.log('📊 [SESSION-MGR] Session has', session.messages.length, 'messages');
         this._sessions.set(id, session);
         return session;
+      } else {
+        console.warn('⚠️ [SESSION-MGR] No data found in storage for session:', id);
       }
     } catch (error) {
-      console.error('[SessionManager] Failed to load session:', error);
+      console.error('❌ [SESSION-MGR] Failed to load session:', error);
     }
 
     return null;
@@ -132,12 +153,15 @@ export class SessionManager {
    * Update session messages
    */
   async updateSession(id: string, messages: IMessage[]): Promise<void> {
+    console.log('💾 [SESSION-MGR] Updating session:', { id, messageCount: messages.length });
+    
     const session = await this.getSession(id);
     if (!session) {
-      console.error('[SessionManager] Session not found:', id);
+      console.error('❌ [SESSION-MGR] Session not found:', id);
       return;
     }
 
+    const oldTitle = session.title;
     session.messages = messages;
     session.messageCount = messages.filter(m => m.role !== 'system').length;
     session.updatedAt = new Date();
@@ -148,11 +172,13 @@ export class SessionManager {
       if (firstUserMsg) {
         session.title = firstUserMsg.content.substring(0, 50) + (firstUserMsg.content.length > 50 ? '...' : '');
         session.preview = firstUserMsg.content.substring(0, 100);
+        console.log('📝 [SESSION-MGR] Updated title:', { old: oldTitle, new: session.title });
       }
     }
 
     await this.saveSession(session);
     await this.saveSessionList();
+    console.log('✅ [SESSION-MGR] Session updated and saved');
   }
 
   /**

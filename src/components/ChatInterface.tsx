@@ -26,6 +26,11 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   isStreaming,
   toolExecutionTracker
 }) => {
+  console.log('[TQRAR-DEBUG] [ChatInterface] Component render, toolExecutionTracker:', {
+    hasTracker: !!toolExecutionTracker,
+    trackerType: toolExecutionTracker?.constructor?.name
+  });
+
   const [inputValue, setInputValue] = React.useState('');
   // Map of tool call ID to execution events for inline rendering
   const [toolExecutions, setToolExecutions] = React.useState<Map<string, IToolExecutionEvent>>(new Map());
@@ -38,7 +43,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   // Keep messages ref in sync
   React.useEffect(() => {
     messagesRef.current = messages;
-    console.log('[ChatInterface] Messages updated:', messages.map((m, i) => ({
+    console.log('[TQRAR-DEBUG] [ChatInterface] Messages updated:', messages.map((m, i) => ({
       index: i,
       role: m.role,
       hasToolCalls: !!m.toolCalls,
@@ -79,12 +84,20 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
 
   // Track tool executions by tool call ID for inline rendering
   React.useEffect(() => {
+    console.log('[TQRAR-DEBUG] [ChatInterface] ===== USEEFFECT CALLED =====');
+    console.log('[TQRAR-DEBUG] [ChatInterface] Setting up tool execution tracker:', {
+      hasTracker: !!toolExecutionTracker,
+      trackerType: toolExecutionTracker?.constructor?.name,
+      trackerInstance: toolExecutionTracker
+    });
+
     if (!toolExecutionTracker) {
+      console.warn('[TQRAR-DEBUG] [ChatInterface] No tool execution tracker provided!');
       return;
     }
 
     const handleExecutionEvent = (event: IToolExecutionEvent) => {
-      console.log('[ChatInterface] Tool execution event:', {
+      console.log('[TQRAR-DEBUG] [ChatInterface] Tool execution event:', {
         id: event.id,
         toolCallId: event.toolCall.id,
         status: event.status,
@@ -94,17 +107,20 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
       setToolExecutions(prev => {
         const newMap = new Map(prev);
         newMap.set(event.toolCall.id, event);
-        console.log('[ChatInterface] Updated toolExecutions, size:', newMap.size);
+        console.log('[TQRAR-DEBUG] [ChatInterface] Updated toolExecutions, size:', newMap.size);
         return newMap;
       });
     };
 
+    console.log('[TQRAR-DEBUG] [ChatInterface] Registering event listeners...');
     toolExecutionTracker.on('execution:start', handleExecutionEvent);
     toolExecutionTracker.on('execution:update', handleExecutionEvent);
     toolExecutionTracker.on('execution:complete', handleExecutionEvent);
     toolExecutionTracker.on('execution:error', handleExecutionEvent);
+    console.log('[TQRAR-DEBUG] [ChatInterface] Event listeners registered successfully');
 
     return () => {
+      console.log('[TQRAR-DEBUG] [ChatInterface] Cleaning up event listeners');
       toolExecutionTracker.off('execution:start', handleExecutionEvent);
       toolExecutionTracker.off('execution:update', handleExecutionEvent);
       toolExecutionTracker.off('execution:complete', handleExecutionEvent);
@@ -131,7 +147,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
           <div className="jp-ChatInterface-welcome">
             <div className="jp-ChatInterface-welcomeContent">
               <img 
-                src="https://raw.githubusercontent.com/marsalanjaved1/tqrar/main/ghost-logo.png" 
+                src="/lab/extensions/tqrar/static/ghost-logo.png"
                 alt="Tqrar Logo" 
                 className="jp-ChatInterface-welcomeLogo"
               />
@@ -210,7 +226,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
           if (message.role === 'user') {
             return (
               <div key={index} className={`jp-ChatMessage jp-ChatMessage-${message.role}`}>
-                <div className="jp-ChatMessage-avatar">👤</div>
+                <div className="jp-ChatMessage-avatar"></div>
                 <div className="jp-ChatMessage-content">
                   <MessageContent content={message.content} role={message.role} />
                   <MessageActions
@@ -230,7 +246,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
 
           // Assistant messages with linear tool execution flow
           if (message.role === 'assistant') {
-            console.log('[ChatInterface] Rendering assistant message:', {
+            console.log('[TQRAR-DEBUG] [ChatInterface] Rendering assistant message:', {
               index,
               hasToolCalls: !!message.toolCalls,
               toolCallsCount: message.toolCalls?.length || 0,
@@ -240,38 +256,100 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
             
             return (
               <div key={index} className={`jp-ChatMessage jp-ChatMessage-${message.role}`}>
-                <div className="jp-ChatMessage-avatar">
-                  <img src="https://raw.githubusercontent.com/marsalanjaved1/tqrar/main/ghost-logo.png" alt="Tqrar" style={{ width: '32px', height: '32px', borderRadius: '50%' }} />
-                </div>
+                <div className="jp-ChatMessage-avatar"></div>
                 <div className="jp-ChatMessage-content">
                   {/* Initial content before tool calls */}
-                  {message.content && (
-                    <MessageContent content={message.content} role={message.role} />
-                  )}
+                  {message.content && (() => {
+                    // Always filter out progress messages from assistant messages
+                    // Remove progress messages like "_Executing 1 tool..._", "Tool 1/1:", "_[Iteration 2/20]_"
+                    let filteredContent = message.content
+                      .replace(/_Executing \d+ tools?\.{3}_\s*/g, '')
+                      .replace(/\*\*Tool \d+\/\d+:\*\*\s*`[^`]+`[^\n]*\n\s*✓ Success\s*/g, '')
+                      .replace(/\*\*Tool \d+\/\d+:\*\*\s*`[^`]+`[^\n]*/g, '')
+                      .replace(/_\[Iteration \d+\/\d+\]_\s*/g, '')
+                      .replace(/Now let me execute it:\s*/g, '')
+                      .replace(/\s*❌ Error:[^\n]*/g, '')
+                      .replace(/\s*✓ Success\s*/g, '')
+                      .trim();
+                    
+                    // Only render if there's content left after filtering
+                    if (filteredContent) {
+                      return <MessageContent content={filteredContent} role={message.role} />;
+                    }
+                    return null;
+                  })()}
                   
                   {/* Tool execution cards inline */}
                   {message.toolCalls && message.toolCalls.length > 0 && (
                     <div className="jp-ChatMessage-toolCalls">
                       {message.toolCalls.map(toolCall => {
-                        console.log('[ChatInterface] Rendering tool call:', {
+                        console.log('[TQRAR-DEBUG] [ChatInterface] Rendering tool call:', {
                           id: toolCall.id,
                           name: toolCall.function.name,
-                          hasExecution: toolExecutions.has(toolCall.id)
+                          hasExecution: toolExecutions.has(toolCall.id),
+                          messageIndex: index
                         });
                         
-                        const execution = toolExecutions.get(toolCall.id);
-                        // Show tool card even if execution not found yet (will show as pending)
+                        // First check the toolExecutions Map (for live executions)
+                        let execution = toolExecutions.get(toolCall.id);
+                        
+                        // If not in Map, try to get from tracker directly (for executions that completed before component mounted)
+                        if (!execution && toolExecutionTracker) {
+                          execution = toolExecutionTracker.getExecutionByToolCallId(toolCall.id);
+                          console.log('[TQRAR-DEBUG] [ChatInterface] Queried tracker for execution:', {
+                            id: toolCall.id,
+                            found: !!execution
+                          });
+                        }
+                        
+                        // Show tool card if execution found
                         if (execution) {
                           return (
                             <ToolCallCard key={toolCall.id} execution={execution} />
                           );
                         } else {
-                          // Create a pending execution for display
+                          // For historical tool calls (from loaded sessions), check if there's a corresponding tool result message
+                          // Look for the next message with role='tool' and matching toolCallId
+                          const toolResultMessage = messages.find((m, i) => 
+                            i > index && m.role === 'tool' && m.toolCallId === toolCall.id
+                          );
+                          
+                          if (toolResultMessage) {
+                            // Create a completed execution for historical tool calls
+                            try {
+                              const result = JSON.parse(toolResultMessage.content);
+                              const historicalExecution: IToolExecutionEvent = {
+                                id: toolCall.id,
+                                toolCall: toolCall,
+                                status: result.success ? 'success' : 'error',
+                                startTime: message.timestamp,
+                                endTime: toolResultMessage.timestamp,
+                                duration: new Date(toolResultMessage.timestamp).getTime() - new Date(message.timestamp).getTime(),
+                                result: result.success ? result : undefined,
+                                error: !result.success && result.error ? {
+                                  message: result.error.message,
+                                  type: result.error.type || 'Error',
+                                  stack: result.error.stack
+                                } : undefined
+                              };
+                              console.log('[TQRAR-DEBUG] [ChatInterface] Created historical execution:', {
+                                id: toolCall.id,
+                                status: historicalExecution.status
+                              });
+                              return (
+                                <ToolCallCard key={toolCall.id} execution={historicalExecution} />
+                              );
+                            } catch (e) {
+                              console.error('[TQRAR-DEBUG] [ChatInterface] Failed to parse tool result:', e);
+                            }
+                          }
+                          
+                          // Fallback: Create a pending execution for display
                           const pendingExecution: IToolExecutionEvent = {
                             id: toolCall.id,
                             toolCall: toolCall,
                             status: 'pending',
-                            startTime: new Date()
+                            startTime: message.timestamp
                           };
                           return (
                             <ToolCallCard key={toolCall.id} execution={pendingExecution} />
@@ -282,9 +360,23 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
                   )}
                   
                   {/* Final content after tool execution */}
-                  {message.finalContent && (
-                    <MessageContent content={message.finalContent} role={message.role} />
-                  )}
+                  {message.finalContent && (() => {
+                    // Filter out progress messages
+                    let filteredContent = message.finalContent
+                      .replace(/_Executing \d+ tools?\.{3}_\s*/g, '')
+                      .replace(/\*\*Tool \d+\/\d+:\*\*\s*`[^`]+`[^\n]*\n\s*✓ Success\s*/g, '')
+                      .replace(/\*\*Tool \d+\/\d+:\*\*\s*`[^`]+`[^\n]*/g, '')
+                      .replace(/_\[Iteration \d+\/\d+\]_\s*/g, '')
+                      .replace(/\s*❌ Error:[^\n]*/g, '')
+                      .replace(/\s*✓ Success\s*/g, '')
+                      .trim();
+                    
+                    // Only render if there's content left after filtering
+                    if (filteredContent) {
+                      return <MessageContent content={filteredContent} role={message.role} />;
+                    }
+                    return null;
+                  })()}
                   
                   <MessageActions
                     content={message.content}
@@ -308,7 +400,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
         {/* Streaming indicator */}
         {isStreaming && (
           <div className="jp-ChatMessage jp-ChatMessage-assistant">
-            <div className="jp-ChatMessage-avatar">🤖</div>
+            <div className="jp-ChatMessage-avatar"></div>
             <div className="jp-ChatMessage-content">
               <div className="jp-ChatMessage-streaming">
                 <span className="jp-ChatMessage-dot"></span>

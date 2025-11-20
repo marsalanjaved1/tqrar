@@ -86,13 +86,15 @@ export class ToolExecutionTracker extends EventEmitter {
     this._executions.set(id, event);
     this._executionOrder.push(id);
 
-    console.log('[ToolExecutionTracker] Started execution:', {
+    console.log('[TQRAR-DEBUG] [ToolExecutionTracker] Started execution:', {
       id,
+      toolCallId: toolCall.id,
       tool: toolCall.function.name,
       totalExecutions: this._executions.size
     });
 
     // Emit start event
+    console.log('[TQRAR-DEBUG] [ToolExecutionTracker] Emitting execution:start event, listeners:', this.listenerCount('execution:start'));
     this.emit('execution:start', event);
 
     return id;
@@ -190,8 +192,10 @@ export class ToolExecutionTracker extends EventEmitter {
     execution.duration = execution.endTime.getTime() - execution.startTime.getTime();
     execution.result = result;
 
-    console.log('[ToolExecutionTracker] Completed execution:', {
+    console.log('[TQRAR-DEBUG] [ToolExecutionTracker] Completed execution:', {
       id,
+      toolCallId: execution.toolCall.id,
+      tool: execution.toolCall.function.name,
       duration: execution.duration
     });
 
@@ -228,8 +232,10 @@ export class ToolExecutionTracker extends EventEmitter {
       stack: error.stack
     });
 
-    console.error('[ToolExecutionTracker] Failed execution:', {
+    console.error('[TQRAR-DEBUG] [ToolExecutionTracker] Failed execution:', {
       id,
+      toolCallId: execution.toolCall.id,
+      tool: execution.toolCall.function.name,
       error: error.message
     });
 
