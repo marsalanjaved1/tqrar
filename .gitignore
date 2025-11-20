@@ -91,5 +91,8 @@ start_phoenix.sh
 .yarn/cache/require-in-the-middle-*
 .yarn/cache/shimmer-*
 
+# Shell scripts
+*.sh
+
 # Jupyter Notebooks
 *.ipynb

@@ -1,11 +1,105 @@
 /**
- * Code execution tools for running cells and managing outputs
+ * Execution tools for cell execution, notebook saving, and output retrieval
  */
 
-import { INotebookTracker, NotebookActions, NotebookPanel } from '@jupyterlab/notebook';
-import { CodeCell, ICodeCellModel } from '@jupyterlab/cells';
+import { INotebookTracker, NotebookPanel, NotebookActions } from '@jupyterlab/notebook';
+import { ICodeCellModel } from '@jupyterlab/cells';
 import { ITool, IToolResult, IToolSchema } from '../types';
 import { ErrorHandler } from '../utils/errors';
+
+/**
+ * Cell output interface
+ */
+export interface ICellOutput {
+  outputType: 'stream' | 'display_data' | 'execute_result' | 'error';
+  content: string;
+  metadata?: Record<string, any>;
+}
+
+/**
+ * Arguments for ExecuteCellTool
+ */
+export interface IExecuteCellArgs {
+  cellIndex: number;
+  notebookId?: string;
+}
+
+/**
+ * Result from ExecuteCellTool
+ */
+export interface IExecuteCellResult {
+  success: boolean;
+  data?: {
+    executionCount: number;
+    outputs: ICellOutput[];
+    hasError: boolean;
+    error?: {
+      name: string;
+      message: string;
+      traceback: string[];
+    };
+    executionTime: number;
+  };
+  error?: {
+    message: string;
+    type: string;
+  };
+}
+
+/**
+ * Arguments for SaveNotebookTool
+ */
+export interface ISaveNotebookArgs {
+  notebookId?: string;
+}
+
+/**
+ * Result from SaveNotebookTool
+ */
+export interface ISaveNotebookResult {
+  success: boolean;
+  data?: {
+    path: string;
+    name: string;
+    savedAt: string;
+    hasUnsavedChanges: boolean;
+  };
+  error?: {
+    message: string;
+    type: string;
+  };
+}
+
+/**
+ * Arguments for GetCellOutputTool
+ */
+export interface IGetCellOutputArgs {
+  cellIndex: number;
+  notebookId?: string;
+}
+
+/**
+ * Result from GetCellOutputTool
+ */
+export interface IGetCellOutputResult {
+  success: boolean;
+  data?: {
+    cellIndex: number;
+    executionCount: number | null;
+    hasOutput: boolean;
+    outputs: ICellOutput[];
+    hasError: boolean;
+    error?: {
+      name: string;
+      message: string;
+      traceback: string[];
+    };
+  };
+  error?: {
+    message: string;
+    type: string;
+  };
+}
 
 /**
  * Base class for execution tools
@@ -22,12 +116,10 @@ abstract class BaseExecutionTool implements ITool {
    * Find a notebook by ID
    */
   protected findNotebook(notebookId: string): NotebookPanel | null {
-    // If no ID provided, use current notebook
     if (!notebookId) {
       return this.notebookTracker.currentWidget;
     }
 
-    // Search through all open notebooks
     const notebooks = this.notebookTracker.filter(() => true);
     return notebooks.find(nb => nb.id === notebookId) || null;
   }
@@ -38,66 +130,10 @@ abstract class BaseExecutionTool implements ITool {
   protected getCurrentNotebook(): NotebookPanel | null {
     return this.notebookTracker.currentWidget;
   }
-
-  /**
-   * Wait for cell execution to complete
-   */
-  protected async waitForExecution(
-    notebook: NotebookPanel,
-    cellIndex: number,
-    timeoutMs: number = 30000
-  ): Promise<void> {
-    const cell = notebook.content.widgets[cellIndex];
-    if (!cell || cell.model.type !== 'code') {
-      return;
-    }
-
-    const codeCell = cell as CodeCell;
-    const model = codeCell.model as ICodeCellModel;
-
-    // If cell is not executing, return immediately
-    if (!model.executionCount || model.executionCount > 0) {
-      return;
-    }
-
-    // Wait for execution to complete or timeout
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error(`Cell execution timed out after ${timeoutMs}ms`));
-      }, timeoutMs);
-
-      // Listen for execution completion
-      const checkExecution = () => {
-        if (model.executionCount && model.executionCount > 0) {
-          clearTimeout(timeout);
-          resolve();
-        } else {
-          // Check again in 100ms
-          setTimeout(checkExecution, 100);
-        }
-      };
-
-      checkExecution();
-    });
-  }
-
-  /**
-   * Get cell outputs
-   */
-  protected getCellOutputs(notebook: NotebookPanel, cellIndex: number): any[] {
-    const cell = notebook.content.widgets[cellIndex];
-    if (!cell || cell.model.type !== 'code') {
-      return [];
-    }
-
-    const codeCell = cell as CodeCell;
-    const model = codeCell.model as ICodeCellModel;
-    return model.outputs.toJSON();
-  }
 }
 
 /**
- * Tool to execute a single cell
+ * Tool to execute a notebook cell and capture its output
  */
 export class ExecuteCellTool extends BaseExecutionTool {
   name = 'executeCell';
@@ -106,17 +142,17 @@ export class ExecuteCellTool extends BaseExecutionTool {
     type: 'function',
     function: {
       name: 'executeCell',
-      description: 'Execute a code cell in a notebook and return its output. Waits for execution to complete before returning.',
+      description: 'Execute a notebook cell and capture its output, including stdout, stderr, display data, and errors. Returns execution count, outputs, and error information if the cell fails.',
       parameters: {
         type: 'object',
         properties: {
-          notebookId: {
-            type: 'string',
-            description: 'The notebook ID. If not provided, uses the currently active notebook.'
-          },
           cellIndex: {
             type: 'number',
             description: 'The 0-based index of the cell to execute.'
+          },
+          notebookId: {
+            type: 'string',
+            description: 'The notebook ID. If not provided, uses the currently active notebook.'
           }
         },
         required: ['cellIndex']
@@ -124,9 +160,9 @@ export class ExecuteCellTool extends BaseExecutionTool {
     }
   };
 
-  async execute(args: { notebookId?: string; cellIndex: number }): Promise<IToolResult> {
+  async execute(args: IExecuteCellArgs): Promise<IExecuteCellResult> {
     try {
-      const notebook = args.notebookId 
+      const notebook = args.notebookId
         ? this.findNotebook(args.notebookId)
         : this.getCurrentNotebook();
 
@@ -134,7 +170,7 @@ export class ExecuteCellTool extends BaseExecutionTool {
         return {
           success: false,
           error: {
-            message: args.notebookId 
+            message: args.notebookId
               ? `Notebook not found: ${args.notebookId}`
               : 'No active notebook found. Please open a notebook first.',
             type: 'NotFoundError'
@@ -142,9 +178,8 @@ export class ExecuteCellTool extends BaseExecutionTool {
         };
       }
 
-      const cellWidgets = notebook.content.widgets;
-      
       // Validate cell index
+      const cellWidgets = notebook.content.widgets;
       if (args.cellIndex < 0 || args.cellIndex >= cellWidgets.length) {
         return {
           success: false,
@@ -156,65 +191,201 @@ export class ExecuteCellTool extends BaseExecutionTool {
       }
 
       const cell = cellWidgets[args.cellIndex];
-      
+      const cellModel = cell.model;
+
       // Check if it's a code cell
-      if (cell.model.type !== 'code') {
+      if (cellModel.type !== 'code') {
         return {
           success: false,
           error: {
-            message: `Cell at index ${args.cellIndex} is a ${cell.model.type} cell. Only code cells can be executed.`,
-            type: 'InvalidCellTypeError'
+            message: `Cell at index ${args.cellIndex} is not a code cell (type: ${cellModel.type}). Only code cells can be executed.`,
+            type: 'ValidationError'
           }
         };
       }
 
-      // Check if kernel is available
-      const sessionContext = notebook.sessionContext;
-      if (!sessionContext.session?.kernel) {
+      // Check kernel status
+      const kernel = notebook.sessionContext?.session?.kernel;
+      if (!kernel) {
         return {
           success: false,
           error: {
             message: 'No kernel available. Please start a kernel first.',
-            type: 'KernelNotAvailableError'
+            type: 'KernelError'
           }
         };
       }
 
-      // Select the cell and execute it
-      notebook.content.activeCellIndex = args.cellIndex;
-      notebook.content.deselectAll();
-      notebook.content.select(cell);
-
-      // Execute the cell using NotebookActions
-      const success = await NotebookActions.run(
-        notebook.content,
-        sessionContext
-      );
-
-      if (!success) {
+      if (kernel.status !== 'idle' && kernel.status !== 'busy') {
         return {
           success: false,
           error: {
-            message: 'Cell execution failed.',
-            type: 'ExecutionError'
+            message: `Kernel is not ready (status: ${kernel.status}). Please wait for the kernel to be ready.`,
+            type: 'KernelError'
           }
         };
       }
 
-      // Get the outputs
-      const codeCell = cell as CodeCell;
-      const model = codeCell.model as ICodeCellModel;
-      const outputs = model.outputs.toJSON();
-      const executionCount = model.executionCount;
+      // Execute the cell with 30-second timeout
+      const startTime = Date.now();
+      
+      try {
+        // Wrap execution in timeout
+        await ErrorHandler.withTimeout(
+          async () => {
+            // Set the active cell to the one we want to execute
+            notebook.content.activeCellIndex = args.cellIndex;
+            
+            // Execute using NotebookActions
+            await NotebookActions.run(notebook.content, notebook.sessionContext);
+          },
+          30000, // 30 seconds timeout
+          `Cell execution timed out after 30 seconds. The cell may contain long-running code or an infinite loop.`
+        );
+      } catch (error) {
+        // Check if it's a timeout error
+        if (error instanceof Error && error.name === 'TimeoutError') {
+          const executionTime = Date.now() - startTime;
+          
+          // Get the code cell model to check for partial outputs
+          const codeModel = cellModel as ICodeCellModel;
+          const outputs: ICellOutput[] = [];
+          
+          // Try to capture any partial outputs that were generated before timeout
+          const outputsList = codeModel.outputs;
+          for (let i = 0; i < outputsList.length; i++) {
+            const output = outputsList.get(i);
+            const outputType = output.type as 'stream' | 'display_data' | 'execute_result' | 'error';
+
+            if (outputType === 'stream') {
+              const streamOutput = output as any;
+              outputs.push({
+                outputType: 'stream',
+                content: streamOutput.text || '',
+                metadata: output.metadata
+              });
+            } else if (outputType === 'execute_result' || outputType === 'display_data') {
+              const dataOutput = output as any;
+              let content = '';
+              if (dataOutput.data) {
+                if (dataOutput.data['text/plain']) {
+                  content = dataOutput.data['text/plain'];
+                } else if (dataOutput.data['text/html']) {
+                  content = dataOutput.data['text/html'];
+                } else {
+                  content = JSON.stringify(dataOutput.data);
+                }
+              }
+              outputs.push({
+                outputType,
+                content,
+                metadata: output.metadata
+              });
+            }
+          }
+          
+          return {
+            success: false,
+            data: {
+              executionCount: codeModel.executionCount || 0,
+              outputs,
+              hasError: true,
+              error: {
+                name: 'TimeoutError',
+                message: error.message,
+                traceback: [
+                  'Cell execution exceeded the 30-second timeout limit.',
+                  'This may indicate:',
+                  '  - Long-running computation',
+                  '  - Infinite loop',
+                  '  - Blocking I/O operation',
+                  '  - Large data processing',
+                  '',
+                  'Suggestions:',
+                  '  - Break down the computation into smaller steps',
+                  '  - Add progress indicators to monitor execution',
+                  '  - Check for infinite loops',
+                  '  - Consider using async operations for I/O'
+                ]
+              },
+              executionTime
+            },
+            error: {
+              message: error.message,
+              type: 'TimeoutError'
+            }
+          };
+        }
+        
+        // Re-throw other errors to be caught by outer try-catch
+        throw error;
+      }
+      
+      const executionTime = Date.now() - startTime;
+
+      // Get the code cell model to access outputs
+      const codeModel = cellModel as ICodeCellModel;
+      const executionCount = codeModel.executionCount || 0;
+
+      // Parse outputs
+      const outputs: ICellOutput[] = [];
+      let hasError = false;
+      let errorInfo: { name: string; message: string; traceback: string[] } | undefined;
+
+      const outputsList = codeModel.outputs;
+      for (let i = 0; i < outputsList.length; i++) {
+        const output = outputsList.get(i);
+        const outputType = output.type as 'stream' | 'display_data' | 'execute_result' | 'error';
+
+        if (outputType === 'error') {
+          hasError = true;
+          const errorOutput = output as any;
+          errorInfo = {
+            name: errorOutput.ename || 'Error',
+            message: errorOutput.evalue || 'Unknown error',
+            traceback: errorOutput.traceback || []
+          };
+          outputs.push({
+            outputType: 'error',
+            content: errorInfo.traceback.join('\n'),
+            metadata: output.metadata
+          });
+        } else if (outputType === 'stream') {
+          const streamOutput = output as any;
+          outputs.push({
+            outputType: 'stream',
+            content: streamOutput.text || '',
+            metadata: output.metadata
+          });
+        } else if (outputType === 'execute_result' || outputType === 'display_data') {
+          const dataOutput = output as any;
+          // Try to get text representation
+          let content = '';
+          if (dataOutput.data) {
+            if (dataOutput.data['text/plain']) {
+              content = dataOutput.data['text/plain'];
+            } else if (dataOutput.data['text/html']) {
+              content = dataOutput.data['text/html'];
+            } else {
+              content = JSON.stringify(dataOutput.data);
+            }
+          }
+          outputs.push({
+            outputType,
+            content,
+            metadata: output.metadata
+          });
+        }
+      }
 
       return {
         success: true,
         data: {
-          notebookId: notebook.id,
-          cellIndex: args.cellIndex,
           executionCount,
           outputs,
-          message: `Executed cell ${args.cellIndex} successfully`
+          hasError,
+          error: errorInfo,
+          executionTime
         }
       };
     } catch (error) {
@@ -227,22 +398,22 @@ export class ExecuteCellTool extends BaseExecutionTool {
 }
 
 /**
- * Tool to execute all cells in a notebook
+ * Tool to save a notebook to disk
  */
-export class ExecuteAllCellsTool extends BaseExecutionTool {
-  name = 'executeAllCells';
+export class SaveNotebookTool extends BaseExecutionTool {
+  name = 'saveNotebook';
 
   schema: IToolSchema = {
     type: 'function',
     function: {
-      name: 'executeAllCells',
-      description: 'Execute all cells in a notebook from top to bottom. Returns execution status and outputs.',
+      name: 'saveNotebook',
+      description: 'Save a notebook to disk. Persists all changes including cell content, outputs, and metadata.',
       parameters: {
         type: 'object',
         properties: {
           notebookId: {
             type: 'string',
-            description: 'The notebook ID. If not provided, uses the currently active notebook.'
+            description: 'The notebook ID. If not provided, saves the currently active notebook.'
           }
         },
         required: []
@@ -250,9 +421,9 @@ export class ExecuteAllCellsTool extends BaseExecutionTool {
     }
   };
 
-  async execute(args: { notebookId?: string }): Promise<IToolResult> {
+  async execute(args: ISaveNotebookArgs): Promise<ISaveNotebookResult> {
     try {
-      const notebook = args.notebookId 
+      const notebook = args.notebookId
         ? this.findNotebook(args.notebookId)
         : this.getCurrentNotebook();
 
@@ -260,7 +431,7 @@ export class ExecuteAllCellsTool extends BaseExecutionTool {
         return {
           success: false,
           error: {
-            message: args.notebookId 
+            message: args.notebookId
               ? `Notebook not found: ${args.notebookId}`
               : 'No active notebook found. Please open a notebook first.',
             type: 'NotFoundError'
@@ -268,59 +439,79 @@ export class ExecuteAllCellsTool extends BaseExecutionTool {
         };
       }
 
-      // Check if kernel is available
-      const sessionContext = notebook.sessionContext;
-      if (!sessionContext.session?.kernel) {
+      const context = notebook.context;
+      const hadUnsavedChanges = context.model?.dirty || false;
+
+      // Check if the notebook has a valid path
+      if (!context.path) {
         return {
           success: false,
           error: {
-            message: 'No kernel available. Please start a kernel first.',
-            type: 'KernelNotAvailableError'
+            message: 'Notebook does not have a valid path. Please save the notebook manually first to set a file path.',
+            type: 'PathNotFoundError'
           }
         };
       }
 
-      const cellCount = notebook.content.widgets.length;
-
-      // Execute all cells using NotebookActions
-      const success = await NotebookActions.runAll(
-        notebook.content,
-        sessionContext
-      );
-
-      if (!success) {
-        return {
-          success: false,
-          error: {
-            message: 'Execution of all cells failed.',
-            type: 'ExecutionError'
-          }
-        };
-      }
-
-      // Collect execution counts and outputs from code cells
-      const results = [];
-      for (let i = 0; i < cellCount; i++) {
-        const cell = notebook.content.widgets[i];
-        if (cell.model.type === 'code') {
-          const codeCell = cell as CodeCell;
-          const model = codeCell.model as ICodeCellModel;
-          results.push({
-            cellIndex: i,
-            executionCount: model.executionCount,
-            outputs: model.outputs.toJSON()
-          });
+      // Save the notebook
+      try {
+        await context.save();
+      } catch (saveError) {
+        // Handle specific save errors
+        const errorMessage = saveError instanceof Error ? saveError.message : String(saveError);
+        
+        // Check for common error patterns
+        if (errorMessage.toLowerCase().includes('permission') || 
+            errorMessage.toLowerCase().includes('eacces')) {
+          return {
+            success: false,
+            error: {
+              message: `Permission denied: Cannot save notebook to ${context.path}. Please check file permissions or try saving to a different location.`,
+              type: 'PermissionError'
+            }
+          };
         }
+        
+        if (errorMessage.toLowerCase().includes('enospc') || 
+            errorMessage.toLowerCase().includes('disk') ||
+            errorMessage.toLowerCase().includes('space')) {
+          return {
+            success: false,
+            error: {
+              message: `Insufficient disk space: Cannot save notebook to ${context.path}. Please free up disk space and try again.`,
+              type: 'DiskFullError'
+            }
+          };
+        }
+        
+        if (errorMessage.toLowerCase().includes('enoent') || 
+            errorMessage.toLowerCase().includes('not found')) {
+          return {
+            success: false,
+            error: {
+              message: `Path not found: The directory for ${context.path} does not exist. Please ensure the parent directory exists.`,
+              type: 'PathNotFoundError'
+            }
+          };
+        }
+        
+        // Generic save error
+        return {
+          success: false,
+          error: {
+            message: `Failed to save notebook: ${errorMessage}`,
+            type: 'SaveError'
+          }
+        };
       }
 
       return {
         success: true,
         data: {
-          notebookId: notebook.id,
-          totalCells: cellCount,
-          executedCells: results.length,
-          results,
-          message: `Executed all ${results.length} code cells successfully`
+          path: context.path,
+          name: notebook.title.label,
+          savedAt: new Date().toISOString(),
+          hasUnsavedChanges: context.model?.dirty || false
         }
       };
     } catch (error) {
@@ -333,263 +524,7 @@ export class ExecuteAllCellsTool extends BaseExecutionTool {
 }
 
 /**
- * Tool to execute all cells above a specific index
- */
-export class ExecuteCellsAboveTool extends BaseExecutionTool {
-  name = 'executeCellsAbove';
-
-  schema: IToolSchema = {
-    type: 'function',
-    function: {
-      name: 'executeCellsAbove',
-      description: 'Execute all cells above (before) a specific cell index. Does not execute the cell at the specified index.',
-      parameters: {
-        type: 'object',
-        properties: {
-          notebookId: {
-            type: 'string',
-            description: 'The notebook ID. If not provided, uses the currently active notebook.'
-          },
-          cellIndex: {
-            type: 'number',
-            description: 'The 0-based index. All cells before this index will be executed.'
-          }
-        },
-        required: ['cellIndex']
-      }
-    }
-  };
-
-  async execute(args: { notebookId?: string; cellIndex: number }): Promise<IToolResult> {
-    try {
-      const notebook = args.notebookId 
-        ? this.findNotebook(args.notebookId)
-        : this.getCurrentNotebook();
-
-      if (!notebook) {
-        return {
-          success: false,
-          error: {
-            message: args.notebookId 
-              ? `Notebook not found: ${args.notebookId}`
-              : 'No active notebook found. Please open a notebook first.',
-            type: 'NotFoundError'
-          }
-        };
-      }
-
-      const cellWidgets = notebook.content.widgets;
-      
-      // Validate cell index
-      if (args.cellIndex < 0 || args.cellIndex >= cellWidgets.length) {
-        return {
-          success: false,
-          error: {
-            message: `Cell index ${args.cellIndex} is out of range. Notebook has ${cellWidgets.length} cells (indices 0-${cellWidgets.length - 1}).`,
-            type: 'IndexError'
-          }
-        };
-      }
-
-      if (args.cellIndex === 0) {
-        return {
-          success: true,
-          data: {
-            notebookId: notebook.id,
-            message: 'No cells above index 0 to execute.'
-          }
-        };
-      }
-
-      // Check if kernel is available
-      const sessionContext = notebook.sessionContext;
-      if (!sessionContext.session?.kernel) {
-        return {
-          success: false,
-          error: {
-            message: 'No kernel available. Please start a kernel first.',
-            type: 'KernelNotAvailableError'
-          }
-        };
-      }
-
-      // Set active cell to the specified index
-      notebook.content.activeCellIndex = args.cellIndex;
-
-      // Execute all cells above using NotebookActions
-      const success = await NotebookActions.runAllAbove(
-        notebook.content,
-        sessionContext
-      );
-
-      if (!success) {
-        return {
-          success: false,
-          error: {
-            message: 'Execution of cells above failed.',
-            type: 'ExecutionError'
-          }
-        };
-      }
-
-      // Collect results from executed cells
-      const results = [];
-      for (let i = 0; i < args.cellIndex; i++) {
-        const cell = cellWidgets[i];
-        if (cell.model.type === 'code') {
-          const codeCell = cell as CodeCell;
-          const model = codeCell.model as ICodeCellModel;
-          results.push({
-            cellIndex: i,
-            executionCount: model.executionCount,
-            outputs: model.outputs.toJSON()
-          });
-        }
-      }
-
-      return {
-        success: true,
-        data: {
-          notebookId: notebook.id,
-          executedCells: results.length,
-          results,
-          message: `Executed ${results.length} code cells above index ${args.cellIndex}`
-        }
-      };
-    } catch (error) {
-      return ErrorHandler.handleToolError(
-        error instanceof Error ? error : new Error(String(error)),
-        this.name
-      );
-    }
-  }
-}
-
-/**
- * Tool to execute all cells below and including a specific index
- */
-export class ExecuteCellsBelowTool extends BaseExecutionTool {
-  name = 'executeCellsBelow';
-
-  schema: IToolSchema = {
-    type: 'function',
-    function: {
-      name: 'executeCellsBelow',
-      description: 'Execute all cells at and below (after) a specific cell index. Includes the cell at the specified index.',
-      parameters: {
-        type: 'object',
-        properties: {
-          notebookId: {
-            type: 'string',
-            description: 'The notebook ID. If not provided, uses the currently active notebook.'
-          },
-          cellIndex: {
-            type: 'number',
-            description: 'The 0-based index. This cell and all cells after it will be executed.'
-          }
-        },
-        required: ['cellIndex']
-      }
-    }
-  };
-
-  async execute(args: { notebookId?: string; cellIndex: number }): Promise<IToolResult> {
-    try {
-      const notebook = args.notebookId 
-        ? this.findNotebook(args.notebookId)
-        : this.getCurrentNotebook();
-
-      if (!notebook) {
-        return {
-          success: false,
-          error: {
-            message: args.notebookId 
-              ? `Notebook not found: ${args.notebookId}`
-              : 'No active notebook found. Please open a notebook first.',
-            type: 'NotFoundError'
-          }
-        };
-      }
-
-      const cellWidgets = notebook.content.widgets;
-      
-      // Validate cell index
-      if (args.cellIndex < 0 || args.cellIndex >= cellWidgets.length) {
-        return {
-          success: false,
-          error: {
-            message: `Cell index ${args.cellIndex} is out of range. Notebook has ${cellWidgets.length} cells (indices 0-${cellWidgets.length - 1}).`,
-            type: 'IndexError'
-          }
-        };
-      }
-
-      // Check if kernel is available
-      const sessionContext = notebook.sessionContext;
-      if (!sessionContext.session?.kernel) {
-        return {
-          success: false,
-          error: {
-            message: 'No kernel available. Please start a kernel first.',
-            type: 'KernelNotAvailableError'
-          }
-        };
-      }
-
-      // Set active cell to the specified index
-      notebook.content.activeCellIndex = args.cellIndex;
-
-      // Execute all cells below (including current) using NotebookActions
-      const success = await NotebookActions.runAllBelow(
-        notebook.content,
-        sessionContext
-      );
-
-      if (!success) {
-        return {
-          success: false,
-          error: {
-            message: 'Execution of cells below failed.',
-            type: 'ExecutionError'
-          }
-        };
-      }
-
-      // Collect results from executed cells
-      const results = [];
-      for (let i = args.cellIndex; i < cellWidgets.length; i++) {
-        const cell = cellWidgets[i];
-        if (cell.model.type === 'code') {
-          const codeCell = cell as CodeCell;
-          const model = codeCell.model as ICodeCellModel;
-          results.push({
-            cellIndex: i,
-            executionCount: model.executionCount,
-            outputs: model.outputs.toJSON()
-          });
-        }
-      }
-
-      return {
-        success: true,
-        data: {
-          notebookId: notebook.id,
-          executedCells: results.length,
-          results,
-          message: `Executed ${results.length} code cells from index ${args.cellIndex} onwards`
-        }
-      };
-    } catch (error) {
-      return ErrorHandler.handleToolError(
-        error instanceof Error ? error : new Error(String(error)),
-        this.name
-      );
-    }
-  }
-}
-
-/**
- * Tool to retrieve and interpret cell outputs
+ * Tool to retrieve cell output without executing
  */
 export class GetCellOutputTool extends BaseExecutionTool {
   name = 'getCellOutput';
@@ -598,243 +533,17 @@ export class GetCellOutputTool extends BaseExecutionTool {
     type: 'function',
     function: {
       name: 'getCellOutput',
-      description: 'Retrieve the output from a code cell. Returns text output, error messages, display data (plots, tables, HTML), and execution count.',
+      description: 'Retrieve the output of a previously executed cell without re-executing it. Returns execution count, outputs, and error information if present.',
       parameters: {
         type: 'object',
         properties: {
-          notebookId: {
-            type: 'string',
-            description: 'The notebook ID. If not provided, uses the currently active notebook.'
-          },
           cellIndex: {
             type: 'number',
             description: 'The 0-based index of the cell to get output from.'
-          }
-        },
-        required: ['cellIndex']
-      }
-    }
-  };
-
-  async execute(args: { notebookId?: string; cellIndex: number }): Promise<IToolResult> {
-    try {
-      const notebook = args.notebookId 
-        ? this.findNotebook(args.notebookId)
-        : this.getCurrentNotebook();
-
-      if (!notebook) {
-        return {
-          success: false,
-          error: {
-            message: args.notebookId 
-              ? `Notebook not found: ${args.notebookId}`
-              : 'No active notebook found. Please open a notebook first.',
-            type: 'NotFoundError'
-          }
-        };
-      }
-
-      const cellWidgets = notebook.content.widgets;
-      
-      // Validate cell index
-      if (args.cellIndex < 0 || args.cellIndex >= cellWidgets.length) {
-        return {
-          success: false,
-          error: {
-            message: `Cell index ${args.cellIndex} is out of range. Notebook has ${cellWidgets.length} cells (indices 0-${cellWidgets.length - 1}).`,
-            type: 'IndexError'
-          }
-        };
-      }
-
-      const cell = cellWidgets[args.cellIndex];
-      
-      // Check if it's a code cell
-      if (cell.model.type !== 'code') {
-        return {
-          success: false,
-          error: {
-            message: `Cell at index ${args.cellIndex} is a ${cell.model.type} cell. Only code cells have outputs.`,
-            type: 'InvalidCellTypeError'
-          }
-        };
-      }
-
-      const codeCell = cell as CodeCell;
-      const model = codeCell.model as ICodeCellModel;
-      const outputs = model.outputs.toJSON();
-      const executionCount = model.executionCount;
-
-      // Interpret outputs
-      const interpretedOutputs = this.interpretOutputs(outputs);
-
-      return {
-        success: true,
-        data: {
-          notebookId: notebook.id,
-          cellIndex: args.cellIndex,
-          executionCount,
-          hasOutput: outputs.length > 0,
-          outputCount: outputs.length,
-          outputs: interpretedOutputs,
-          rawOutputs: outputs
-        }
-      };
-    } catch (error) {
-      return ErrorHandler.handleToolError(
-        error instanceof Error ? error : new Error(String(error)),
-        this.name
-      );
-    }
-  }
-
-  /**
-   * Interpret cell outputs and categorize them
-   */
-  private interpretOutputs(outputs: any[]): any[] {
-    return outputs.map((output, index) => {
-      const interpreted: any = {
-        index,
-        outputType: output.output_type
-      };
-
-      switch (output.output_type) {
-        case 'stream':
-          // Text output (stdout/stderr)
-          interpreted.streamName = output.name;
-          interpreted.text = Array.isArray(output.text) 
-            ? output.text.join('') 
-            : output.text;
-          interpreted.category = 'text';
-          break;
-
-        case 'error':
-          // Error output
-          interpreted.errorName = output.ename;
-          interpreted.errorValue = output.evalue;
-          interpreted.traceback = output.traceback;
-          interpreted.category = 'error';
-          
-          // Extract root cause from traceback
-          if (output.traceback && output.traceback.length > 0) {
-            const lastLine = output.traceback[output.traceback.length - 1];
-            interpreted.errorMessage = lastLine;
-          }
-          break;
-
-        case 'execute_result':
-        case 'display_data':
-          // Display data (plots, tables, HTML, etc.)
-          interpreted.category = 'display';
-          interpreted.mimeTypes = Object.keys(output.data || {});
-          interpreted.data = output.data;
-
-          // Identify specific data types
-          if (output.data) {
-            if (output.data['text/plain']) {
-              interpreted.textRepresentation = Array.isArray(output.data['text/plain'])
-                ? output.data['text/plain'].join('')
-                : output.data['text/plain'];
-              
-              // Check if it's a DataFrame representation
-              if (this.isDataFrameRepresentation(interpreted.textRepresentation)) {
-                interpreted.dataType = 'dataframe';
-              }
-            }
-
-            if (output.data['text/html']) {
-              interpreted.dataType = interpreted.dataType || 'html';
-              interpreted.htmlContent = Array.isArray(output.data['text/html'])
-                ? output.data['text/html'].join('')
-                : output.data['text/html'];
-            }
-
-            if (output.data['image/png']) {
-              interpreted.dataType = 'image';
-              interpreted.imageFormat = 'png';
-              interpreted.imageData = output.data['image/png'];
-            }
-
-            if (output.data['image/jpeg']) {
-              interpreted.dataType = 'image';
-              interpreted.imageFormat = 'jpeg';
-              interpreted.imageData = output.data['image/jpeg'];
-            }
-
-            if (output.data['image/svg+xml']) {
-              interpreted.dataType = 'image';
-              interpreted.imageFormat = 'svg';
-              interpreted.imageData = Array.isArray(output.data['image/svg+xml'])
-                ? output.data['image/svg+xml'].join('')
-                : output.data['image/svg+xml'];
-            }
-
-            if (output.data['application/json']) {
-              interpreted.dataType = 'json';
-              interpreted.jsonData = output.data['application/json'];
-            }
-
-            if (output.data['application/vnd.plotly.v1+json']) {
-              interpreted.dataType = 'plotly';
-            }
-
-            if (output.data['application/vnd.vegalite.v4+json'] || 
-                output.data['application/vnd.vega.v5+json']) {
-              interpreted.dataType = 'vega';
-            }
-          }
-
-          if (output.output_type === 'execute_result') {
-            interpreted.executionCount = output.execution_count;
-          }
-          break;
-
-        default:
-          interpreted.category = 'unknown';
-          interpreted.rawOutput = output;
-      }
-
-      return interpreted;
-    });
-  }
-
-  /**
-   * Check if text representation is a DataFrame
-   */
-  private isDataFrameRepresentation(text: string): boolean {
-    // Check for common DataFrame patterns
-    const patterns = [
-      /^\s+\w+\s+\w+/m,  // Column headers with whitespace
-      /\d+\s+rows\s+×\s+\d+\s+columns/,  // "X rows × Y columns"
-      /DataFrame/,  // Explicit DataFrame mention
-      /\[.*rows\s+x\s+.*columns\]/  // [X rows x Y columns]
-    ];
-
-    return patterns.some(pattern => pattern.test(text));
-  }
-}
-
-/**
- * Tool to clear output from a single cell
- */
-export class ClearCellOutputTool extends BaseExecutionTool {
-  name = 'clearCellOutput';
-
-  schema: IToolSchema = {
-    type: 'function',
-    function: {
-      name: 'clearCellOutput',
-      description: 'Clear the output from a single code cell. The cell content is preserved, only the output is removed.',
-      parameters: {
-        type: 'object',
-        properties: {
-          notebookId: {
-            type: 'string',
-            description: 'The notebook ID. If not provided, uses the currently active notebook.'
           },
-          cellIndex: {
-            type: 'number',
-            description: 'The 0-based index of the cell to clear output from.'
+          notebookId: {
+            type: 'string',
+            description: 'The notebook ID. If not provided, uses the currently active notebook.'
           }
         },
         required: ['cellIndex']
@@ -842,9 +551,9 @@ export class ClearCellOutputTool extends BaseExecutionTool {
     }
   };
 
-  async execute(args: { notebookId?: string; cellIndex: number }): Promise<IToolResult> {
+  async execute(args: IGetCellOutputArgs): Promise<IGetCellOutputResult> {
     try {
-      const notebook = args.notebookId 
+      const notebook = args.notebookId
         ? this.findNotebook(args.notebookId)
         : this.getCurrentNotebook();
 
@@ -852,7 +561,7 @@ export class ClearCellOutputTool extends BaseExecutionTool {
         return {
           success: false,
           error: {
-            message: args.notebookId 
+            message: args.notebookId
               ? `Notebook not found: ${args.notebookId}`
               : 'No active notebook found. Please open a notebook first.',
             type: 'NotFoundError'
@@ -860,9 +569,8 @@ export class ClearCellOutputTool extends BaseExecutionTool {
         };
       }
 
-      const cellWidgets = notebook.content.widgets;
-      
       // Validate cell index
+      const cellWidgets = notebook.content.widgets;
       if (args.cellIndex < 0 || args.cellIndex >= cellWidgets.length) {
         return {
           success: false,
@@ -874,119 +582,82 @@ export class ClearCellOutputTool extends BaseExecutionTool {
       }
 
       const cell = cellWidgets[args.cellIndex];
-      
+      const cellModel = cell.model;
+
       // Check if it's a code cell
-      if (cell.model.type !== 'code') {
+      if (cellModel.type !== 'code') {
         return {
           success: false,
           error: {
-            message: `Cell at index ${args.cellIndex} is a ${cell.model.type} cell. Only code cells have outputs to clear.`,
-            type: 'InvalidCellTypeError'
+            message: `Cell at index ${args.cellIndex} is not a code cell (type: ${cellModel.type}). Only code cells have outputs.`,
+            type: 'ValidationError'
           }
         };
       }
 
-      const codeCell = cell as CodeCell;
-      const model = codeCell.model as ICodeCellModel;
+      const codeModel = cellModel as ICodeCellModel;
+      const executionCount = codeModel.executionCount;
+      const hasOutput = codeModel.outputs.length > 0;
 
-      // Check if there's any output to clear
-      const hadOutput = model.outputs.length > 0;
+      // Parse outputs
+      const outputs: ICellOutput[] = [];
+      let hasError = false;
+      let errorInfo: { name: string; message: string; traceback: string[] } | undefined;
 
-      // Clear the output
-      model.sharedModel.transact(() => {
-        model.clearExecution();
-        codeCell.outputHidden = false;
-      }, false);
+      const outputsList = codeModel.outputs;
+      for (let i = 0; i < outputsList.length; i++) {
+        const output = outputsList.get(i);
+        const outputType = output.type as 'stream' | 'display_data' | 'execute_result' | 'error';
 
-      // Mark notebook as modified
-      if (notebook.context.model) {
-        notebook.context.model.dirty = true;
+        if (outputType === 'error') {
+          hasError = true;
+          const errorOutput = output as any;
+          errorInfo = {
+            name: errorOutput.ename || 'Error',
+            message: errorOutput.evalue || 'Unknown error',
+            traceback: errorOutput.traceback || []
+          };
+          outputs.push({
+            outputType: 'error',
+            content: errorInfo.traceback.join('\n'),
+            metadata: output.metadata
+          });
+        } else if (outputType === 'stream') {
+          const streamOutput = output as any;
+          outputs.push({
+            outputType: 'stream',
+            content: streamOutput.text || '',
+            metadata: output.metadata
+          });
+        } else if (outputType === 'execute_result' || outputType === 'display_data') {
+          const dataOutput = output as any;
+          let content = '';
+          if (dataOutput.data) {
+            if (dataOutput.data['text/plain']) {
+              content = dataOutput.data['text/plain'];
+            } else if (dataOutput.data['text/html']) {
+              content = dataOutput.data['text/html'];
+            } else {
+              content = JSON.stringify(dataOutput.data);
+            }
+          }
+          outputs.push({
+            outputType,
+            content,
+            metadata: output.metadata
+          });
+        }
       }
 
       return {
         success: true,
         data: {
-          notebookId: notebook.id,
           cellIndex: args.cellIndex,
-          hadOutput,
-          message: hadOutput 
-            ? `Cleared output from cell ${args.cellIndex}`
-            : `Cell ${args.cellIndex} had no output to clear`
-        }
-      };
-    } catch (error) {
-      return ErrorHandler.handleToolError(
-        error instanceof Error ? error : new Error(String(error)),
-        this.name
-      );
-    }
-  }
-}
-
-/**
- * Tool to clear all outputs in a notebook
- */
-export class ClearAllOutputsTool extends BaseExecutionTool {
-  name = 'clearAllOutputs';
-
-  schema: IToolSchema = {
-    type: 'function',
-    function: {
-      name: 'clearAllOutputs',
-      description: 'Clear all outputs from all code cells in a notebook. Cell contents are preserved, only outputs are removed.',
-      parameters: {
-        type: 'object',
-        properties: {
-          notebookId: {
-            type: 'string',
-            description: 'The notebook ID. If not provided, uses the currently active notebook.'
-          }
-        },
-        required: []
-      }
-    }
-  };
-
-  async execute(args: { notebookId?: string }): Promise<IToolResult> {
-    try {
-      const notebook = args.notebookId 
-        ? this.findNotebook(args.notebookId)
-        : this.getCurrentNotebook();
-
-      if (!notebook) {
-        return {
-          success: false,
-          error: {
-            message: args.notebookId 
-              ? `Notebook not found: ${args.notebookId}`
-              : 'No active notebook found. Please open a notebook first.',
-            type: 'NotFoundError'
-          }
-        };
-      }
-
-      // Use NotebookActions to clear all outputs
-      NotebookActions.clearAllOutputs(notebook.content);
-
-      // Mark notebook as modified
-      if (notebook.context.model) {
-        notebook.context.model.dirty = true;
-      }
-
-      // Count how many code cells were cleared
-      let clearedCount = 0;
-      for (const cell of notebook.content.widgets) {
-        if (cell.model.type === 'code') {
-          clearedCount++;
-        }
-      }
-
-      return {
-        success: true,
-        data: {
-          notebookId: notebook.id,
-          clearedCells: clearedCount,
-          message: `Cleared outputs from all ${clearedCount} code cells`
+          executionCount: executionCount || null,
+          hasOutput,
+          outputs,
+          hasError,
+          error: errorInfo
         }
       };
     } catch (error) {

@@ -32,6 +32,11 @@ export interface IToolCall {
     name: string;
     arguments: string; // JSON string
   };
+  /**
+   * Index of this tool call in a multi-tool-call response
+   * Used during streaming to properly accumulate deltas
+   */
+  index?: number;
 }
 
 /**
