@@ -31,9 +31,9 @@ export const MessageActions: React.FC<IMessageActionsProps> = ({
   };
 
   return (
-    <div className="jp-ChatMessage-actions">
+    <div className="tq-flex tq-gap-1 tq-mt-2 tq-opacity-0 tq-transition-opacity group-hover:tq-opacity-100">
       <button
-        className="jp-ChatMessage-actionButton"
+        className="tq-btn-secondary"
         onClick={handleCopy}
         title="Copy message"
       >
@@ -42,7 +42,7 @@ export const MessageActions: React.FC<IMessageActionsProps> = ({
       
       {role === 'user' && onEdit && (
         <button
-          className="jp-ChatMessage-actionButton"
+          className="tq-btn-secondary"
           onClick={onEdit}
           title="Edit message"
         >
@@ -52,7 +52,7 @@ export const MessageActions: React.FC<IMessageActionsProps> = ({
       
       {role === 'assistant' && onRegenerate && (
         <button
-          className="jp-ChatMessage-actionButton"
+          className="tq-btn-secondary"
           onClick={onRegenerate}
           title="Regenerate response"
         >

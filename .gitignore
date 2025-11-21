@@ -96,3 +96,6 @@ start_phoenix.sh
 
 # Jupyter Notebooks
 *.ipynb
+
+# Generated Tailwind CSS output
+style/index.css

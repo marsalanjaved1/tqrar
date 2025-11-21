@@ -9,6 +9,7 @@
 import React from 'react';
 import * as Switch from '@radix-ui/react-switch';
 import { ExecutionMode } from '../types';
+import { cn } from '../utils/classNames';
 
 /**
  * Props for ModeToggle component
@@ -110,19 +111,22 @@ export const ModeToggle: React.FC<IModeToggleProps> = ({
 
   return (
     <div 
-      className={`jp-ModeToggle ${className}`}
+      className={cn('tq-flex tq-items-center tq-gap-2 tq-select-none', className)}
       title={tooltipText}
     >
-      <label className="jp-ModeToggle-label">
+      <label className="tq-flex tq-items-center tq-gap-2 tq-cursor-pointer">
         <span 
-          className={`jp-ModeToggle-text ${!isActMode ? 'jp-ModeToggle-text-active' : ''}`}
+          className={cn(
+            'tq-text-sm tq-font-medium tq-transition-colors',
+            !isActMode ? 'tq-text-text-primary' : 'tq-text-text-secondary'
+          )}
           aria-hidden="true"
         >
           {MODE_CONFIGS.plan.label}
         </span>
         
         <Switch.Root
-          className="jp-ModeToggle-switch"
+          className="tq-mode-switch"
           checked={isActMode}
           onCheckedChange={handleCheckedChange}
           disabled={disabled}
@@ -130,11 +134,14 @@ export const ModeToggle: React.FC<IModeToggleProps> = ({
           title={tooltipText}
           onKeyDown={handleKeyDown}
         >
-          <Switch.Thumb className="jp-ModeToggle-thumb" />
+          <Switch.Thumb className="tq-mode-thumb" />
         </Switch.Root>
         
         <span 
-          className={`jp-ModeToggle-text ${isActMode ? 'jp-ModeToggle-text-active' : ''}`}
+          className={cn(
+            'tq-text-sm tq-font-medium tq-transition-colors',
+            isActMode ? 'tq-text-text-primary' : 'tq-text-text-secondary'
+          )}
           aria-hidden="true"
         >
           {MODE_CONFIGS.act.label}
@@ -142,7 +149,7 @@ export const ModeToggle: React.FC<IModeToggleProps> = ({
       </label>
 
       {/* Screen reader announcement for mode changes */}
-      <span className="jp-sr-only" role="status" aria-live="polite" aria-atomic="true">
+      <span className="tq-sr-only" role="status" aria-live="polite" aria-atomic="true">
         {`Current mode: ${currentConfig.label}. ${currentConfig.description}`}
       </span>
     </div>

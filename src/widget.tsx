@@ -14,11 +14,12 @@ import { SessionTabs } from './components/SessionTabs';
 import { HistorySidebar } from './components/HistorySidebar';
 import { SessionManager, ISession } from './session';
 
+// CSS is imported via style/index.js (Tailwind-generated)
 // Import CSS
-import '../style/widget.css';
-import '../style/chat-interface.css';
-import '../style/tool-execution.css';
-import '../style/sessions.css';
+// import '../style/widget.css';
+// import '../style/chat-interface.css';
+// import '../style/tool-execution.css';
+// import '../style/sessions.css';
 
 /**
  * Options for creating a ChatWidget

@@ -6,6 +6,7 @@
  */
 
 import React, { useRef, useEffect, useState } from 'react';
+import { cn } from '../utils/classNames';
 
 /**
  * Props for CollapsibleSection component
@@ -217,12 +218,18 @@ export const CollapsibleSection: React.FC<ICollapsibleSectionProps> = ({
 
   return (
     <div
-      className={`jp-CollapsibleSection ${className} ${isExpanded ? 'jp-CollapsibleSection-expanded' : 'jp-CollapsibleSection-collapsed'}`}
+      className={cn(
+        'tq-border tq-border-border-default tq-rounded tq-overflow-hidden',
+        className
+      )}
       data-animating={isAnimating}
     >
       {/* Header button */}
       <button
-        className={`jp-CollapsibleSection-header ${headerClassName}`}
+        className={cn(
+          'tq-w-full tq-px-3 tq-py-2 tq-bg-bg-secondary tq-text-left tq-text-text-primary tq-text-sm tq-font-medium tq-flex tq-items-center tq-gap-2 tq-cursor-pointer tq-transition-colors hover:tq-bg-bg-hover',
+          headerClassName
+        )}
         onClick={handleToggle}
         onKeyDown={handleKeyDown}
         aria-expanded={isExpanded}
@@ -230,12 +237,15 @@ export const CollapsibleSection: React.FC<ICollapsibleSectionProps> = ({
         type="button"
       >
         <span
-          className="jp-CollapsibleSection-icon"
+          className={cn(
+            'tq-text-text-secondary tq-transition-transform tq-duration-normal',
+            isExpanded && 'tq-rotate-90'
+          )}
           aria-hidden="true"
         >
           {isExpanded ? expandedIcon : collapsedIcon}
         </span>
-        <span className="jp-CollapsibleSection-title">
+        <span>
           {title}
         </span>
       </button>
@@ -244,13 +254,13 @@ export const CollapsibleSection: React.FC<ICollapsibleSectionProps> = ({
       <div
         id={`${id}-content`}
         ref={contentRef}
-        className={`jp-CollapsibleSection-content ${contentClassName}`}
+        className={cn('tq-bg-bg-primary', contentClassName)}
         style={getContentStyle()}
         role="region"
         aria-labelledby={`${id}-header`}
         aria-hidden={!isExpanded}
       >
-        <div className="jp-CollapsibleSection-contentInner">
+        <div className="tq-p-3">
           {children}
         </div>
       </div>

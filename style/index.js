@@ -15,7 +15,8 @@ import '@jupyterlab/codemirror/style/index.js';
 import '@jupyterlab/cells/style/index.js';
 import '@jupyterlab/notebook/style/index.js';
 
-// Import extension styles
-import './widget.css';
-import './debug-panel.css';
-import './sessions.css';
+// Import extension styles (generated from Tailwind)
+import './index.css';
+// import './widget.css';
+// import './debug-panel.css';
+// import './sessions.css';

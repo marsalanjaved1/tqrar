@@ -12,6 +12,7 @@ import { MessageActions } from './MessageActions';
 import { InputArea } from './InputArea';
 import { DebugPanel } from './DebugPanel';
 import type { IToolExecutionEvent } from '../types';
+import { cn } from '../utils/classNames';
 
 export interface IChatInterfaceProps {
   messages: IMessage[];
@@ -142,65 +143,65 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   };
 
   return (
-    <div className="jp-ChatInterface" ref={containerRef}>
+    <div className="tq-chat-container" ref={containerRef}>
       
       {/* Messages container */}
-      <div className="jp-ChatInterface-messages">
+      <div className="tq-chat-messages tq-scrollbar">
         {/* Welcome screen when no messages */}
         {messages.filter(m => m.role !== 'system').length === 0 && (
-          <div className="jp-ChatInterface-welcome">
-            <div className="jp-ChatInterface-welcomeContent">
+          <div className="tq-flex tq-flex-col tq-items-center tq-justify-center tq-h-full tq-text-center tq-px-4">
+            <div className="tq-max-w-2xl">
               <img 
                 src="/lab/extensions/tqrar/static/ghost-logo.png"
                 alt="Tqrar Logo" 
-                className="jp-ChatInterface-welcomeLogo"
+                className="tq-w-24 tq-h-24 tq-mx-auto tq-mb-6 tq-opacity-80"
               />
-              <h2 className="jp-ChatInterface-welcomeTitle">Welcome to Tqrar</h2>
-              <p className="jp-ChatInterface-welcomeSubtitle">Your AI assistant for JupyterLab</p>
+              <h2 className="tq-text-2xl tq-font-semibold tq-text-text-primary tq-mb-2">Welcome to Tqrar</h2>
+              <p className="tq-text-md tq-text-text-secondary tq-mb-8">Your AI assistant for JupyterLab</p>
               
-              <div className="jp-ChatInterface-welcomePrompts">
+              <div className="tq-grid tq-grid-cols-2 tq-gap-3 tq-max-w-xl tq-mx-auto">
                 <button 
-                  className="jp-ChatInterface-promptCard"
+                  className="tq-bg-bg-secondary tq-border tq-border-border-default tq-rounded-lg tq-p-4 tq-text-left tq-transition-all hover:tq-bg-bg-hover hover:tq-border-border-subtle tq-cursor-pointer tq-flex tq-flex-col tq-gap-2"
                   onClick={() => {
                     const prompt = "Load the iris dataset and show me the first 5 rows";
                     onSendMessage(prompt, executionSettings);
                   }}
                 >
-                  <span className="jp-ChatInterface-promptIcon">📊</span>
-                  <span className="jp-ChatInterface-promptText">Load the iris dataset</span>
+                  <span className="tq-text-2xl">📊</span>
+                  <span className="tq-text-sm tq-text-text-primary">Load the iris dataset</span>
                 </button>
                 
                 <button 
-                  className="jp-ChatInterface-promptCard"
+                  className="tq-bg-bg-secondary tq-border tq-border-border-default tq-rounded-lg tq-p-4 tq-text-left tq-transition-all hover:tq-bg-bg-hover hover:tq-border-border-subtle tq-cursor-pointer tq-flex tq-flex-col tq-gap-2"
                   onClick={() => {
                     const prompt = "Create a scatter plot of sepal length vs width";
                     onSendMessage(prompt, executionSettings);
                   }}
                 >
-                  <span className="jp-ChatInterface-promptIcon">📈</span>
-                  <span className="jp-ChatInterface-promptText">Create a visualization</span>
+                  <span className="tq-text-2xl">📈</span>
+                  <span className="tq-text-sm tq-text-text-primary">Create a visualization</span>
                 </button>
                 
                 <button 
-                  className="jp-ChatInterface-promptCard"
+                  className="tq-bg-bg-secondary tq-border tq-border-border-default tq-rounded-lg tq-p-4 tq-text-left tq-transition-all hover:tq-bg-bg-hover hover:tq-border-border-subtle tq-cursor-pointer tq-flex tq-flex-col tq-gap-2"
                   onClick={() => {
                     const prompt = "Explain what this code does";
                     onSendMessage(prompt, executionSettings);
                   }}
                 >
-                  <span className="jp-ChatInterface-promptIcon">💡</span>
-                  <span className="jp-ChatInterface-promptText">Explain my code</span>
+                  <span className="tq-text-2xl">💡</span>
+                  <span className="tq-text-sm tq-text-text-primary">Explain my code</span>
                 </button>
                 
                 <button 
-                  className="jp-ChatInterface-promptCard"
+                  className="tq-bg-bg-secondary tq-border tq-border-border-default tq-rounded-lg tq-p-4 tq-text-left tq-transition-all hover:tq-bg-bg-hover hover:tq-border-border-subtle tq-cursor-pointer tq-flex tq-flex-col tq-gap-2"
                   onClick={() => {
                     const prompt = "Help me debug this error";
                     onSendMessage(prompt, executionSettings);
                   }}
                 >
-                  <span className="jp-ChatInterface-promptIcon">🐛</span>
-                  <span className="jp-ChatInterface-promptText">Debug an error</span>
+                  <span className="tq-text-2xl">🐛</span>
+                  <span className="tq-text-sm tq-text-text-primary">Debug an error</span>
                 </button>
               </div>
             </div>
@@ -229,17 +230,21 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
           // User messages
           if (message.role === 'user') {
             return (
-              <div key={index} className={`jp-ChatMessage jp-ChatMessage-${message.role}`}>
-                <div className="jp-ChatMessage-avatar"></div>
-                <div className="jp-ChatMessage-content">
-                  <MessageContent content={message.content} role={message.role} />
+              <div key={index} className="tq-message-user tq-group">
+                <div className="tq-w-8 tq-h-8 tq-rounded-full tq-bg-accent-blue tq-flex tq-items-center tq-justify-center tq-text-white tq-text-sm tq-font-semibold tq-flex-shrink-0">
+                  U
+                </div>
+                <div className="tq-flex tq-flex-col tq-gap-1">
+                  <div className="tq-message-text-user">
+                    <MessageContent content={message.content} role={message.role} />
+                  </div>
                   <MessageActions
                     content={message.content}
                     role={message.role}
                     onEdit={handleEdit}
                   />
                   {message.timestamp && (
-                    <div className="jp-ChatMessage-timestamp">
+                    <div className="tq-text-xs tq-text-text-muted tq-mt-1">
                       {new Date(message.timestamp).toLocaleTimeString()}
                     </div>
                   )}
@@ -259,9 +264,11 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
             });
             
             return (
-              <div key={index} className={`jp-ChatMessage jp-ChatMessage-${message.role}`}>
-                <div className="jp-ChatMessage-avatar"></div>
-                <div className="jp-ChatMessage-content">
+              <div key={index} className="tq-message-assistant tq-group">
+                <div className="tq-w-8 tq-h-8 tq-rounded-full tq-bg-bg-secondary tq-flex tq-items-center tq-justify-center tq-text-text-primary tq-text-sm tq-font-semibold tq-flex-shrink-0 tq-border tq-border-border-default">
+                  A
+                </div>
+                <div className="tq-flex tq-flex-col tq-gap-1 tq-flex-1">
                   {/* Initial content before tool calls */}
                   {message.content && (() => {
                     // Always filter out progress messages from assistant messages
@@ -278,14 +285,18 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
                     
                     // Only render if there's content left after filtering
                     if (filteredContent) {
-                      return <MessageContent content={filteredContent} role={message.role} />;
+                      return (
+                        <div className="tq-message-text-assistant">
+                          <MessageContent content={filteredContent} role={message.role} />
+                        </div>
+                      );
                     }
                     return null;
                   })()}
                   
                   {/* Tool execution cards inline */}
                   {message.toolCalls && message.toolCalls.length > 0 && (
-                    <div className="jp-ChatMessage-toolCalls">
+                    <div className="tq-flex tq-flex-col tq-gap-2 tq-my-2">
                       {message.toolCalls.map(toolCall => {
                         console.log('[TQRAR-DEBUG] [ChatInterface] Rendering tool call:', {
                           id: toolCall.id,
@@ -377,7 +388,11 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
                     
                     // Only render if there's content left after filtering
                     if (filteredContent) {
-                      return <MessageContent content={filteredContent} role={message.role} />;
+                      return (
+                        <div className="tq-message-text-assistant">
+                          <MessageContent content={filteredContent} role={message.role} />
+                        </div>
+                      );
                     }
                     return null;
                   })()}
@@ -388,7 +403,7 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
                     onRegenerate={handleRegenerate}
                   />
                   {message.timestamp && (
-                    <div className="jp-ChatMessage-timestamp">
+                    <div className="tq-text-xs tq-text-text-muted tq-mt-1">
                       {new Date(message.timestamp).toLocaleTimeString()}
                     </div>
                   )}
@@ -403,13 +418,15 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
 
         {/* Streaming indicator */}
         {isStreaming && (
-          <div className="jp-ChatMessage jp-ChatMessage-assistant">
-            <div className="jp-ChatMessage-avatar"></div>
-            <div className="jp-ChatMessage-content">
-              <div className="jp-ChatMessage-streaming">
-                <span className="jp-ChatMessage-dot"></span>
-                <span className="jp-ChatMessage-dot"></span>
-                <span className="jp-ChatMessage-dot"></span>
+          <div className="tq-message-assistant">
+            <div className="tq-w-8 tq-h-8 tq-rounded-full tq-bg-bg-secondary tq-flex tq-items-center tq-justify-center tq-text-text-primary tq-text-sm tq-font-semibold tq-flex-shrink-0 tq-border tq-border-border-default">
+              A
+            </div>
+            <div className="tq-flex tq-flex-col tq-gap-1 tq-flex-1">
+              <div className="tq-flex tq-gap-1 tq-items-center tq-py-2">
+                <span className="tq-w-2 tq-h-2 tq-bg-text-secondary tq-rounded-full tq-animate-pulse-dot"></span>
+                <span className="tq-w-2 tq-h-2 tq-bg-text-secondary tq-rounded-full tq-animate-pulse-dot" style={{ animationDelay: '0.2s' }}></span>
+                <span className="tq-w-2 tq-h-2 tq-bg-text-secondary tq-rounded-full tq-animate-pulse-dot" style={{ animationDelay: '0.4s' }}></span>
               </div>
             </div>
           </div>

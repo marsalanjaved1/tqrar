@@ -14,6 +14,7 @@ import {
   sanitizeCodeSnippet,
   escapeHtml
 } from '../utils/sanitization';
+import { cn } from '../utils/classNames';
 
 /**
  * Props for ToolExecutionPanel component
@@ -241,30 +242,30 @@ class ToolExecutionPanelComponent extends React.Component<
         
         <div 
           ref={this.panelRef}
-          className="jp-ToolExecutionPanel"
+          className="tq-bg-bg-tertiary tq-border tq-border-border-default tq-rounded-md tq-overflow-hidden tq-my-2"
           onKeyDown={this.handlePanelKeyDown}
           role="region"
           aria-label={`Tool execution: ${toolName}`}
           tabIndex={-1}
         >
         {/* Tool header with icon and status badge */}
-        <div className="jp-ToolExecutionPanel-header">
-          <div className="jp-ToolExecutionPanel-headerLeft">
+        <div className="tq-p-3 tq-bg-bg-secondary tq-flex tq-items-center tq-justify-between tq-border-b tq-border-border-default">
+          <div className="tq-flex tq-items-center tq-gap-2">
             {this.renderToolIcon()}
-            <span className="jp-ToolExecutionPanel-toolName" id={`${panelId}-name`}>
+            <span className="tq-text-text-primary tq-text-md tq-font-medium" id={`${panelId}-name`}>
               {toolName}
             </span>
           </div>
-          <div className="jp-ToolExecutionPanel-headerRight">
+          <div className="tq-flex tq-items-center">
             {this.renderStatusBadge()}
           </div>
         </div>
 
         {/* Parameters section with formatting and syntax highlighting */}
-        <div className="jp-ToolExecutionPanel-section">
+        <div className="tq-border-b tq-border-border-default">
           <button
             ref={this.parametersButtonRef}
-            className="jp-ToolExecutionPanel-sectionHeader"
+            className="tq-w-full tq-px-3 tq-py-2 tq-bg-bg-secondary tq-text-left tq-text-text-primary tq-text-sm tq-font-medium tq-flex tq-items-center tq-gap-2 tq-cursor-pointer tq-transition-colors hover:tq-bg-bg-hover"
             onClick={this.toggleParameters}
             onKeyDown={this.handleParametersKeyDown}
             aria-expanded={parametersExpanded}
@@ -272,14 +273,15 @@ class ToolExecutionPanelComponent extends React.Component<
             aria-label="Toggle parameters section"
             type="button"
           >
-            <span className="jp-ToolExecutionPanel-sectionTitle">
-              Parameters {parametersExpanded ? '▼' : '▶'}
+            <span className="tq-text-text-secondary">
+              {parametersExpanded ? '▼' : '▶'}
             </span>
+            <span>Parameters</span>
           </button>
           {parametersExpanded && (
             <div
               id={parametersId}
-              className="jp-ToolExecutionPanel-sectionContent"
+              className="tq-p-3 tq-bg-bg-primary"
               role="region"
               aria-labelledby={`${panelId}-name`}
               aria-label="Tool parameters"
@@ -290,18 +292,18 @@ class ToolExecutionPanelComponent extends React.Component<
         </div>
 
         {/* Execution timer with human-readable duration */}
-        <div className="jp-ToolExecutionPanel-footer">
-          <div className="jp-ToolExecutionPanel-timer" role="status" aria-live="polite">
+        <div className="tq-px-3 tq-py-2 tq-bg-bg-secondary tq-border-t tq-border-border-default">
+          <div className="tq-text-xs tq-text-text-secondary" role="status" aria-live="polite">
             {this.renderTimer()}
           </div>
         </div>
 
         {/* Result section with formatted display */}
         {execution.result && execution.status === 'success' && (
-          <div className="jp-ToolExecutionPanel-section">
+          <div className="tq-border-t tq-border-border-default">
             <button
               ref={this.resultButtonRef}
-              className="jp-ToolExecutionPanel-sectionHeader"
+              className="tq-w-full tq-px-3 tq-py-2 tq-bg-bg-secondary tq-text-left tq-text-text-primary tq-text-sm tq-font-medium tq-flex tq-items-center tq-gap-2 tq-cursor-pointer tq-transition-colors hover:tq-bg-bg-hover"
               onClick={this.toggleResult}
               onKeyDown={this.handleResultKeyDown}
               aria-expanded={resultExpanded}
@@ -309,14 +311,15 @@ class ToolExecutionPanelComponent extends React.Component<
               aria-label="Toggle result section"
               type="button"
             >
-              <span className="jp-ToolExecutionPanel-sectionTitle">
-                Result {resultExpanded ? '▼' : '▶'}
+              <span className="tq-text-text-secondary">
+                {resultExpanded ? '▼' : '▶'}
               </span>
+              <span>Result</span>
             </button>
             {resultExpanded && (
               <div
                 id={resultId}
-                className="jp-ToolExecutionPanel-sectionContent"
+                className="tq-p-3 tq-bg-bg-primary"
                 role="region"
                 aria-labelledby={`${panelId}-name`}
                 aria-label="Tool result"
@@ -329,7 +332,7 @@ class ToolExecutionPanelComponent extends React.Component<
 
         {/* Error display with detailed information */}
         {execution.error && execution.status === 'error' && (
-          <div className="jp-ToolExecutionPanel-errorSection" role="alert" aria-live="assertive">
+          <div className="tq-p-3 tq-bg-error-bg tq-border-t tq-border-error" role="alert" aria-live="assertive">
             {this.renderError()}
           </div>
         )}
@@ -347,18 +350,18 @@ class ToolExecutionPanelComponent extends React.Component<
 
     if (execution.status === 'pending') {
       return (
-        <span className="jp-ToolTimer-pending">
-          <span className="jp-ToolTimer-icon">⏱️</span>
-          <span className="jp-ToolTimer-text">Pending...</span>
+        <span className="tq-flex tq-items-center tq-gap-1 tq-text-pending">
+          <span>⏱️</span>
+          <span>Pending...</span>
         </span>
       );
     }
 
     if (execution.status === 'running') {
       return (
-        <span className="jp-ToolTimer-running">
-          <span className="jp-ToolTimer-icon jp-ToolTimer-spinner">⚙️</span>
-          <span className="jp-ToolTimer-text">Running...</span>
+        <span className="tq-flex tq-items-center tq-gap-1 tq-text-warning">
+          <span className="tq-animate-spin-slow">⚙️</span>
+          <span>Running...</span>
         </span>
       );
     }
@@ -368,9 +371,12 @@ class ToolExecutionPanelComponent extends React.Component<
       const icon = execution.status === 'success' ? '✓' : '✗';
       
       return (
-        <span className={`jp-ToolTimer-complete jp-ToolTimer-${execution.status}`}>
-          <span className="jp-ToolTimer-icon">{icon}</span>
-          <span className="jp-ToolTimer-text">Executed in {durationText}</span>
+        <span className={cn(
+          'tq-flex tq-items-center tq-gap-1',
+          execution.status === 'success' ? 'tq-text-success' : 'tq-text-error'
+        )}>
+          <span>{icon}</span>
+          <span>Executed in {durationText}</span>
         </span>
       );
     }
@@ -409,7 +415,10 @@ class ToolExecutionPanelComponent extends React.Component<
 
     return (
       <span 
-        className={`jp-ToolExecutionPanel-icon ${iconClass}`}
+        className={cn(
+          'tq-text-lg tq-flex tq-items-center tq-justify-center',
+          iconClass
+        )}
         role="img"
         aria-label={`${category} tool`}
       >
@@ -442,17 +451,17 @@ class ToolExecutionPanelComponent extends React.Component<
    * @returns CSS class for the icon
    */
   private getToolIconClass(toolName: string): string {
-    // Map tool names to categories for styling
+    // Map tool names to categories for styling with Tailwind classes
     if (toolName.includes('Cell') || toolName.includes('cell')) {
-      return 'jp-ToolIcon-notebook';
+      return 'tq-text-accent-blue';
     }
     if (toolName.includes('File') || toolName.includes('file') || toolName.includes('read') || toolName.includes('write')) {
-      return 'jp-ToolIcon-file';
+      return 'tq-text-success';
     }
     if (toolName.includes('get') || toolName.includes('inspect') || toolName.includes('Documentation') || toolName.includes('Completion')) {
-      return 'jp-ToolIcon-inspection';
+      return 'tq-text-warning';
     }
-    return 'jp-ToolIcon-other';
+    return 'tq-text-text-secondary';
   }
 
   /**
@@ -487,22 +496,22 @@ class ToolExecutionPanelComponent extends React.Component<
     const { status } = this.props.execution;
 
     const statusConfig = {
-      pending: { label: 'Pending', icon: '⏱️', className: 'jp-ToolStatus-pending' },
-      running: { label: 'Running', icon: '⚙️', className: 'jp-ToolStatus-running' },
-      success: { label: 'Success', icon: '✓', className: 'jp-ToolStatus-success' },
-      error: { label: 'Error', icon: '✗', className: 'jp-ToolStatus-error' }
+      pending: { label: 'Pending', icon: '⏱️', className: 'tq-status-pending' },
+      running: { label: 'Running', icon: '⚙️', className: 'tq-status-running' },
+      success: { label: 'Success', icon: '✓', className: 'tq-status-success' },
+      error: { label: 'Error', icon: '✗', className: 'tq-status-error' }
     };
 
     const config = statusConfig[status];
 
     return (
       <span 
-        className={`jp-ToolExecutionPanel-statusBadge ${config.className}`}
+        className={cn('tq-status-badge', config.className)}
         role="status"
         aria-label={`Status: ${config.label}`}
       >
-        <span className="jp-ToolStatus-icon" aria-hidden="true">{config.icon}</span>
-        <span className="jp-ToolStatus-label">{config.label}</span>
+        <span className="tq-mr-1" aria-hidden="true">{config.icon}</span>
+        <span>{config.label}</span>
       </span>
     );
   }
@@ -532,8 +541,8 @@ class ToolExecutionPanelComponent extends React.Component<
       // If parsing fails, show sanitized raw arguments
       const sanitizedRaw = escapeHtml(execution.toolCall.function.arguments);
       return (
-        <div className="jp-ToolExecutionPanel-parametersRaw">
-          <pre>{sanitizedRaw}</pre>
+        <div className="tq-bg-code-bg tq-p-2 tq-rounded tq-overflow-x-auto">
+          <pre className="tq-text-sm tq-text-text-code tq-font-mono">{sanitizedRaw}</pre>
         </div>
       );
     }
@@ -557,11 +566,11 @@ class ToolExecutionPanelComponent extends React.Component<
    */
   private renderSimpleParameters(args: Record<string, any>): JSX.Element {
     return (
-      <div className="jp-ToolExecutionPanel-parametersSimple">
+      <div className="tq-space-y-1">
         {Object.entries(args).map(([key, value]) => (
-          <div key={key} className="jp-ToolParameter-item">
-            <span className="jp-ToolParameter-key">{key}:</span>{' '}
-            <span className="jp-ToolParameter-value">
+          <div key={key} className="tq-flex tq-gap-2">
+            <span className="tq-text-text-secondary tq-font-medium">{key}:</span>
+            <span className="tq-text-text-primary">
               {this.formatSimpleValue(value)}
             </span>
           </div>
@@ -595,8 +604,8 @@ class ToolExecutionPanelComponent extends React.Component<
     const formatted = JSON.stringify(args, null, 2);
     
     return (
-      <div className="jp-ToolExecutionPanel-parametersComplex">
-        <pre className="jp-ToolParameter-json">
+      <div className="tq-bg-code-bg tq-p-2 tq-rounded tq-overflow-x-auto">
+        <pre className="tq-text-sm tq-text-text-code tq-font-mono">
           <code>{this.highlightJSON(formatted)}</code>
         </pre>
       </div>
@@ -631,7 +640,7 @@ class ToolExecutionPanelComponent extends React.Component<
     const { result } = this.props.execution;
     
     if (!result) {
-      return <div className="jp-ToolResult-empty">No result</div>;
+      return <div className="tq-text-text-muted tq-text-sm">No result</div>;
     }
 
     // Sanitize the entire result to prevent XSS and limit size
@@ -645,9 +654,9 @@ class ToolExecutionPanelComponent extends React.Component<
     // If result is just success: true with no data
     if (sanitizedResult.success && !sanitizedResult.data) {
       return (
-        <div className="jp-ToolResult-success">
-          <span className="jp-ToolResult-successIcon">✓</span>
-          <span className="jp-ToolResult-successText">Operation completed successfully</span>
+        <div className="tq-flex tq-items-center tq-gap-2 tq-text-success">
+          <span className="tq-text-lg">✓</span>
+          <span>Operation completed successfully</span>
         </div>
       );
     }
@@ -664,9 +673,9 @@ class ToolExecutionPanelComponent extends React.Component<
     // Check if data is a simple message string
     if (typeof data === 'string') {
       return (
-        <div className="jp-ToolResult-message">
-          <span className="jp-ToolResult-messageIcon">✓</span>
-          <span className="jp-ToolResult-messageText">{data}</span>
+        <div className="tq-flex tq-items-center tq-gap-2 tq-text-success">
+          <span className="tq-text-lg">✓</span>
+          <span>{data}</span>
         </div>
       );
     }
@@ -674,11 +683,13 @@ class ToolExecutionPanelComponent extends React.Component<
     // Check if data has a message property
     if (data && typeof data === 'object' && 'message' in data) {
       return (
-        <div className="jp-ToolResult-message">
-          <span className="jp-ToolResult-messageIcon">✓</span>
-          <span className="jp-ToolResult-messageText">{data.message}</span>
+        <div className="tq-space-y-2">
+          <div className="tq-flex tq-items-center tq-gap-2 tq-text-success">
+            <span className="tq-text-lg">✓</span>
+            <span>{data.message}</span>
+          </div>
           {Object.keys(data).length > 1 && (
-            <div className="jp-ToolResult-additionalData">
+            <div className="tq-mt-2">
               {this.renderStructuredResult(data)}
             </div>
           )}
@@ -702,12 +713,12 @@ class ToolExecutionPanelComponent extends React.Component<
     const isLengthy = lines > 20;
     
     return (
-      <div className={`jp-ToolResult-structured ${isLengthy ? 'jp-ToolResult-lengthy' : ''}`}>
-        <pre className="jp-ToolResult-json">
+      <div className="tq-bg-code-bg tq-p-2 tq-rounded tq-overflow-x-auto">
+        <pre className="tq-text-sm tq-text-text-code tq-font-mono">
           <code>{this.highlightJSON(formatted)}</code>
         </pre>
         {isLengthy && (
-          <div className="jp-ToolResult-lengthyNote">
+          <div className="tq-text-xs tq-text-text-muted tq-mt-2">
             {lines} lines
           </div>
         )}
@@ -733,28 +744,28 @@ class ToolExecutionPanelComponent extends React.Component<
     const errorMessage = sanitizedError.message || 'An unknown error occurred';
     
     return (
-      <div className="jp-ToolExecutionPanel-error" role="alert">
-        <div className="jp-ToolError-header">
-          <span className="jp-ToolError-icon" aria-hidden="true">✗</span>
-          <span className="jp-ToolError-type" role="heading" aria-level={3}>{errorType}</span>
+      <div className="tq-space-y-2" role="alert">
+        <div className="tq-flex tq-items-center tq-gap-2">
+          <span className="tq-text-lg tq-text-error" aria-hidden="true">✗</span>
+          <span className="tq-text-error tq-font-semibold" role="heading" aria-level={3}>{errorType}</span>
         </div>
         
-        <div className="jp-ToolError-message" aria-label="Error message">
+        <div className="tq-text-text-primary tq-text-sm" aria-label="Error message">
           {errorMessage}
         </div>
 
         {this.renderErrorSuggestions(errorType, errorMessage)}
 
         {sanitizedError.stack && (
-          <details className="jp-ToolError-stackTrace">
+          <details className="tq-mt-2">
             <summary 
-              className="jp-ToolError-stackSummary"
+              className="tq-text-sm tq-text-text-secondary tq-cursor-pointer hover:tq-text-text-primary tq-transition-colors"
               aria-label="Show stack trace"
             >
               Stack Trace
             </summary>
             <pre 
-              className="jp-ToolError-stackContent"
+              className="tq-mt-2 tq-bg-code-bg tq-p-2 tq-rounded tq-text-xs tq-text-text-code tq-font-mono tq-overflow-x-auto"
               role="log"
               aria-label="Error stack trace"
             >
@@ -805,11 +816,11 @@ class ToolExecutionPanelComponent extends React.Component<
     }
 
     return (
-      <div className="jp-ToolError-suggestions" role="complementary" aria-label="Error suggestions">
-        <div className="jp-ToolError-suggestionsTitle" role="heading" aria-level={4}>Suggestions:</div>
-        <ul className="jp-ToolError-suggestionsList" aria-label="List of suggestions to resolve the error">
+      <div className="tq-mt-2 tq-p-2 tq-bg-warning-bg tq-rounded tq-border tq-border-warning" role="complementary" aria-label="Error suggestions">
+        <div className="tq-text-sm tq-font-semibold tq-text-warning tq-mb-1" role="heading" aria-level={4}>Suggestions:</div>
+        <ul className="tq-list-disc tq-list-inside tq-space-y-1 tq-text-sm tq-text-text-primary" aria-label="List of suggestions to resolve the error">
           {suggestions.map((suggestion, index) => (
-            <li key={index} className="jp-ToolError-suggestionItem">
+            <li key={index}>
               {suggestion}
             </li>
           ))}

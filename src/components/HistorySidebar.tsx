@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { ISession } from '../session';
+import { cn } from '../utils/classNames';
 
 export interface IHistorySidebarProps {
   sessions: ISession[];
@@ -42,35 +43,41 @@ export const HistorySidebar: React.FC<IHistorySidebarProps> = ({
   };
 
   return (
-    <div className="jp-HistorySidebar">
-      <div className="jp-HistorySidebar-overlay" onClick={onClose} />
-      <div className="jp-HistorySidebar-panel">
-        <div className="jp-HistorySidebar-header">
-          <h3>Chat History</h3>
-          <button className="jp-HistorySidebar-close" onClick={onClose}>
+    <div className="tq-fixed tq-inset-0 tq-z-50 tq-flex tq-justify-end">
+      <div 
+        className="tq-absolute tq-inset-0 tq-bg-black tq-bg-opacity-50 tq-animate-fade-in" 
+        onClick={onClose} 
+      />
+      <div className="tq-relative tq-w-80 tq-h-full tq-bg-bg-secondary tq-shadow-dropdown tq-flex tq-flex-col tq-animate-slide-in">
+        <div className="tq-flex tq-items-center tq-justify-between tq-p-4 tq-border-b tq-border-border-default">
+          <h3 className="tq-text-lg tq-font-semibold tq-text-text-primary">Chat History</h3>
+          <button 
+            className="tq-text-text-muted hover:tq-text-text-primary tq-transition-colors tq-text-2xl tq-leading-none"
+            onClick={onClose}
+          >
             ×
           </button>
         </div>
 
-        <div className="jp-HistorySidebar-content">
+        <div className="tq-flex-1 tq-overflow-y-auto tq-p-2 tq-scrollbar">
           {sessions.length === 0 ? (
-            <div className="jp-HistorySidebar-empty">
+            <div className="tq-text-center tq-text-text-muted tq-py-8">
               No chat history yet
             </div>
           ) : (
             sessions.map(session => (
               <div
                 key={session.id}
-                className="jp-HistorySidebar-item"
+                className="tq-p-3 tq-mb-2 tq-bg-bg-tertiary tq-rounded tq-cursor-pointer tq-transition-colors hover:tq-bg-bg-hover tq-border tq-border-border-default"
                 onClick={() => {
                   onSessionSelect(session.id);
                   onClose();
                 }}
               >
-                <div className="jp-HistorySidebar-itemHeader">
-                  <span className="jp-HistorySidebar-itemTitle">{session.title}</span>
+                <div className="tq-flex tq-items-start tq-justify-between tq-mb-2">
+                  <span className="tq-text-text-primary tq-font-medium tq-flex-1 tq-truncate">{session.title}</span>
                   <button
-                    className="jp-HistorySidebar-itemDelete"
+                    className="tq-text-text-muted hover:tq-text-error tq-transition-colors tq-ml-2 tq-flex-shrink-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       if (confirm(`Delete "${session.title}"?`)) {
@@ -82,12 +89,12 @@ export const HistorySidebar: React.FC<IHistorySidebarProps> = ({
                     🗑️
                   </button>
                 </div>
-                <div className="jp-HistorySidebar-itemMeta">
+                <div className="tq-flex tq-gap-3 tq-text-xs tq-text-text-secondary tq-mb-2">
                   <span>{formatDate(session.updatedAt)}</span>
                   <span>{session.messageCount} messages</span>
                 </div>
                 {session.preview && (
-                  <div className="jp-HistorySidebar-itemPreview">
+                  <div className="tq-text-sm tq-text-text-muted tq-truncate">
                     {session.preview}
                   </div>
                 )}

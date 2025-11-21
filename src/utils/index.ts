@@ -3,4 +3,5 @@
  */
 
 export * from './errors';
+export * from './classNames';
 

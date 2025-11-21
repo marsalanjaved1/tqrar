@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { ToolExecutionStatus } from '../types';
+import { cn } from '../utils/classNames';
 
 /**
  * Props for StatusBadge component
@@ -75,28 +76,28 @@ const STATUS_CONFIGS: Record<ToolExecutionStatus, IStatusConfig> = {
   pending: {
     label: 'Pending',
     icon: '⏱️',
-    className: 'jp-ToolStatus-pending',
+    className: 'tq-status-pending',
     ariaLabel: 'Tool execution pending',
     isAnimated: false
   },
   running: {
     label: 'Running',
     icon: '⚙️',
-    className: 'jp-ToolStatus-running',
+    className: 'tq-status-running',
     ariaLabel: 'Tool execution in progress',
     isAnimated: true
   },
   success: {
     label: 'Success',
     icon: '✓',
-    className: 'jp-ToolStatus-success',
+    className: 'tq-status-success',
     ariaLabel: 'Tool execution succeeded',
     isAnimated: false
   },
   error: {
     label: 'Error',
     icon: '✗',
-    className: 'jp-ToolStatus-error',
+    className: 'tq-status-error',
     ariaLabel: 'Tool execution failed',
     isAnimated: false
   }
@@ -118,21 +119,24 @@ export const StatusBadge: React.FC<IStatusBadgeProps> = ({
 
   return (
     <span
-      className={`jp-ToolStatus ${config.className} ${className}`}
+      className={cn('tq-status-badge', config.className, className)}
       role="status"
       aria-label={config.ariaLabel}
       aria-live={config.isAnimated ? 'polite' : 'off'}
     >
       {showIcon && (
         <span
-          className={`jp-ToolStatus-icon ${config.isAnimated ? 'jp-ToolStatus-iconAnimated' : ''}`}
+          className={cn(
+            'tq-mr-1',
+            config.isAnimated && 'tq-animate-pulse-dot'
+          )}
           aria-hidden="true"
         >
           {config.icon}
         </span>
       )}
       {showLabel && (
-        <span className="jp-ToolStatus-label">
+        <span>
           {displayLabel}
         </span>
       )}

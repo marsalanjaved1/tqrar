@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { LabIcon } from '@jupyterlab/ui-components';
+import { cn } from '../utils/classNames';
 
 /**
  * Props for ToolIcon component
@@ -164,7 +165,14 @@ export function getToolIconConfig(toolName: string): IToolIconConfig {
  * @returns CSS class name
  */
 export function getToolCategoryClass(category: ToolCategory): string {
-  return `jp-ToolIcon-${category}`;
+  // Map categories to Tailwind color classes
+  const categoryColors: Record<ToolCategory, string> = {
+    notebook: 'tq-text-accent-blue',
+    file: 'tq-text-success',
+    inspection: 'tq-text-warning',
+    other: 'tq-text-text-secondary'
+  };
+  return categoryColors[category];
 }
 
 /**
@@ -182,7 +190,7 @@ export const ToolIcon: React.FC<IToolIconProps> = ({
       // Custom SVG string
       return (
         <span
-          className={`jp-ToolIcon ${className}`}
+          className={cn('tq-text-lg tq-flex tq-items-center tq-justify-center', className)}
           dangerouslySetInnerHTML={{ __html: customIcon }}
         />
       );
@@ -190,7 +198,7 @@ export const ToolIcon: React.FC<IToolIconProps> = ({
       // LabIcon instance
       return (
         <customIcon.react
-          className={`jp-ToolIcon ${className}`}
+          className={cn('tq-text-lg tq-flex tq-items-center tq-justify-center', className)}
           tag="span"
         />
       );
@@ -204,7 +212,7 @@ export const ToolIcon: React.FC<IToolIconProps> = ({
   // Use emoji symbol as fallback (always available)
   return (
     <span
-      className={`jp-ToolIcon ${categoryClass} ${className}`}
+      className={cn('tq-text-lg tq-flex tq-items-center tq-justify-center', categoryClass, className)}
       title={toolName}
       role="img"
       aria-label={`${toolName} tool icon`}

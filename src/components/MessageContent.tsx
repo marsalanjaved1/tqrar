@@ -73,7 +73,7 @@ export const MessageContent: React.FC<IMessageContentProps> = ({ content, role }
 
       // Add inline code
       parts.push(
-        <code key={`inline-${keyCounter++}`} className="jp-ChatMessage-inlineCode">
+        <code key={`inline-${keyCounter++}`} className="tq-code-inline">
           {match[1]}
         </code>
       );
@@ -140,18 +140,18 @@ const CodeBlock: React.FC<ICodeBlockProps> = ({ language, code }) => {
   };
 
   return (
-    <pre className="jp-ChatMessage-codeBlock">
-      <div className="jp-ChatMessage-codeHeader">
-        <span className="jp-ChatMessage-codeLanguage">{language}</span>
+    <pre className="tq-code-block">
+      <div className="tq-code-header">
+        <span className="tq-text-text-secondary">{language}</span>
         <button
-          className="jp-ChatMessage-copyButton"
+          className="tq-text-text-secondary hover:tq-text-text-primary tq-transition-colors tq-cursor-pointer tq-bg-transparent tq-border-none tq-text-xs"
           onClick={handleCopy}
           title="Copy code"
         >
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
-      <code className="jp-ChatMessage-code">{code}</code>
+      <code className="tq-block tq-p-3 tq-font-mono tq-text-sm tq-text-text-primary tq-overflow-x-auto tq-whitespace-pre">{code}</code>
     </pre>
   );
 };

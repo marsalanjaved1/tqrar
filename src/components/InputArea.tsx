@@ -7,6 +7,7 @@ import React from 'react';
 import { IExecutionSettings } from '../types';
 import { ModeToggle } from './ModeToggle';
 import { AutoModeCheckbox } from './AutoModeCheckbox';
+import { cn } from '../utils/classNames';
 
 export interface IModelConfig {
   provider: 'openrouter' | 'openai' | 'anthropic';
@@ -102,11 +103,11 @@ export const InputArea: React.FC<IInputAreaProps> = ({
   };
 
   return (
-    <div className="jp-InputArea">
-      <div className="jp-InputContainer">
+    <div className="tq-border-t tq-border-border-default tq-p-4 tq-pb-2 tq-bg-bg-primary tq-flex-shrink-0 tq-flex tq-flex-col tq-w-full tq-box-border">
+      <div className="tq-input-container">
         <textarea
           ref={textareaRef}
-          className="jp-InputArea-textarea"
+          className="tq-textarea"
           value={value}
           onChange={e => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -116,8 +117,8 @@ export const InputArea: React.FC<IInputAreaProps> = ({
           aria-label="Message input"
         />
         
-        <div className="jp-InputArea-actions">
-          <div className="jp-InputArea-leftControls">
+        <div className="tq-flex tq-items-center tq-justify-between tq-gap-2 tq-mt-1">
+          <div className="tq-flex tq-items-center tq-gap-2">
             {/* Mode Toggle */}
             <ModeToggle
               mode={executionSettings.mode}
@@ -143,11 +144,16 @@ export const InputArea: React.FC<IInputAreaProps> = ({
             )}
           </div>
 
-          <div className="jp-InputArea-rightControls">
-            <div className="jp-InputArea-modelWrapper">
+          <div className="tq-flex tq-items-center tq-gap-2">
+            <div className="tq-relative">
               <button
                 ref={modelButtonRef}
-                className={`jp-InputArea-modelButton ${showModelSelector ? 'jp-InputArea-modelButton-active' : ''}`}
+                className={cn(
+                  'tq-bg-transparent tq-border-none tq-text-text-secondary tq-text-xs tq-px-2.5 tq-py-2 tq-cursor-pointer tq-rounded tq-transition-all tq-font-mono tq-whitespace-nowrap tq-h-8 tq-flex tq-items-center tq-mr-1',
+                  showModelSelector && 'tq-bg-bg-active tq-text-accent-blue',
+                  !showModelSelector && 'hover:tq-bg-bg-active hover:tq-text-text-primary',
+                  disabled && 'tq-opacity-50 tq-cursor-not-allowed'
+                )}
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowModelSelector(!showModelSelector);
@@ -161,45 +167,48 @@ export const InputArea: React.FC<IInputAreaProps> = ({
               {showModelSelector && (
                 <div 
                   ref={dropdownRef}
-                  className="jp-InputArea-modelDropdown"
+                  className="tq-fixed tq-bg-bg-secondary tq-border tq-border-border-default tq-rounded-md tq-shadow-dropdown tq-min-w-[180px] tq-z-[99999] tq-py-1"
                   style={{
                     top: `${dropdownPosition.top}px`,
                     left: `${dropdownPosition.left}px`,
                     transform: 'translateY(-100%)'
                   }}
                 >
-                  <div className="jp-InputArea-modelGroup">
-                    <div className="jp-InputArea-modelGroupTitle">Anthropic</div>
+                  <div className="tq-py-1 tq-border-b tq-border-border-default">
+                    <div className="tq-px-3 tq-py-1 tq-text-[10px] tq-font-semibold tq-text-text-muted tq-uppercase tq-tracking-wide">Anthropic</div>
                     <button
-                      className={`jp-InputArea-modelOption ${
+                      className={cn(
+                        'tq-w-full tq-bg-transparent tq-border-none tq-px-3 tq-py-1.5 tq-text-text-primary tq-text-left tq-cursor-pointer tq-text-sm tq-transition-colors tq-block',
                         currentModel.provider === 'anthropic' && currentModel.model === 'claude-3-5-sonnet-20241022'
-                          ? 'jp-InputArea-modelOption-selected'
-                          : ''
-                      }`}
+                          ? 'tq-bg-accent-blue tq-text-white hover:tq-bg-accent-blue-hover'
+                          : 'hover:tq-bg-bg-active'
+                      )}
                       onClick={() => onModelChange?.({ provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' })}
                     >
                       Claude Sonnet 4.5
                     </button>
                     <button
-                      className={`jp-InputArea-modelOption ${
+                      className={cn(
+                        'tq-w-full tq-bg-transparent tq-border-none tq-px-3 tq-py-1.5 tq-text-text-primary tq-text-left tq-cursor-pointer tq-text-sm tq-transition-colors tq-block',
                         currentModel.provider === 'anthropic' && currentModel.model === 'claude-3-5-haiku-20241022'
-                          ? 'jp-InputArea-modelOption-selected'
-                          : ''
-                      }`}
+                          ? 'tq-bg-accent-blue tq-text-white hover:tq-bg-accent-blue-hover'
+                          : 'hover:tq-bg-bg-active'
+                      )}
                       onClick={() => onModelChange?.({ provider: 'anthropic', model: 'claude-3-5-haiku-20241022' })}
                     >
                       Claude Haiku 4.5
                     </button>
                   </div>
 
-                  <div className="jp-InputArea-modelGroup">
-                    <div className="jp-InputArea-modelGroupTitle">OpenAI</div>
+                  <div className="tq-py-1">
+                    <div className="tq-px-3 tq-py-1 tq-text-[10px] tq-font-semibold tq-text-text-muted tq-uppercase tq-tracking-wide">OpenAI</div>
                     <button
-                      className={`jp-InputArea-modelOption ${
+                      className={cn(
+                        'tq-w-full tq-bg-transparent tq-border-none tq-px-3 tq-py-1.5 tq-text-text-primary tq-text-left tq-cursor-pointer tq-text-sm tq-transition-colors tq-block',
                         currentModel.provider === 'openai' && currentModel.model === 'gpt-4o'
-                          ? 'jp-InputArea-modelOption-selected'
-                          : ''
-                      }`}
+                          ? 'tq-bg-accent-blue tq-text-white hover:tq-bg-accent-blue-hover'
+                          : 'hover:tq-bg-bg-active'
+                      )}
                       onClick={() => onModelChange?.({ provider: 'openai', model: 'gpt-4o' })}
                     >
                       GPT-4o
@@ -210,13 +219,13 @@ export const InputArea: React.FC<IInputAreaProps> = ({
             </div>
 
             <button
-              className="jp-InputArea-send"
+              className="tq-btn-primary"
               onClick={onSubmit}
               disabled={!value.trim() || disabled}
               title="Send message"
               aria-label="Send message"
             >
-              <span className="jp-InputArea-sendIcon">↑</span>
+              <span className="tq-text-lg tq-leading-none">↑</span>
             </button>
           </div>
         </div>

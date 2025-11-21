@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { ISession } from '../session';
+import { cn } from '../utils/classNames';
 
 export interface ISessionTabsProps {
   sessions: ISession[];
@@ -33,19 +34,24 @@ export const SessionTabs: React.FC<ISessionTabsProps> = ({
   }
 
   return (
-    <div className="jp-SessionTabs">
+    <div className="tq-flex tq-gap-1 tq-bg-bg-secondary tq-border-b tq-border-border-default tq-px-2 tq-py-1 tq-overflow-x-auto tq-flex-shrink-0 tq-min-h-[40px]">
       {sessions.map(session => (
         <div
           key={session.id}
-          className={`jp-SessionTab ${session.id === activeSessionId ? 'jp-SessionTab-active' : ''}`}
+          className={cn(
+            'tq-flex tq-items-center tq-gap-2 tq-px-3 tq-py-1.5 tq-rounded-t tq-cursor-pointer tq-transition-colors tq-border tq-border-b-0 tq-min-w-[120px] tq-max-w-[200px]',
+            session.id === activeSessionId
+              ? 'tq-bg-bg-primary tq-border-border-default tq-text-text-primary'
+              : 'tq-bg-bg-tertiary tq-border-transparent tq-text-text-secondary hover:tq-bg-bg-hover hover:tq-text-text-primary'
+          )}
           onClick={() => {
             console.log('👆 [TABS] Tab clicked:', session.id);
             onSessionSelect(session.id);
           }}
         >
-          <span className="jp-SessionTab-title">{session.title}</span>
+          <span className="tq-flex-1 tq-truncate tq-text-sm">{session.title}</span>
           <button
-            className="jp-SessionTab-close"
+            className="tq-text-text-muted hover:tq-text-text-primary tq-transition-colors tq-text-lg tq-leading-none tq-flex-shrink-0"
             onClick={(e) => {
               e.stopPropagation();
               console.log('❌ [TABS] Close button clicked:', session.id);

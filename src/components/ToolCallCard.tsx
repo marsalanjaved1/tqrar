@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { IToolExecutionEvent } from '../types';
+import { cn } from '../utils/classNames';
 
 export interface IToolCallCardProps {
   execution: IToolExecutionEvent;
@@ -68,50 +69,56 @@ export const ToolCallCard: React.FC<IToolCallCardProps> = ({ execution }) => {
   const statusColor = getStatusColor(execution.status);
 
   return (
-    <div className={`jp-ToolCallCard ${isExpanded ? 'jp-ToolCallCard-expanded' : ''}`}>
-      <div className="jp-ToolCallCard-header" onClick={toggleExpanded}>
-        <div className="jp-ToolCallCard-title">
-          <span className="jp-ToolCallCard-icon">{getToolIcon(toolName)}</span>
-          <span className="jp-ToolCallCard-name">{toolName}</span>
-          <span className={`jp-ToolCallCard-status jp-ToolCallCard-status-${statusColor}`}>
+    <div className="tq-tool-card">
+      <div className="tq-tool-card-header" onClick={toggleExpanded}>
+        <div className="tq-flex tq-items-center tq-gap-2 tq-flex-1">
+          <span className="tq-text-base">{getToolIcon(toolName)}</span>
+          <span className="tq-text-code tq-font-mono tq-font-medium">{toolName}</span>
+          <span className={cn(
+            'tq-status-badge',
+            statusColor === 'success' && 'tq-status-success',
+            statusColor === 'error' && 'tq-status-error',
+            statusColor === 'running' && 'tq-status-running',
+            statusColor === 'pending' && 'tq-status-pending'
+          )}>
             {execution.status}
           </span>
         </div>
-        <span className="jp-ToolCallCard-expandIcon">
-          {isExpanded ? '▼' : '▶'}
+        <span className="tq-text-text-secondary tq-text-xs tq-transition-transform" style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}>
+          ▼
         </span>
       </div>
 
       {isExpanded && (
-        <div className="jp-ToolCallCard-body">
-          <div className="jp-ToolCallCard-section">
-            <div className="jp-ToolCallCard-sectionTitle">Parameters:</div>
-            <pre className="jp-ToolCallCard-parameters">
+        <div className="tq-p-3 tq-bg-bg-tertiary tq-animate-slide-down">
+          <div className="tq-mb-3">
+            <div className="tq-text-xs tq-font-semibold tq-text-text-secondary tq-mb-1.5">Parameters:</div>
+            <pre className="tq-bg-code-bg tq-border tq-border-border-default tq-rounded tq-p-2 tq-m-0 tq-overflow-x-auto tq-font-mono tq-text-sm tq-leading-relaxed tq-text-text-code">
               <code>{formatParameters(parameters)}</code>
             </pre>
           </div>
 
           {execution.result && execution.status === 'success' && (
-            <div className="jp-ToolCallCard-section">
-              <div className="jp-ToolCallCard-sectionTitle">Result:</div>
-              <pre className="jp-ToolCallCard-result">
+            <div className="tq-mb-3">
+              <div className="tq-text-xs tq-font-semibold tq-text-text-secondary tq-mb-1.5">Result:</div>
+              <pre className="tq-bg-code-bg tq-border tq-border-border-default tq-rounded tq-p-2 tq-m-0 tq-overflow-x-auto tq-font-mono tq-text-sm tq-leading-relaxed tq-text-text-code">
                 <code>{JSON.stringify(execution.result, null, 2)}</code>
               </pre>
             </div>
           )}
 
           {execution.error && execution.status === 'error' && (
-            <div className="jp-ToolCallCard-section">
-              <div className="jp-ToolCallCard-sectionTitle">Error:</div>
-              <div className="jp-ToolCallCard-error">
+            <div className="tq-mb-3">
+              <div className="tq-text-xs tq-font-semibold tq-text-text-secondary tq-mb-1.5">Error:</div>
+              <div className="tq-bg-error-bg tq-border tq-border-error tq-rounded tq-p-2 tq-text-error tq-text-sm tq-leading-relaxed">
                 {execution.error.message}
               </div>
             </div>
           )}
 
           {execution.duration !== undefined && (
-            <div className="jp-ToolCallCard-footer">
-              <span className="jp-ToolCallCard-duration">
+            <div className="tq-mt-2 tq-pt-2 tq-border-t tq-border-border-default tq-flex tq-justify-end">
+              <span className="tq-text-xs tq-text-text-secondary tq-font-mono">
                 {execution.duration < 1000
                   ? `${Math.round(execution.duration)}ms`
                   : `${(execution.duration / 1000).toFixed(2)}s`}
