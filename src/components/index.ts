@@ -19,3 +19,19 @@ export type { IModeToggleProps } from './ModeToggle';
 
 export { AutoModeCheckbox, isAutoModeEnabled, requiresManualApproval } from './AutoModeCheckbox';
 export type { IAutoModeCheckboxProps } from './AutoModeCheckbox';
+
+export { Toast } from './Toast';
+export type { IToastProps } from './Toast';
+
+// Kiro-style components
+export { AutopilotToggle } from './AutopilotToggle';
+export type { IAutopilotToggleProps } from './AutopilotToggle';
+
+export { ToolApprovalCard } from './ToolApprovalCard';
+export type { IToolApprovalCardProps } from './ToolApprovalCard';
+
+export { CheckpointButton } from './CheckpointButton';
+export type { ICheckpointButtonProps, ICheckpoint } from './CheckpointButton';
+
+export { ReviewButton } from './ReviewButton';
+export type { IReviewButtonProps, IChange } from './ReviewButton';

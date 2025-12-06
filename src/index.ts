@@ -365,6 +365,47 @@ const plugin: JupyterFrontEndPlugin<void> = {
               if (conversationManager) {
                 conversationManager.clear();
               }
+            },
+            // Pending tools approval callbacks
+            onPendingToolsChange: (callback) => {
+              if (conversationManager) {
+                conversationManager.setOnPendingToolsChange(callback);
+              }
+            },
+            onApprovePendingTools: () => {
+              if (conversationManager) {
+                conversationManager.approvePendingTools();
+              }
+            },
+            onRejectPendingTools: () => {
+              if (conversationManager) {
+                conversationManager.rejectPendingTools();
+              }
+            },
+            // Model change callback
+            onModelChange: (config) => {
+              console.log('[AI Assistant] Model change requested:', config);
+              if (conversationManager) {
+                conversationManager.updateLLMSettings(config);
+              } else if (llmClient) {
+                // If conversation manager not ready, update LLM client directly
+                const currentSettings = llmClient.getSettings();
+                llmClient.updateSettings({
+                  ...currentSettings,
+                  provider: config.provider as any,
+                  model: config.model
+                });
+                console.log('[AI Assistant] Updated LLM client directly (no conversation manager yet)');
+              }
+            },
+            getCurrentModel: () => {
+              if (conversationManager) {
+                return conversationManager.getLLMSettings();
+              } else if (llmClient) {
+                const settings = llmClient.getSettings();
+                return { provider: settings.provider, model: settings.model || '' };
+              }
+              return { provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' };
             }
           });
 

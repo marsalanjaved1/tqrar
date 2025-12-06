@@ -3,7 +3,7 @@
  */
 
 import { ReactWidget } from '@jupyterlab/apputils';
-import { IMessage, IExecutionSettings, ExecutionMode } from './types';
+import { IMessage, IExecutionSettings, ExecutionMode, IToolCall } from './types';
 import { settingsIcon } from '@jupyterlab/ui-components';
 import { IRenderMimeRegistry } from '@jupyterlab/rendermime';
 import { IStateDB } from '@jupyterlab/statedb';
@@ -74,6 +74,31 @@ export interface IChatWidgetOptions {
    * StateDB for persisting execution settings
    */
   stateDB?: IStateDB;
+
+  /**
+   * Callback to subscribe to pending tools changes (for manual mode approval)
+   */
+  onPendingToolsChange?: (callback: (toolCalls: IToolCall[] | null) => void) => void;
+
+  /**
+   * Callback to approve pending tools
+   */
+  onApprovePendingTools?: () => void;
+
+  /**
+   * Callback to reject pending tools
+   */
+  onRejectPendingTools?: () => void;
+
+  /**
+   * Callback when model is changed
+   */
+  onModelChange?: (config: { provider: string; model: string }) => void;
+
+  /**
+   * Get current model config
+   */
+  getCurrentModel?: () => { provider: string; model: string };
 }
 
 /**
@@ -90,7 +115,32 @@ const ChatComponent: React.FC<{
   onNewSession?: () => void;
   executionSettings?: IExecutionSettings;
   onExecutionSettingsChange?: (settings: IExecutionSettings) => void;
-}> = ({ onSettingsClick, onMessageSend, toolExecutionTracker, initialMessages = [], onMessagesChange, sessionManager, onSessionChange, onNewSession, executionSettings, onExecutionSettingsChange }) => {
+  onPendingToolsChange?: (callback: (toolCalls: IToolCall[] | null) => void) => void;
+  onApprovePendingTools?: () => void;
+  onRejectPendingTools?: () => void;
+  onModelChange?: (config: { provider: string; model: string }) => void;
+  getCurrentModel?: () => { provider: string; model: string };
+  initialModel?: { provider: string; model: string };
+  onModelCallbackRegister?: (callback: (model: { provider: string; model: string }) => void) => void;
+}> = ({ 
+  onSettingsClick, 
+  onMessageSend, 
+  toolExecutionTracker, 
+  initialMessages = [], 
+  onMessagesChange, 
+  sessionManager, 
+  onSessionChange, 
+  onNewSession, 
+  executionSettings, 
+  onExecutionSettingsChange,
+  onPendingToolsChange,
+  onApprovePendingTools,
+  onRejectPendingTools,
+  onModelChange,
+  getCurrentModel,
+  initialModel,
+  onModelCallbackRegister
+}) => {
   const [messages, setMessages] = React.useState<IMessage[]>(initialMessages);
   const [isStreaming, setIsStreaming] = React.useState(false);
   const [streamingContent, setStreamingContent] = React.useState<string>('');
@@ -100,12 +150,66 @@ const ChatComponent: React.FC<{
   const [openSessions, setOpenSessions] = React.useState<ISession[]>([]); // Multiple open tabs
   const [activeSessionId, setActiveSessionId] = React.useState<string | null>(null);
   const [showHistory, setShowHistory] = React.useState(false);
+  const [pendingToolCalls, setPendingToolCalls] = React.useState<IToolCall[] | null>(null);
+  const [currentModel, setCurrentModel] = React.useState<{ provider: string; model: string }>(
+    initialModel || { provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' }
+  );
   
   // Store messages for each open session
   const sessionMessagesRef = React.useRef<Map<string, IMessage[]>>(new Map());
   
   // Check if current active session is streaming
   const isActiveSessionStreaming = isStreaming && streamingSessionId === activeSessionId;
+
+  // Subscribe to pending tools changes for manual mode approval
+  React.useEffect(() => {
+    if (onPendingToolsChange) {
+      onPendingToolsChange((toolCalls) => {
+        console.log('[ChatComponent] Pending tools changed:', toolCalls?.length || 0);
+        setPendingToolCalls(toolCalls);
+      });
+    }
+  }, [onPendingToolsChange]);
+
+  // Register model change callback to receive updates from widget
+  React.useEffect(() => {
+    if (onModelCallbackRegister) {
+      onModelCallbackRegister((model) => {
+        console.log('[ChatComponent] Model updated from widget:', model);
+        setCurrentModel(model);
+      });
+    }
+  }, [onModelCallbackRegister]);
+
+  // Handle model change
+  const handleModelChange = React.useCallback((config: { provider: string; model: string }) => {
+    console.log('[ChatComponent] Model changed:', config);
+    setCurrentModel(config);
+    onModelChange?.(config);
+  }, [onModelChange]);
+
+  // Handle tool approval
+  const handleApproveToolCall = React.useCallback((toolCallId: string) => {
+    console.log('[ChatComponent] Approving tool:', toolCallId);
+    // For now, approve all - individual approval would need more complex state
+    onApprovePendingTools?.();
+  }, [onApprovePendingTools]);
+
+  const handleRejectToolCall = React.useCallback((toolCallId: string) => {
+    console.log('[ChatComponent] Rejecting tool:', toolCallId);
+    // For now, reject all - individual rejection would need more complex state
+    onRejectPendingTools?.();
+  }, [onRejectPendingTools]);
+
+  const handleApproveAllToolCalls = React.useCallback(() => {
+    console.log('[ChatComponent] Approving all tools');
+    onApprovePendingTools?.();
+  }, [onApprovePendingTools]);
+
+  const handleRejectAllToolCalls = React.useCallback(() => {
+    console.log('[ChatComponent] Rejecting all tools');
+    onRejectPendingTools?.();
+  }, [onRejectPendingTools]);
 
   // Helper to refresh sessions list
   const refreshSessions = React.useCallback(() => {
@@ -515,6 +619,15 @@ const ChatComponent: React.FC<{
         toolExecutionTracker={toolExecutionTracker}
         executionSettings={executionSettings}
         onExecutionSettingsChange={onExecutionSettingsChange}
+        // Pending tool approvals (when autopilot is off)
+        pendingToolCalls={pendingToolCalls || []}
+        onApproveToolCall={handleApproveToolCall}
+        onRejectToolCall={handleRejectToolCall}
+        onApproveAllToolCalls={handleApproveAllToolCalls}
+        onRejectAllToolCalls={handleRejectAllToolCalls}
+        // Model selection
+        currentModel={currentModel}
+        onModelChange={handleModelChange}
       />
 
       {/* History Sidebar */}
@@ -547,11 +660,31 @@ export class ChatWidget extends ReactWidget {
     mode: 'act',
     autoMode: true
   };
+  
+  // Pending tools approval callbacks
+  private _onPendingToolsChange?: (callback: (toolCalls: IToolCall[] | null) => void) => void;
+  private _pendingToolsCallback?: (toolCalls: IToolCall[] | null) => void;
+  private _onApprovePendingTools?: () => void;
+  private _onRejectPendingTools?: () => void;
+  private _onModelChange?: (config: { provider: string; model: string }) => void;
+  private _getCurrentModel?: () => { provider: string; model: string };
+  
+  // Current model state (persisted)
+  private _currentModel: { provider: string; model: string } = {
+    provider: 'anthropic',
+    model: 'claude-3-5-sonnet-20241022'
+  };
+  private _modelChangeCallback?: (model: { provider: string; model: string }) => void;
 
   /**
    * StateDB key for storing execution settings
    */
   private static readonly EXECUTION_SETTINGS_KEY = 'ai-assistant:execution-settings';
+  
+  /**
+   * StateDB key for storing model selection
+   */
+  private static readonly MODEL_SETTINGS_KEY = 'ai-assistant:model-settings';
 
   /**
    * Construct a new chat widget
@@ -575,10 +708,43 @@ export class ChatWidget extends ReactWidget {
     this._onMessagesChange = (callback) => {
       this._messagesCallback = callback;
     };
+    
+    // Pending tools approval callbacks
+    this._onPendingToolsChange = options.onPendingToolsChange ? (callback) => {
+      this._pendingToolsCallback = callback;
+      options.onPendingToolsChange!(callback);
+    } : (callback) => {
+      this._pendingToolsCallback = callback;
+    };
+    this._onApprovePendingTools = options.onApprovePendingTools;
+    this._onRejectPendingTools = options.onRejectPendingTools;
+    
+    // Model change - wrap to also persist and update internal state
+    this._onModelChange = (config) => {
+      console.log('[ChatWidget] Model change requested:', config);
+      this._currentModel = config;
+      this._saveModelSettings().catch(err => console.error('[ChatWidget] Failed to save model:', err));
+      options.onModelChange?.(config);
+      // Notify UI of model change
+      this._modelChangeCallback?.(config);
+    };
+    
+    // Get current model - return our persisted state
+    this._getCurrentModel = () => {
+      // Try to get from conversation manager first (if available)
+      const fromManager = options.getCurrentModel?.();
+      if (fromManager && fromManager.model) {
+        return fromManager;
+      }
+      return this._currentModel;
+    };
 
-    // Load execution settings from StateDB
+    // Load execution settings and model from StateDB
     this._loadExecutionSettings().catch(error => {
       console.error('[ChatWidget] Failed to load execution settings:', error);
+    });
+    this._loadModelSettings().catch(error => {
+      console.error('[ChatWidget] Failed to load model settings:', error);
     });
   }
 
@@ -598,6 +764,13 @@ export class ChatWidget extends ReactWidget {
         onNewSession={this._onNewSession}
         executionSettings={this._executionSettings}
         onExecutionSettingsChange={(settings) => this._handleExecutionSettingsChange(settings)}
+        onPendingToolsChange={this._onPendingToolsChange}
+        onApprovePendingTools={this._onApprovePendingTools}
+        onRejectPendingTools={this._onRejectPendingTools}
+        onModelChange={this._onModelChange}
+        getCurrentModel={this._getCurrentModel}
+        initialModel={this._currentModel}
+        onModelCallbackRegister={(cb) => this.setModelChangeCallback(cb)}
       />
     );
   }
@@ -718,5 +891,67 @@ export class ChatWidget extends ReactWidget {
       console.error('[ChatWidget] Failed to save execution settings:', error);
       // Continue with in-memory state
     }
+  }
+
+  /**
+   * Load model settings from StateDB
+   */
+  private async _loadModelSettings(): Promise<void> {
+    if (!this._stateDB) {
+      console.log('[ChatWidget] No StateDB available, using default model');
+      return;
+    }
+
+    try {
+      const data = await this._stateDB.fetch(ChatWidget.MODEL_SETTINGS_KEY);
+      
+      if (data && typeof data === 'object' && data !== null) {
+        const settings = data as any;
+        if ('provider' in settings && 'model' in settings) {
+          this._currentModel = {
+            provider: settings.provider,
+            model: settings.model
+          };
+          console.log('[ChatWidget] Loaded model settings from StateDB:', this._currentModel);
+          // Notify UI of loaded model
+          this._modelChangeCallback?.(this._currentModel);
+        }
+      }
+    } catch (error) {
+      console.error('[ChatWidget] Failed to load model settings:', error);
+    }
+  }
+
+  /**
+   * Save model settings to StateDB
+   */
+  private async _saveModelSettings(): Promise<void> {
+    if (!this._stateDB) {
+      console.log('[ChatWidget] No StateDB available, skipping model save');
+      return;
+    }
+
+    try {
+      await this._stateDB.save(ChatWidget.MODEL_SETTINGS_KEY, this._currentModel as any);
+      console.log('[ChatWidget] Saved model settings to StateDB:', this._currentModel);
+    } catch (error) {
+      console.error('[ChatWidget] Failed to save model settings:', error);
+    }
+  }
+
+  /**
+   * Set callback for model changes (called from React component)
+   */
+  setModelChangeCallback(callback: (model: { provider: string; model: string }) => void): void {
+    this._modelChangeCallback = callback;
+    // Immediately notify with current model
+    callback(this._currentModel);
+  }
+
+  /**
+   * Get current model
+   */
+  getCurrentModel(): { provider: string; model: string } {
+    return { ...this._currentModel };
   }
 }

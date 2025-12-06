@@ -79,7 +79,7 @@ If you want to contribute or modify the extension:
 
 ```bash
 # Clone the repository
-git clone https://github.com/marsalanjaved1/tqrar.git
+git clone https://github.com/tqrar/tqrar.git
 cd tqrar
 
 # Install Node dependencies
@@ -335,8 +335,8 @@ Built with JupyterLab, React, TypeScript, and OpenAI-compatible APIs.
 ## Contact
 
 - GitHub: [@marsalanjaved1](https://github.com/marsalanjaved1)
-- Issues: [GitHub Issues](https://github.com/marsalanjaved1/tqrar/issues)
-- Repository: [github.com/marsalanjaved1/tqrar](https://github.com/marsalanjaved1/tqrar)
+- Issues: [GitHub Issues](https://github.com/tqrar/tqrar/issues)
+- Repository: [github.com/marsalanjaved1/tqrar](https://github.com/tqrar/tqrar)
 
 ---
 

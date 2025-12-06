@@ -10,14 +10,14 @@
     "assistant",
     "tqrar"
   ],
-  "homepage": "https://github.com/marsalanjaved1/tqrar",
+  "homepage": "https://github.com/tqrar/tqrar",
   "bugs": {
-    "url": "https://github.com/marsalanjaved1/tqrar/issues"
+    "url": "https://github.com/tqrar/tqrar/issues"
   },
   "license": "BSD-3-Clause",
   "author": {
-    "name": "Marsal Anjaved",
-    "email": "marsalanjaved1@gmail.com"
+    "name": "Arsalan Javed",
+    "email": "arsalanjaved2010@gmail.com"
   },
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
@@ -30,7 +30,7 @@
   "style": "style/index.css",
   "repository": {
     "type": "git",
-    "url": "https://github.com/marsalanjaved1/tqrar.git"
+    "url": "https://github.com/tqrar/tqrar.git"
   },
   "scripts": {
     "build": "jlpm build:css && jlpm build:lib && jlpm build:labextension:dev",

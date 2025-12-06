@@ -26,22 +26,30 @@ module.exports = {
         'text-muted': '#6e6e6e',
         'text-code': '#ce9178',
         
-        // Brand colors
+        // Brand colors - Kiro style
         'accent-blue': '#007acc',
         'accent-blue-hover': '#1177bb',
         'accent-blue-active': '#0d5a8f',
+        'accent-blue-bg': 'rgba(0, 122, 204, 0.15)',
+        'accent-blue-hover-bg': 'rgba(0, 122, 204, 0.25)',
         'accent-red': '#cb4830',
         'accent-red-hover': '#d95840',
         
+        // Green accent - Kiro style for autopilot/approve
+        'accent-green': '#3fb950',
+        'accent-green-hover': '#2ea043',
+        'accent-green-bg': 'rgba(63, 185, 80, 0.15)',
+        'accent-green-hover-bg': 'rgba(63, 185, 80, 0.25)',
+        
         // Status colors
-        'success': '#5cb85c',
-        'success-bg': 'rgba(92, 184, 92, 0.2)',
-        'error': '#d9534f',
-        'error-bg': 'rgba(217, 83, 79, 0.2)',
-        'warning': '#f0ad4e',
-        'warning-bg': 'rgba(240, 173, 78, 0.2)',
+        'success': '#3fb950',
+        'success-bg': 'rgba(63, 185, 80, 0.15)',
+        'error': '#f85149',
+        'error-bg': 'rgba(248, 81, 73, 0.15)',
+        'warning': '#d29922',
+        'warning-bg': 'rgba(210, 153, 34, 0.15)',
         'pending': '#858585',
-        'pending-bg': 'rgba(128, 128, 128, 0.2)',
+        'pending-bg': 'rgba(128, 128, 128, 0.15)',
         
         // Code syntax
         'code-bg': '#1a1a1a',
@@ -91,6 +99,7 @@ module.exports = {
         'fade-in': 'fadeIn 0.2s ease-in',
         'slide-in': 'slideIn 0.2s ease-out',
         'slide-down': 'slideDown 0.2s ease-out',
+        'slide-in-up': 'slideInUp 0.3s ease-out',
         'pulse-dot': 'pulse 1.4s ease-in-out infinite',
         'spin-slow': 'spin 2s linear infinite',
       },
@@ -106,6 +115,10 @@ module.exports = {
         slideDown: {
           'from': { opacity: '0', maxHeight: '0' },
           'to': { opacity: '1', maxHeight: '500px' },
+        },
+        slideInUp: {
+          'from': { opacity: '0', transform: 'translateY(20px)' },
+          'to': { opacity: '1', transform: 'translateY(0)' },
         },
         pulse: {
           '0%, 60%, 100%': { opacity: '0.3', transform: 'scale(0.8)' },

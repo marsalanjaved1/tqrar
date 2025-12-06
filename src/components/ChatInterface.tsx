@@ -1,18 +1,22 @@
 /**
- * Custom Chat Interface Component
- * Simple, clean chat UI with inline tool execution display
+ * Custom Chat Interface Component - Kiro Style
+ * Clean chat UI with inline tool execution display and approval workflow
  */
 
 import React from 'react';
-import { IMessage, IExecutionSettings } from '../types';
+import { IMessage, IExecutionSettings, IToolCall } from '../types';
 import { ToolCallCard } from './ToolCallCard';
+import { ToolApprovalCard } from './ToolApprovalCard';
 import { ToolExecutionTracker } from '../tools/ToolExecutionTracker';
 import { MessageContent } from './MessageContent';
 import { MessageActions } from './MessageActions';
 import { InputArea } from './InputArea';
-import { DebugPanel } from './DebugPanel';
+import { ICheckpoint } from './CheckpointButton';
+import { IChange } from './ReviewButton';
+import { Toast } from './Toast';
 import type { IToolExecutionEvent } from '../types';
 import { cn } from '../utils/classNames';
+import { starPromptUtils } from '../utils/starPrompt';
 
 export interface IChatInterfaceProps {
   messages: IMessage[];
@@ -21,6 +25,25 @@ export interface IChatInterfaceProps {
   toolExecutionTracker?: ToolExecutionTracker;
   executionSettings?: IExecutionSettings;
   onExecutionSettingsChange?: (settings: IExecutionSettings) => void;
+  // Pending tool approvals (when autopilot is off)
+  pendingToolCalls?: IToolCall[];
+  onApproveToolCall?: (toolCallId: string) => void;
+  onRejectToolCall?: (toolCallId: string) => void;
+  onApproveAllToolCalls?: () => void;
+  onRejectAllToolCalls?: () => void;
+  // Checkpoint functionality
+  checkpoints?: ICheckpoint[];
+  onCreateCheckpoint?: () => void;
+  onRestoreCheckpoint?: (checkpointId: string) => void;
+  hasUnsavedChanges?: boolean;
+  // Review functionality
+  changes?: IChange[];
+  onViewChange?: (changeId: string) => void;
+  onAcceptAllChanges?: () => void;
+  onRevertAllChanges?: () => void;
+  // Model selection
+  currentModel?: { provider: string; model: string };
+  onModelChange?: (config: { provider: string; model: string }) => void;
 }
 
 export const ChatInterface: React.FC<IChatInterfaceProps> = ({
@@ -29,7 +52,26 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   isStreaming,
   toolExecutionTracker,
   executionSettings = { mode: 'act', autoMode: true },
-  onExecutionSettingsChange
+  onExecutionSettingsChange,
+  // Pending tool approvals
+  pendingToolCalls = [],
+  onApproveToolCall,
+  onRejectToolCall,
+  onApproveAllToolCalls,
+  onRejectAllToolCalls,
+  // Checkpoint functionality
+  checkpoints = [],
+  onCreateCheckpoint,
+  onRestoreCheckpoint,
+  hasUnsavedChanges = false,
+  // Review functionality
+  changes = [],
+  onViewChange,
+  onAcceptAllChanges,
+  onRevertAllChanges,
+  // Model selection
+  currentModel = { provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' },
+  onModelChange
 }) => {
   console.log('[TQRAR-DEBUG] [ChatInterface] Component render, toolExecutionTracker:', {
     hasTracker: !!toolExecutionTracker,
@@ -44,8 +86,10 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
   const messagesRef = React.useRef<IMessage[]>(messages);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [debugOpen, setDebugOpen] = React.useState(false);
+  const [showStarPrompt, setShowStarPrompt] = React.useState(false);
+  const lastMessageCountRef = React.useRef(0);
 
-  // Keep messages ref in sync
+  // Keep messages ref in sync and check for star prompt
   React.useEffect(() => {
     messagesRef.current = messages;
     console.log('[TQRAR-DEBUG] [ChatInterface] Messages updated:', messages.map((m, i) => ({
@@ -55,6 +99,17 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
       toolCallsCount: m.toolCalls?.length || 0,
       hasFinalContent: !!m.finalContent
     })));
+
+    // Check if we should show star prompt after a successful assistant response
+    const assistantMessages = messages.filter(m => m.role === 'assistant');
+    if (assistantMessages.length > lastMessageCountRef.current) {
+      lastMessageCountRef.current = assistantMessages.length;
+      
+      // Show star prompt if conditions are met
+      if (starPromptUtils.shouldShowPrompt()) {
+        setShowStarPrompt(true);
+      }
+    }
   }, [messages]);
 
 
@@ -140,6 +195,17 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
       setInputValue('');
       inputRef.current?.focus();
     }
+  };
+
+  const handleStarClick = () => {
+    window.open('https://github.com/tqrar/tqrar', '_blank');
+    starPromptUtils.markAsStarred();
+    setShowStarPrompt(false);
+  };
+
+  const handleDismissStarPrompt = () => {
+    starPromptUtils.dismissPrompt();
+    setShowStarPrompt(false);
   };
 
   return (
@@ -443,7 +509,21 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
         onToggle={() => setDebugOpen(!debugOpen)}
       /> */}
 
-      {/* Input area */}
+      {/* Tool Approval Card - shown when autopilot is OFF and there are pending tools */}
+      {!executionSettings.autoMode && pendingToolCalls.length > 0 && onApproveToolCall && onRejectToolCall && (
+        <div className="tq-px-4 tq-pb-2">
+          <ToolApprovalCard
+            pendingTools={pendingToolCalls}
+            onApprove={onApproveToolCall}
+            onReject={onRejectToolCall}
+            onApproveAll={onApproveAllToolCalls || (() => {})}
+            onRejectAll={onRejectAllToolCalls || (() => {})}
+            isProcessing={isStreaming}
+          />
+        </div>
+      )}
+
+      {/* Input area - Kiro style */}
       <InputArea
         value={inputValue}
         onChange={setInputValue}
@@ -456,13 +536,35 @@ export const ChatInterface: React.FC<IChatInterfaceProps> = ({
         }}
         disabled={isStreaming}
         placeholder="Ask Tqrar..."
-        currentModel={{ provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' }}
-        onModelChange={(config) => {
-          // TODO: Implement model change handler
-        }}
+        currentModel={currentModel}
+        onModelChange={onModelChange}
         executionSettings={executionSettings}
         onExecutionSettingsChange={onExecutionSettingsChange}
+        // Checkpoint props
+        checkpoints={checkpoints}
+        onCreateCheckpoint={onCreateCheckpoint}
+        onRestoreCheckpoint={onRestoreCheckpoint}
+        hasUnsavedChanges={hasUnsavedChanges}
+        // Review props
+        changes={changes}
+        onViewChange={onViewChange}
+        onAcceptAllChanges={onAcceptAllChanges}
+        onRevertAllChanges={onRevertAllChanges}
       />
+
+      {/* Star Prompt Toast */}
+      {showStarPrompt && (
+        <Toast
+          message="Enjoying TQRAR? Consider starring on GitHub 🌟"
+          action={{
+            label: 'Star',
+            onClick: handleStarClick
+          }}
+          onDismiss={handleDismissStarPrompt}
+          autoCloseDuration={5000}
+          type="info"
+        />
+      )}
     </div>
   );
 };

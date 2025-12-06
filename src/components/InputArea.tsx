@@ -1,16 +1,17 @@
 /**
- * Input Area Component
- * Simple input area with subtle model selector and execution mode controls
+ * Input Area Component - Kiro Style
+ * Clean input area with autopilot toggle, checkpoint, and review buttons
  */
 
 import React from 'react';
 import { IExecutionSettings } from '../types';
-import { ModeToggle } from './ModeToggle';
-import { AutoModeCheckbox } from './AutoModeCheckbox';
+import { AutopilotToggle } from './AutopilotToggle';
+import { CheckpointButton, ICheckpoint } from './CheckpointButton';
+import { ReviewButton, IChange } from './ReviewButton';
 import { cn } from '../utils/classNames';
 
 export interface IModelConfig {
-  provider: 'openrouter' | 'openai' | 'anthropic';
+  provider: 'openrouter' | 'openai' | 'anthropic' | string;
   model: string;
 }
 
@@ -24,6 +25,16 @@ export interface IInputAreaProps {
   onModelChange?: (config: IModelConfig) => void;
   executionSettings?: IExecutionSettings;
   onExecutionSettingsChange?: (settings: IExecutionSettings) => void;
+  // Checkpoint props
+  checkpoints?: ICheckpoint[];
+  onCreateCheckpoint?: () => void;
+  onRestoreCheckpoint?: (checkpointId: string) => void;
+  hasUnsavedChanges?: boolean;
+  // Review props
+  changes?: IChange[];
+  onViewChange?: (changeId: string) => void;
+  onAcceptAllChanges?: () => void;
+  onRevertAllChanges?: () => void;
 }
 
 export const InputArea: React.FC<IInputAreaProps> = ({
@@ -35,7 +46,15 @@ export const InputArea: React.FC<IInputAreaProps> = ({
   currentModel = { provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' },
   onModelChange,
   executionSettings = { mode: 'act', autoMode: true },
-  onExecutionSettingsChange
+  onExecutionSettingsChange,
+  checkpoints = [],
+  onCreateCheckpoint,
+  onRestoreCheckpoint,
+  hasUnsavedChanges = false,
+  changes = [],
+  onViewChange,
+  onAcceptAllChanges,
+  onRevertAllChanges
 }) => {
   const [showModelSelector, setShowModelSelector] = React.useState(false);
   const [dropdownPosition, setDropdownPosition] = React.useState({ top: 0, left: 0 });
@@ -57,7 +76,7 @@ export const InputArea: React.FC<IInputAreaProps> = ({
     if (showModelSelector && modelButtonRef.current) {
       const rect = modelButtonRef.current.getBoundingClientRect();
       setDropdownPosition({
-        top: rect.top - 8, // Position above button with small gap
+        top: rect.top - 8,
         left: rect.left
       });
     }
@@ -102,56 +121,84 @@ export const InputArea: React.FC<IInputAreaProps> = ({
     return modelMap[currentModel.model] || currentModel.model;
   };
 
-  return (
-    <div className="tq-border-t tq-border-border-default tq-p-4 tq-pb-2 tq-bg-bg-primary tq-flex-shrink-0 tq-flex tq-flex-col tq-w-full tq-box-border">
-      <div className="tq-input-container">
-        <textarea
-          ref={textareaRef}
-          className="tq-textarea"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          rows={1}
-          disabled={disabled}
-          aria-label="Message input"
-        />
-        
-        <div className="tq-flex tq-items-center tq-justify-between tq-gap-2 tq-mt-1">
-          <div className="tq-flex tq-items-center tq-gap-2">
-            {/* Mode Toggle */}
-            <ModeToggle
-              mode={executionSettings.mode}
-              onChange={(mode) => {
-                if (onExecutionSettingsChange) {
-                  onExecutionSettingsChange({ ...executionSettings, mode });
-                }
-              }}
-              disabled={disabled}
-            />
-            
-            {/* Auto Mode Checkbox - only visible in Act mode */}
-            {executionSettings.mode === 'act' && (
-              <AutoModeCheckbox
-                checked={executionSettings.autoMode}
-                onChange={(autoMode) => {
-                  if (onExecutionSettingsChange) {
-                    onExecutionSettingsChange({ ...executionSettings, autoMode });
-                  }
-                }}
-                disabled={disabled}
-              />
-            )}
-          </div>
+  const handleAutopilotChange = (enabled: boolean) => {
+    if (onExecutionSettingsChange) {
+      onExecutionSettingsChange({
+        ...executionSettings,
+        autoMode: enabled,
+        // When autopilot is on, always use 'act' mode
+        mode: enabled ? 'act' : executionSettings.mode
+      });
+    }
+  };
 
-          <div className="tq-flex tq-items-center tq-gap-2">
+  return (
+    <div className="kiro-input-area tq-border-t tq-border-border-default tq-bg-bg-primary tq-flex-shrink-0">
+      {/* Top toolbar with controls */}
+      <div className="tq-flex tq-items-center tq-justify-between tq-px-4 tq-py-2 tq-border-b tq-border-border-default tq-bg-bg-secondary">
+        <div className="tq-flex tq-items-center tq-gap-2">
+          {/* Autopilot Toggle - Kiro style */}
+          <AutopilotToggle
+            enabled={executionSettings.autoMode}
+            onChange={handleAutopilotChange}
+            disabled={disabled}
+          />
+        </div>
+
+        <div className="tq-flex tq-items-center tq-gap-2">
+          {/* Review Button - only show if there are changes */}
+          {changes.length > 0 && onViewChange && onAcceptAllChanges && onRevertAllChanges && (
+            <ReviewButton
+              changes={changes}
+              onViewChange={onViewChange}
+              onAcceptAll={onAcceptAllChanges}
+              onRevertAll={onRevertAllChanges}
+              isLoading={disabled}
+            />
+          )}
+
+          {/* Checkpoint Button */}
+          {onCreateCheckpoint && onRestoreCheckpoint && (
+            <CheckpointButton
+              checkpoints={checkpoints}
+              onCreateCheckpoint={onCreateCheckpoint}
+              onRestoreCheckpoint={onRestoreCheckpoint}
+              hasChanges={hasUnsavedChanges}
+              isLoading={disabled}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Input container */}
+      <div className="tq-p-4 tq-pb-2">
+        <div className="kiro-input-container tq-flex tq-flex-col tq-bg-bg-secondary tq-border tq-border-border-default tq-rounded-lg tq-transition-all focus-within:tq-border-accent-blue">
+          <textarea
+            ref={textareaRef}
+            className="kiro-textarea tq-w-full tq-bg-transparent tq-border-none tq-text-text-primary tq-text-md tq-font-sans tq-resize-none tq-min-h-[44px] tq-max-h-[200px] tq-leading-relaxed tq-p-3 tq-pb-0 tq-outline-none"
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            rows={1}
+            disabled={disabled}
+            aria-label="Message input"
+          />
+          
+          {/* Bottom bar with model selector and send button */}
+          <div className="tq-flex tq-items-center tq-justify-between tq-px-3 tq-py-2">
+            {/* Model selector */}
             <div className="tq-relative">
               <button
                 ref={modelButtonRef}
                 className={cn(
-                  'tq-bg-transparent tq-border-none tq-text-text-secondary tq-text-xs tq-px-2.5 tq-py-2 tq-cursor-pointer tq-rounded tq-transition-all tq-font-mono tq-whitespace-nowrap tq-h-8 tq-flex tq-items-center tq-mr-1',
-                  showModelSelector && 'tq-bg-bg-active tq-text-accent-blue',
-                  !showModelSelector && 'hover:tq-bg-bg-active hover:tq-text-text-primary',
+                  'kiro-model-btn',
+                  'tq-flex tq-items-center tq-gap-1 tq-px-2 tq-py-1 tq-rounded',
+                  'tq-text-xs tq-text-text-muted tq-font-mono',
+                  'tq-bg-transparent tq-border-none tq-cursor-pointer',
+                  'hover:tq-text-text-secondary hover:tq-bg-bg-hover',
+                  'tq-transition-colors',
+                  showModelSelector && 'tq-text-text-secondary tq-bg-bg-hover',
                   disabled && 'tq-opacity-50 tq-cursor-not-allowed'
                 )}
                 onClick={(e) => {
@@ -161,13 +208,17 @@ export const InputArea: React.FC<IInputAreaProps> = ({
                 disabled={disabled}
                 title="Select model"
               >
-                {getModelDisplayText()}
+                <span>{getModelDisplayText()}</span>
+                <svg width="10" height="10" viewBox="0 0 10 10" className="tq-text-current">
+                  <path d="M2 4l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                </svg>
               </button>
 
+              {/* Model dropdown */}
               {showModelSelector && (
                 <div 
                   ref={dropdownRef}
-                  className="tq-fixed tq-bg-bg-secondary tq-border tq-border-border-default tq-rounded-md tq-shadow-dropdown tq-min-w-[180px] tq-z-[99999] tq-py-1"
+                  className="tq-fixed tq-bg-bg-secondary tq-border tq-border-border-default tq-rounded-lg tq-shadow-dropdown tq-min-w-[180px] tq-z-[99999] tq-py-1 tq-animate-fade-in"
                   style={{
                     top: `${dropdownPosition.top}px`,
                     left: `${dropdownPosition.left}px`,
@@ -181,9 +232,12 @@ export const InputArea: React.FC<IInputAreaProps> = ({
                         'tq-w-full tq-bg-transparent tq-border-none tq-px-3 tq-py-1.5 tq-text-text-primary tq-text-left tq-cursor-pointer tq-text-sm tq-transition-colors tq-block',
                         currentModel.provider === 'anthropic' && currentModel.model === 'claude-3-5-sonnet-20241022'
                           ? 'tq-bg-accent-blue tq-text-white hover:tq-bg-accent-blue-hover'
-                          : 'hover:tq-bg-bg-active'
+                          : 'hover:tq-bg-bg-hover'
                       )}
-                      onClick={() => onModelChange?.({ provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' })}
+                      onClick={() => {
+                        onModelChange?.({ provider: 'anthropic', model: 'claude-3-5-sonnet-20241022' });
+                        setShowModelSelector(false);
+                      }}
                     >
                       Claude Sonnet 4.5
                     </button>
@@ -192,9 +246,12 @@ export const InputArea: React.FC<IInputAreaProps> = ({
                         'tq-w-full tq-bg-transparent tq-border-none tq-px-3 tq-py-1.5 tq-text-text-primary tq-text-left tq-cursor-pointer tq-text-sm tq-transition-colors tq-block',
                         currentModel.provider === 'anthropic' && currentModel.model === 'claude-3-5-haiku-20241022'
                           ? 'tq-bg-accent-blue tq-text-white hover:tq-bg-accent-blue-hover'
-                          : 'hover:tq-bg-bg-active'
+                          : 'hover:tq-bg-bg-hover'
                       )}
-                      onClick={() => onModelChange?.({ provider: 'anthropic', model: 'claude-3-5-haiku-20241022' })}
+                      onClick={() => {
+                        onModelChange?.({ provider: 'anthropic', model: 'claude-3-5-haiku-20241022' });
+                        setShowModelSelector(false);
+                      }}
                     >
                       Claude Haiku 4.5
                     </button>
@@ -207,9 +264,12 @@ export const InputArea: React.FC<IInputAreaProps> = ({
                         'tq-w-full tq-bg-transparent tq-border-none tq-px-3 tq-py-1.5 tq-text-text-primary tq-text-left tq-cursor-pointer tq-text-sm tq-transition-colors tq-block',
                         currentModel.provider === 'openai' && currentModel.model === 'gpt-4o'
                           ? 'tq-bg-accent-blue tq-text-white hover:tq-bg-accent-blue-hover'
-                          : 'hover:tq-bg-bg-active'
+                          : 'hover:tq-bg-bg-hover'
                       )}
-                      onClick={() => onModelChange?.({ provider: 'openai', model: 'gpt-4o' })}
+                      onClick={() => {
+                        onModelChange?.({ provider: 'openai', model: 'gpt-4o' });
+                        setShowModelSelector(false);
+                      }}
                     >
                       GPT-4o
                     </button>
@@ -218,14 +278,27 @@ export const InputArea: React.FC<IInputAreaProps> = ({
               )}
             </div>
 
+            {/* Send button */}
             <button
-              className="tq-btn-primary"
+              className={cn(
+                'kiro-send-btn',
+                'tq-flex tq-items-center tq-justify-center',
+                'tq-w-8 tq-h-8 tq-rounded-lg',
+                'tq-bg-accent-blue tq-text-white',
+                'tq-border-none tq-cursor-pointer',
+                'tq-transition-all',
+                'hover:tq-bg-accent-blue-hover',
+                'active:tq-scale-95',
+                'disabled:tq-bg-bg-hover disabled:tq-text-text-muted disabled:tq-cursor-not-allowed disabled:tq-opacity-50'
+              )}
               onClick={onSubmit}
               disabled={!value.trim() || disabled}
-              title="Send message"
+              title="Send message (Enter)"
               aria-label="Send message"
             >
-              <span className="tq-text-lg tq-leading-none">↑</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M8 12V4M8 4L4 8M8 4l4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </button>
           </div>
         </div>
